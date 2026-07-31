@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071d31">
-<title>StopFlow — Colruyt & Leloup v0.2.2</title>
+<title>StopFlow — Colruyt & Leloup v0.2.3</title>
 <style>
 :root{
   --navy:#071d31;--navy2:#0c2a45;--blue:#2463eb;--blue2:#174dcc;
@@ -74,7 +74,7 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.2.2 — Colruyt & Leloup</p>
+    <p class="muted" style="text-align:center">Version 0.2.3 — Colruyt & Leloup</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" value="quentin@lunion.be" type="email" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" value="stopflow" type="password" required></div>
@@ -99,7 +99,7 @@ Les données restent dans ce navigateur.</div>
     <button data-page="suggestions">◌ Suggestions</button>
     <button data-page="settings">⚙ Paramètres</button>
    </nav>
-   <div class="usercard"><span class="avatar">QP</span><div><b>Quentin</b><br><small id="userRoleLabel">Responsable</small></div></div>
+   <div class="usercard"><span class="avatar">QP</span><div><b>Quentin Pollet</b><br><small id="userRoleLabel">Responsable</small></div></div>
  </aside>
  <main class="main">
   <div class="topbar"><div><h1 id="pageTitle">Tableau de bord</h1><div class="muted" id="today"></div></div><button class="btn ghost" id="logout">Déconnexion</button></div>
@@ -231,7 +231,7 @@ const defaultData=()=>({
  articles:[...COLRUYT,...LE_LOUP],
  orders:[],
  suggestions:[],
- settings:{establishment:"Brasserie L'Union",manager:"Quentin",footer:"Document préparé par StopFlow — Envoi au fournisseur à effectuer manuellement."}
+ settings:{establishment:"Brasserie L'Union",manager:"Quentin Pollet",footer:"Document préparé par StopFlow — Envoi au fournisseur à effectuer manuellement."}
 });
 
 function migrate(raw){
@@ -267,8 +267,17 @@ function migrate(raw){
 }
 
 let db=migrate(localStorage.getItem("stopflowData"));
-let session={name:"Quentin",role:"Responsable",email:"quentin@lunion.be"};
-let current={id:null,supplier:"Colruyt",stocks:{},adjustments:{},note:"",author:"Quentin"};
+let session={name:"Quentin Pollet",role:"Responsable",email:"quentin@lunion.be"};
+function repairResponsibleSession(){
+ if(!session || typeof session!=="object") session={};
+ if(session.email==="quentin@lunion.be" || !session.email){
+   session.name="Quentin Pollet";
+   session.email="quentin@lunion.be";
+   session.role="Responsable";
+ }
+}
+repairResponsibleSession();
+let current={id:null,supplier:"Colruyt",stocks:{},adjustments:{},note:"",author:"Quentin Pollet"};
 const save=()=>localStorage.setItem("stopflowData",JSON.stringify(db));
 save();
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -387,7 +396,7 @@ function showDetail(id){
 }
 
 function pdfSafe(s){
- return String(s??"").replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/–|—/g,"-").replace(/’/g,"'").replace(/€/g,"EUR");
+ return String(s===undefined||s===null?"":s).replace(/œ/g,"oe").replace(/Œ/g,"OE").replace(/–|—/g,"-").replace(/’/g,"'").replace(/€/g,"EUR");
 }
 function pdfEscape(s){return pdfSafe(s).replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)")}
 function binaryBytes(str){const a=new Uint8Array(str.length);for(let i=0;i<str.length;i++)a[i]=str.charCodeAt(i)&255;return a}
@@ -396,18 +405,18 @@ function createSimplePDF(o){
  const text=(s,x,y,size=10,bold=false)=>ops.push(`BT /F${bold?2:1} ${size} Tf ${x} ${y} Td (${pdfEscape(s)}) Tj ET`);
  const line=(x1,y1,x2,y2)=>ops.push(`${x1} ${y1} m ${x2} ${y2} l S`);
  text("StopFlow - Bon de commande",left,y,19,true); y-=28;
- text(db.settings.establishment,left,y,11,true); text("N° : "+o.number,360,y,11,true); y-=18;
- text("Fournisseur : "+o.supplier,left,y,10); text("Statut : "+o.status,360,y,10); y-=16;
- text("Inventaire : "+fmt(o.inventoryAt)+" - "+o.author,left,y,9);
- y-=15;text("Validation : "+(o.validatedAt?fmt(o.validatedAt)+" - "+o.validator:"Non valide"),left,y,9); y-=25;
+ text(pdfSafe(db.settings.establishment),left,y,11,true); text("N° : "+o.number,360,y,11,true); y-=18;
+ text("Fournisseur : "+pdfSafe(o.supplier),left,y,10); text("Statut : "+pdfSafe(o.status),360,y,10); y-=16;
+ text("Inventaire : "+fmt(o.inventoryAt)+" - "+pdfSafe(o.author||"Quentin Pollet"),left,y,9);
+ y-=15;text("Validation : "+(o.validatedAt?fmt(o.validatedAt)+" - "+pdfSafe(o.validator):"Non valide"),left,y,9); y-=25;
  line(left,y,550,y); y-=18;
  text("Article",left,y,10,true);text("Conditionnement",330,y,10,true);text("Quantite",500,y,10,true);y-=10;line(left,y,550,y);y-=18;
  for(const l of o.lines){
    if(y<90){break}
-   text(l.name,left,y,10);text(l.unit,330,y,9);text(String(l.quantity),515,y,11,true);y-=21;line(left,y+7,550,y+7);
+   text(pdfSafe(l.name),left,y,10);text(pdfSafe(l.unit),325,y,9);text(pdfSafe(l.quantity),520,y,11,true);y-=21;line(left,y+7,550,y+7);
  }
  y-=14;text("Remarque : "+(o.note||"-"),left,y,9);y-=35;
- text(db.settings.footer,left,y,8);
+ text(pdfSafe(db.settings.footer),left,y,8);
  const stream=ops.join("\n");
  const objs=[
    "<< /Type /Catalog /Pages 2 0 R >>",
@@ -520,7 +529,7 @@ $("#loginForm").onsubmit=e=>{
  e.preventDefault();
  const email=$("#email").value.trim().toLowerCase();
  if($("#password").value!=="stopflow")return alert("Mot de passe de démonstration incorrect.");
- session=email==="employe@lunion.be"?{name:"Employé test",role:"Employé",email}:{name:"Quentin",role:"Responsable",email};
+ session=email==="employe@lunion.be"?{name:"Employé test",role:"Employé",email}:{name:"Quentin Pollet",role:"Responsable",email:"quentin@lunion.be"};
  localStorage.setItem("stopflowLogged",JSON.stringify(session));
  $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
 };
