@@ -1,0 +1,20 @@
+STOPFLOW v0.2.2 — CORRECTIF PRIORITAIRE PDF / IMPRESSION
+
+CORRECTIONS
+- Réapparition garantie des quatre articles Leloup après migration.
+- Normalisation automatique de « Le Loup » vers « Leloup ».
+- Domaine Veneto blanc, rouge et rosé : fûts de 20 L.
+- Gaz corrigé en « Bouteille d’azote ».
+- « Ouvrir le PDF » ouvre le vrai PDF dans un nouvel onglet.
+- Bouton distinct « Télécharger le PDF ».
+- Impression ouverte dans un document indépendant avec son propre bouton.
+- Méthode de secours si les fenêtres surgissantes sont bloquées.
+
+TEST CONSEILLÉ
+1. Télécharger et décompresser le ZIP.
+2. Ouvrir index.html dans Safari, Chrome ou Edge.
+3. Autoriser les fenêtres surgissantes si le navigateur le demande.
+
+COMPTES
+Responsable : quentin@lunion.be / stopflow
+Employé : employe@lunion.be / stopflow
