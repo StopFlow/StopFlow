@@ -287,6 +287,7 @@ const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="�
 function isAdmin(){return session.role===ROLE.ADMIN;}
 function isResponsible(){return isAdmin()||session.role===ROLE.RESPONSABLE;}
 function isEmployee(){return session.role===ROLE.EMPLOYE;}
+function canSubmitOrders(){return isAdmin()||isResponsible()||isEmployee();}
 function canValidateOrders(){return isAdmin()||isResponsible();}
 function canManageUsers(){return isAdmin();}
 function canManageArticles(){return isAdmin()||isResponsible();}
@@ -361,7 +362,7 @@ function renderSummary(){
  }).join("");
  $("#sumLines").textContent=lines;$("#sumQty").textContent=qty;$("#generalNote").value=current.note||"";
  $("#validateOrder").classList.toggle("hidden",!canValidateOrders());
- $("#sendPending").classList.toggle("hidden",!canValidateOrders());
+ $("#sendPending").classList.toggle("hidden",!canSubmitOrders());
 }
 
 function renderDashboard(){
@@ -559,10 +560,10 @@ $("#historyNew").onclick=()=>page("dashboard");
 $("#articleSearch").oninput=renderInventory;
 $("#setAllZero").onclick=()=>{activeArticles().forEach(a=>current.stocks[a.id]=0);renderInventory()};
 $("#saveDraft").onclick=()=>{upsertOrder(orderSnapshot("Brouillon"));alert("Inventaire enregistré. Vous pourrez le reprendre depuis l'historique dans une prochaine évolution.");page("dashboard")};
-$("#showSummary").onclick=()=>{const missing=Object.values(current.stocks).some(v=>v===null||v==="");if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;renderSummary();page("summary")};
+$("#showSummary").onclick=()=>{const missing=Object.values(current.stocks).some(v=>v===null||v==="");if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;const filled=Object.values(current.stocks).filter(v=>v!==null&&v!=="").length;const total=activeArticles().length;if(isEmployee()&&filled===total){upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard");return;}renderSummary();page("summary")};
 $$("[data-back-inventory]").forEach(b=>b.onclick=()=>page("inventory"));
 $("#generalNote").oninput=e=>current.note=e.target.value;
-$("#sendPending").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")};
+$("#sendPending").onclick=()=>{if(!canSubmitOrders())return alert("Action non autorisée.");upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")};
 $("#validateOrder").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");const o=orderSnapshot("Validé");upsertOrder(o);alert("Bon validé. Vous pouvez l'enregistrer en PDF ou l'imprimer depuis l'historique.");page("history");showDetail(o.id)};
 $("#historySearch").oninput=renderHistory;$("#historyStatus").onchange=renderHistory;$("#historySort").onchange=renderHistory;
 $("#articleSupplier").onchange=renderArticles;$("#addArticle").onclick=()=>articleModal();
