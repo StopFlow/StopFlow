@@ -267,13 +267,14 @@ function migrate(raw){
 }
 
 let db=migrate(localStorage.getItem("stopflowData"));
-let session={name:"Quentin Pollet",role:"Responsable",email:"quentin@lunion.be"};
+const ROLE={ADMIN:"Admin",RESPONSABLE:"Responsable",EMPLOYE:"Employé"};
+let session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
 function repairResponsibleSession(){
  if(!session || typeof session!=="object") session={};
  if(session.email==="quentin@lunion.be" || !session.email){
    session.name="Quentin Pollet";
    session.email="quentin@lunion.be";
-   session.role="Responsable";
+   session.role=ROLE.RESPONSABLE;
  }
 }
 repairResponsibleSession();
@@ -283,17 +284,24 @@ save();
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmt=d=>new Intl.DateTimeFormat("fr-BE",{dateStyle:"short",timeStyle:"short"}).format(new Date(d));
 const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="—").length+1)).padStart(6,"0");
-const isResponsible=()=>session.role==="Responsable";
+function isAdmin(){return session.role===ROLE.ADMIN;}
+function isResponsible(){return isAdmin()||session.role===ROLE.RESPONSABLE;}
+function isEmployee(){return session.role===ROLE.EMPLOYE;}
+function canValidateOrders(){return isAdmin()||isResponsible();}
+function canManageUsers(){return isAdmin();}
+function canManageArticles(){return isAdmin()||isResponsible();}
+function canManageSettings(){return isAdmin()||isResponsible();}
 
 function applyRole(){
  $(".usercard b").textContent=session.name;
  $("#userRoleLabel").textContent=session.role;
  $(".avatar").textContent=session.name.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
- $$('[data-page="articles"],[data-page="settings"]').forEach(el=>el.classList.toggle("hidden",!isResponsible()));
+ $$('[data-page="articles"]').forEach(el=>el.classList.toggle("hidden",!canManageArticles()));
+ $$('[data-page="settings"]').forEach(el=>el.classList.toggle("hidden",!canManageSettings()));
 }
 
 function page(id){
- if((id==="articles"||id==="settings")&&!isResponsible()) id="dashboard";
+ if((id==="articles"&&!canManageArticles())||(id==="settings"&&!canManageSettings())) id="dashboard";
  $$(".page").forEach(x=>x.classList.add("hidden")); $("#"+id).classList.remove("hidden");
  const titles={dashboard:"Tableau de bord",inventory:"Inventaire "+(current.supplier||""),summary:"Résumé",history:"Historique",articles:"Articles",suggestions:"Suggestions",settings:"Paramètres"};
  $("#pageTitle").textContent=titles[id]||"StopFlow";
@@ -315,6 +323,13 @@ function newInventory(supplier){
 }
 
 function calc(a){const s=Number(current.stocks[a.id]??0);return Math.max(0,Number(a.target)-s)}
+
+function orderSnapshot(status){
+ current.note=$("#generalNote")?.value||current.note||"";
+ const lines=activeArticles().map(a=>({id:a.id,name:a.name,category:a.category,unit:a.unit,target:a.target,stock:Number(current.stocks[a.id]??0),proposed:calc(a),quantity:Number(current.adjustments[a.id]??calc(a))})).filter(l=>l.quantity>0);
+ return {id:current.id||crypto.randomUUID(),number:status==="Brouillon"?"—":nextNumber(),supplier:current.supplier,status,createdAt:current.createdAt||new Date().toISOString(),inventoryAt:new Date().toISOString(),validatedAt:status==="Validé"?new Date().toISOString():null,author:current.author,validator:status==="Validé"?session.name:null,note:current.note,lines,stocks:structuredClone(current.stocks),adjustments:structuredClone(current.adjustments)};
+}
+function upsertOrder(o){const i=db.orders.findIndex(x=>x.id===o.id);if(i>=0)db.orders[i]=o;else db.orders.push(o);save()}
 
 function renderInventory(){
  $("#inventoryHeading").textContent="Inventaire — "+current.supplier;
@@ -345,19 +360,9 @@ function renderSummary(){
    return `<tr><td><b>${a.name}</b><br><small class="muted">${a.category} · ${a.unit}</small></td><td>${a.target}</td><td>${Number(current.stocks[a.id]??0)}</td><td class="${proposed?'order':'zero'}">${proposed}</td><td><div class="qty"><button data-adj-minus="${a.id}">−</button><input data-adjust="${a.id}" value="${adj}"><button data-adj-plus="${a.id}">+</button></div></td></tr>`
  }).join("");
  $("#sumLines").textContent=lines;$("#sumQty").textContent=qty;$("#generalNote").value=current.note||"";
- $("#validateOrder").classList.toggle("hidden",!isResponsible());
- $("#sendPending").classList.toggle("hidden",isResponsible());
- $$("[data-adjust]").forEach(i=>i.onchange=e=>{current.adjustments[e.target.dataset.adjust]=Math.max(0,Number(e.target.value||0));renderSummary()});
- $$("[data-adj-plus]").forEach(b=>b.onclick=()=>{let id=b.dataset.adjPlus;current.adjustments[id]=Number(current.adjustments[id]??calc(db.articles.find(a=>a.id==id)))+1;renderSummary()});
- $$("[data-adj-minus]").forEach(b=>b.onclick=()=>{let id=b.dataset.adjMinus;current.adjustments[id]=Math.max(0,Number(current.adjustments[id]??calc(db.articles.find(a=>a.id==id)))-1);renderSummary()});
+ $("#validateOrder").classList.toggle("hidden",!canValidateOrders());
+ $("#sendPending").classList.toggle("hidden",!canValidateOrders());
 }
-
-function orderSnapshot(status){
- current.note=$("#generalNote")?.value||current.note||"";
- const lines=activeArticles().map(a=>({id:a.id,name:a.name,category:a.category,unit:a.unit,target:a.target,stock:Number(current.stocks[a.id]??0),proposed:calc(a),quantity:Number(current.adjustments[a.id]??calc(a))})).filter(l=>l.quantity>0);
- return {id:current.id||crypto.randomUUID(),number:status==="Brouillon"?"—":nextNumber(),supplier:current.supplier,status,createdAt:current.createdAt||new Date().toISOString(),inventoryAt:new Date().toISOString(),validatedAt:status==="Validé"?new Date().toISOString():null,author:current.author,validator:status==="Validé"?session.name:null,note:current.note,lines,stocks:structuredClone(current.stocks),adjustments:structuredClone(current.adjustments)};
-}
-function upsertOrder(o){const i=db.orders.findIndex(x=>x.id===o.id);if(i>=0)db.orders[i]=o;else db.orders.push(o);save()}
 
 function renderDashboard(){
  const count=s=>db.orders.filter(o=>o.status===s).length;
@@ -375,7 +380,8 @@ function renderHistory(){
 
 function showDetail(id){
  const o=db.orders.find(x=>x.id===id);if(!o)return;
- const canValidate=isResponsible()&&o.status==="À valider";
+ const canValidate=canValidateOrders()&&o.status==="À valider";
+ const canManageOrder=canValidateOrders();
  $("#modalBox").innerHTML=`<div class="flex between"><div><h2>${o.number} — ${o.supplier}</h2><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${o.status}</span></div><button class="btn ghost" id="closeModal">Fermer</button></div>
  <p class="muted">Inventaire : ${fmt(o.inventoryAt)} — ${o.author}<br>Validation : ${o.validatedAt?fmt(o.validatedAt)+" — "+o.validator:"Non validé"}</p>
  <div class="tablewrap"><table><thead><tr><th>Article</th><th>Stock</th><th>Cible</th><th>Commande</th></tr></thead><tbody>${o.lines.map(l=>`<tr><td>${l.name}<br><small class="muted">${l.unit}</small></td><td>${l.stock}</td><td>${l.target}</td><td><b>${l.quantity}</b></td></tr>`).join("")||`<tr><td colspan="4">Aucune ligne.</td></tr>`}</tbody></table></div>
@@ -383,16 +389,16 @@ function showDetail(id){
  <div class="flex wrap">
  ${o.status!=="Brouillon"?`<button class="btn primary" id="openPdf">Ouvrir le PDF</button><button class="btn ghost" id="downloadPdf">Télécharger le PDF</button><button class="btn ghost" id="printOrder">Imprimer le bon</button><div id="pdfStatus" style="width:100%"></div>`:""}
  ${canValidate?`<button class="btn secondary" id="approvePending">Valider le bon</button>`:""}
- ${isResponsible()&&o.status==="Validé"?`<button class="btn secondary" id="markOrdered">Marquer commandé</button>`:""}
- ${isResponsible()&&o.status!=="Annulé"?`<button class="btn danger" id="cancelOrder">Annuler</button>`:""}
+ ${canManageOrder&&o.status==="Validé"?`<button class="btn secondary" id="markOrdered">Marquer commandé</button>`:""}
+ ${canManageOrder&&o.status!=="Annulé"?`<button class="btn danger" id="cancelOrder">Annuler</button>`:""}
  </div>`;
  $("#modal").classList.remove("hidden");$("#closeModal").onclick=()=>$("#modal").classList.add("hidden");
  if($("#openPdf"))$("#openPdf").onclick=()=>openPDF(o);
  if($("#downloadPdf"))$("#downloadPdf").onclick=()=>downloadPDF(o);
  if($("#printOrder"))$("#printOrder").onclick=()=>openPrintableWindow(o);
- if($("#approvePending"))$("#approvePending").onclick=()=>{o.status="Validé";o.validatedAt=new Date().toISOString();o.validator=session.name;if(o.number==="—")o.number=nextNumber();save();$("#modal").classList.add("hidden");renderHistory();alert("Bon validé avec succès.")};
- if($("#markOrdered"))$("#markOrdered").onclick=()=>{o.status="Commandé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard();alert("Bon de commande marqué comme commandé.")};
- if($("#cancelOrder"))$("#cancelOrder").onclick=()=>{if(confirm("Annuler ce document ?")){o.status="Annulé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard()}};
+ if($("#approvePending"))$("#approvePending").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");o.status="Validé";o.validatedAt=new Date().toISOString();o.validator=session.name;if(o.number==="—")o.number=nextNumber();save();$("#modal").classList.add("hidden");renderHistory();alert("Bon validé avec succès.")};
+ if($("#markOrdered"))$("#markOrdered").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");o.status="Commandé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard();alert("Bon de commande marqué comme commandé.")};
+ if($("#cancelOrder"))$("#cancelOrder").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");if(confirm("Annuler ce document ?")){o.status="Annulé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard()}};
 }
 
 function pdfSafe(s){
@@ -529,7 +535,13 @@ $("#loginForm").onsubmit=e=>{
  e.preventDefault();
  const email=$("#email").value.trim().toLowerCase();
  if($("#password").value!=="stopflow")return alert("Mot de passe de démonstration incorrect.");
- session=email==="employe@lunion.be"?{name:"Employé test",role:"Employé",email}:{name:"Quentin Pollet",role:"Responsable",email:"quentin@lunion.be"};
+ if(email==="employe@lunion.be"){
+   session={name:"Employé test",role:ROLE.EMPLOYE,email};
+ } else if(email==="contact@srlreunion.com"){
+   session={name:"Administrateur",role:ROLE.ADMIN,email};
+ } else {
+   session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
+ }
  localStorage.setItem("stopflowLogged",JSON.stringify(session));
  $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
 };
@@ -550,8 +562,8 @@ $("#saveDraft").onclick=()=>{upsertOrder(orderSnapshot("Brouillon"));alert("Inve
 $("#showSummary").onclick=()=>{const missing=Object.values(current.stocks).some(v=>v===null||v==="");if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;renderSummary();page("summary")};
 $$("[data-back-inventory]").forEach(b=>b.onclick=()=>page("inventory"));
 $("#generalNote").oninput=e=>current.note=e.target.value;
-$("#sendPending").onclick=()=>{upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")};
-$("#validateOrder").onclick=()=>{const o=orderSnapshot("Validé");upsertOrder(o);alert("Bon validé. Vous pouvez l'enregistrer en PDF ou l'imprimer depuis l'historique.");page("history");showDetail(o.id)};
+$("#sendPending").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")};
+$("#validateOrder").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");const o=orderSnapshot("Validé");upsertOrder(o);alert("Bon validé. Vous pouvez l'enregistrer en PDF ou l'imprimer depuis l'historique.");page("history");showDetail(o.id)};
 $("#historySearch").oninput=renderHistory;$("#historyStatus").onchange=renderHistory;$("#historySort").onchange=renderHistory;
 $("#articleSupplier").onchange=renderArticles;$("#addArticle").onclick=()=>articleModal();
 $("#suggestionForm").onsubmit=e=>{e.preventDefault();db.suggestions.push({id:Date.now(),title:$("#sugTitle").value,description:$("#sugDesc").value,category:$("#sugCategory").value,priority:$("#sugPriority").value,status:"Nouvelle",createdAt:new Date().toISOString()});save();e.target.reset();renderSuggestions();alert("Suggestion enregistrée.")};
