@@ -174,8 +174,3 @@ window.addEventListener("focus",()=>{
   if(!isCloudMode())return;
   refreshSharedViews().catch(error=>console.warn(cloudErrorMessage(error)));
 });
-
-/* Le module catalogue est chargé pendant l’analyse du document, avant le script principal. */
-if(!document.querySelector('script[data-stopflow-catalog]')){
-  document.write('<script data-stopflow-catalog src="supabase-catalog.js"><\/script>');
-}
