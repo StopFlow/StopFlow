@@ -103,45 +103,49 @@ async function saveSharedSettings(settings){
   return db.settings;
 }
 
-/* Mémorise uniquement les écrans stables. Les écrans d’inventaire et de résumé
-   restent temporaires et reviennent volontairement à l’accueil après actualisation. */
+/* Mémorisation robuste de l’écran stable ouvert. */
 const STOPFLOW_PAGE_KEY="stopflowLastPage";
 const STOPFLOW_STABLE_PAGES=new Set(["dashboard","history","articles","suggestions","settings"]);
+let stopFlowRestoreInProgress=false;
 
 function rememberedStopFlowPage(){
   const saved=localStorage.getItem(STOPFLOW_PAGE_KEY)||"dashboard";
   return STOPFLOW_STABLE_PAGES.has(saved)?saved:"dashboard";
 }
 
-function restoreRememberedStopFlowPage(){
-  const app=document.querySelector("#app");
-  if(!app||app.classList.contains("hidden")||typeof window.page!=="function")return;
-  const target=rememberedStopFlowPage();
-  window.page(target);
+function rememberStopFlowPage(id){
+  if(STOPFLOW_STABLE_PAGES.has(id))localStorage.setItem(STOPFLOW_PAGE_KEY,id);
 }
 
+function restoreRememberedStopFlowPage(){
+  if(stopFlowRestoreInProgress)return;
+  const app=document.querySelector("#app");
+  if(!app||app.classList.contains("hidden"))return;
+  const target=rememberedStopFlowPage();
+  const pageElement=document.getElementById(target);
+  if(pageElement&&!pageElement.classList.contains("hidden"))return;
+  const navigation=document.querySelector(`[data-page="${target}"]`);
+  if(!navigation)return;
+  stopFlowRestoreInProgress=true;
+  navigation.click();
+  setTimeout(()=>{stopFlowRestoreInProgress=false},100);
+}
+
+document.addEventListener("click",event=>{
+  const navigation=event.target.closest?.("[data-page]");
+  const requested=navigation?.dataset?.page;
+  if(STOPFLOW_STABLE_PAGES.has(requested))rememberStopFlowPage(requested);
+},true);
+
 window.addEventListener("load",()=>{
-  if(typeof window.page==="function"){
-    const originalPage=window.page;
-    window.page=function(id){
-      const requested=STOPFLOW_STABLE_PAGES.has(id)?id:"dashboard";
-      const result=originalPage(id);
-      const visible=document.querySelector(".page:not(.hidden)")?.id;
-      if(STOPFLOW_STABLE_PAGES.has(visible))localStorage.setItem(STOPFLOW_PAGE_KEY,visible);
-      else if(STOPFLOW_STABLE_PAGES.has(requested))localStorage.setItem(STOPFLOW_PAGE_KEY,requested);
-      return result;
-    };
+  const app=document.querySelector("#app");
+  if(app){
+    new MutationObserver(()=>setTimeout(restoreRememberedStopFlowPage,0))
+      .observe(app,{attributes:true,attributeFilter:["class"]});
   }
+  [0,100,300,700,1500,2500].forEach(delay=>setTimeout(restoreRememberedStopFlowPage,delay));
+});
 
-  if(typeof window.showApp==="function"){
-    const originalShowApp=window.showApp;
-    window.showApp=function(){
-      const result=originalShowApp();
-      setTimeout(restoreRememberedStopFlowPage,0);
-      return result;
-    };
-  }
-
-  setTimeout(restoreRememberedStopFlowPage,250);
-  setTimeout(restoreRememberedStopFlowPage,1000);
+window.addEventListener("pageshow",()=>{
+  [0,150,600].forEach(delay=>setTimeout(restoreRememberedStopFlowPage,delay));
 });
