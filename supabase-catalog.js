@@ -102,3 +102,46 @@ async function saveSharedSettings(settings){
   save();
   return db.settings;
 }
+
+/* Mémorise uniquement les écrans stables. Les écrans d’inventaire et de résumé
+   restent temporaires et reviennent volontairement à l’accueil après actualisation. */
+const STOPFLOW_PAGE_KEY="stopflowLastPage";
+const STOPFLOW_STABLE_PAGES=new Set(["dashboard","history","articles","suggestions","settings"]);
+
+function rememberedStopFlowPage(){
+  const saved=localStorage.getItem(STOPFLOW_PAGE_KEY)||"dashboard";
+  return STOPFLOW_STABLE_PAGES.has(saved)?saved:"dashboard";
+}
+
+function restoreRememberedStopFlowPage(){
+  const app=document.querySelector("#app");
+  if(!app||app.classList.contains("hidden")||typeof window.page!=="function")return;
+  const target=rememberedStopFlowPage();
+  window.page(target);
+}
+
+window.addEventListener("load",()=>{
+  if(typeof window.page==="function"){
+    const originalPage=window.page;
+    window.page=function(id){
+      const requested=STOPFLOW_STABLE_PAGES.has(id)?id:"dashboard";
+      const result=originalPage(id);
+      const visible=document.querySelector(".page:not(.hidden)")?.id;
+      if(STOPFLOW_STABLE_PAGES.has(visible))localStorage.setItem(STOPFLOW_PAGE_KEY,visible);
+      else if(STOPFLOW_STABLE_PAGES.has(requested))localStorage.setItem(STOPFLOW_PAGE_KEY,requested);
+      return result;
+    };
+  }
+
+  if(typeof window.showApp==="function"){
+    const originalShowApp=window.showApp;
+    window.showApp=function(){
+      const result=originalShowApp();
+      setTimeout(restoreRememberedStopFlowPage,0);
+      return result;
+    };
+  }
+
+  setTimeout(restoreRememberedStopFlowPage,250);
+  setTimeout(restoreRememberedStopFlowPage,1000);
+});
