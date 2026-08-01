@@ -1,6 +1,7 @@
 name: StopFlow Step 2A Supabase
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - stopflow-dev
