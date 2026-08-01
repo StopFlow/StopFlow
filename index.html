@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071d31">
-<title>StopFlow — Colruyt & Leloup v0.2.3</title>
+<title>StopFlow — Colruyt & Leloup v0.2.4</title>
 <style>
 :root{
   --navy:#071d31;--navy2:#0c2a45;--blue:#2463eb;--blue2:#174dcc;
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
 .stepper{display:flex;align-items:center;gap:10px;margin:15px 0 22px}.step{display:flex;align-items:center;gap:8px;color:#8995a5}.step b{width:28px;height:28px;border-radius:50%;background:#e7ebf1;display:grid;place-items:center}.step.active{color:var(--blue);font-weight:800}.step.active b{background:var(--blue);color:#fff}.line{height:1px;background:var(--line);flex:1}
 .notice{padding:13px 15px;border-radius:11px;background:#edf5ff;border:1px solid #cfe1ff;color:#27547f}
 .login-page{min-height:100vh;background:linear-gradient(135deg,#f8fbff,#eef3fa);display:grid;place-items:center;padding:24px}.login-card{width:min(440px,100%);background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 80px rgba(20,46,80,.14);padding:34px}.login-brand{justify-content:center;margin-bottom:24px}.login-brand .brand{color:var(--text);margin:0}.login-brand .logo{background:#eaf1ff}
-.login-card .field{margin:14px 0}.login-card .btn{width:100%;margin-top:8px}.demo{margin-top:18px;font-size:13px;padding:12px;border-radius:10px;background:#f7f9fc;color:#526174}
+.login-card .field{margin:14px 0}.login-card .btn{width:100%;margin-top:8px}.demo{margin-top:18px;font-size:13px;padding:12px;border-radius:10px;background:#f7f9fc;color:#526174}.login-status{min-height:20px;margin-top:12px;font-size:13px;text-align:center}.login-status.error{color:var(--red)}.login-status.success{color:var(--green)}.login-status.info{color:var(--muted)}
 .modal{position:fixed;inset:0;background:rgba(3,16,30,.55);display:grid;place-items:center;padding:20px;z-index:20}.modalbox{background:#fff;width:min(680px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.25)}
 .mobilebar{display:none}
 #printArea{display:none}
@@ -74,16 +74,19 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.2.3 — Colruyt & Leloup</p>
+    <p class="muted" style="text-align:center">Version 0.2.4 — Connexion Supabase</p>
     <form id="loginForm">
-      <div class="field"><label>E-mail</label><input class="input" id="email" value="quentin@lunion.be" type="email" required></div>
-      <div class="field"><label>Mot de passe</label><input class="input" id="password" value="stopflow" type="password" required></div>
-      <button class="btn primary" type="submit">Se connecter</button>
+      <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn primary" id="loginButton" type="submit">Se connecter avec Supabase</button>
     </form>
-    <div class="demo"><b>Accès de démonstration</b><br>
+    <div id="loginMessage" class="login-status info" aria-live="polite"></div>
+    <div class="demo hidden" id="localFallbackPanel"><b>Mode local de secours</b><br>
+Disponible uniquement en local ou sur la branche de développement pendant les tests.<br><br>
 Responsable : quentin@lunion.be / stopflow<br>
-Employé : employe@lunion.be / stopflow<br><br>
-Les données restent dans ce navigateur.</div>
+Employé : employe@lunion.be / stopflow<br>
+Admin : contact@srlreunion.com / stopflow
+<button class="btn ghost" id="localFallback" type="button">Utiliser le mode local de secours</button></div>
   </div>
 </div>
 
@@ -212,6 +215,7 @@ Les données restent dans ce navigateur.</div>
 <div id="printArea"></div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const COLRUYT = [
  "Campari","Gancia","Aperol","Martini rouge","Martini blanc","Picon","Pineau des Charentes",
@@ -268,22 +272,146 @@ function migrate(raw){
 
 let db=migrate(localStorage.getItem("stopflowData"));
 const ROLE={ADMIN:"Admin",RESPONSABLE:"Responsable",EMPLOYE:"Employé"};
-let session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
-function repairResponsibleSession(){
- if(!session || typeof session!=="object") session={};
- if(session.email==="quentin@lunion.be" || !session.email){
-   session.name="Quentin Pollet";
-   session.email="quentin@lunion.be";
-   session.role=ROLE.RESPONSABLE;
- }
-}
-repairResponsibleSession();
+let session={id:null,name:"",role:"",email:"",authMode:"none"};
 let current={id:null,supplier:"Colruyt",stocks:{},adjustments:{},note:"",author:"Quentin Pollet"};
 const save=()=>localStorage.setItem("stopflowData",JSON.stringify(db));
 save();
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmt=d=>new Intl.DateTimeFormat("fr-BE",{dateStyle:"short",timeStyle:"short"}).format(new Date(d));
 const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="—").length+1)).padStart(6,"0");
+
+const SUPABASE_URL="https://gjwvquhoecfikjorapud.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_z1gJuq-2eggMLbpRVy925A_oyUIkNUs";
+const LOCAL_FALLBACK_ACCOUNTS={
+ "contact@srlreunion.com":{name:"Administrateur",role:ROLE.ADMIN},
+ "quentin@lunion.be":{name:"Quentin Pollet",role:ROLE.RESPONSABLE},
+ "employe@lunion.be":{name:"Employé test",role:ROLE.EMPLOYE}
+};
+let supabaseClient=null;
+
+function localFallbackAllowed(){
+ const host=location.hostname.toLowerCase();
+ return location.protocol==="file:"||host==="localhost"||host==="127.0.0.1"||host.includes("git-stopflow-dev");
+}
+function setLoginMessage(message="",type="info"){
+ const box=$("#loginMessage");
+ if(!box)return;
+ box.textContent=message;
+ box.className="login-status "+type;
+}
+function setLoginBusy(busy){
+ const button=$("#loginButton");
+ if(!button)return;
+ button.disabled=busy;
+ button.textContent=busy?"Connexion en cours…":"Se connecter avec Supabase";
+}
+function showApp(){
+ $("#login").classList.add("hidden");
+ $("#app").classList.remove("hidden");
+ applyRole();
+ page("dashboard");
+}
+function showLogin(){
+ $("#app").classList.add("hidden");
+ $("#login").classList.remove("hidden");
+}
+function mapProfileRole(role){
+ return {admin:ROLE.ADMIN,responsable:ROLE.RESPONSABLE,employe:ROLE.EMPLOYE}[String(role||"").toLowerCase()]||null;
+}
+function profileDisplayName(profile,user){
+ const fullName=[profile.prenom,profile.nom].filter(Boolean).join(" ").trim();
+ if(fullName)return fullName;
+ if(profile.role==="admin")return "Administrateur";
+ return user.email||profile.email||"Utilisateur StopFlow";
+}
+async function loadAuthenticatedProfile(user){
+ const {data:profile,error}=await supabaseClient.from("profiles").select("id,email,prenom,nom,role,actif").eq("id",user.id).single();
+ if(error||!profile){
+   await supabaseClient.auth.signOut();
+   throw new Error("Votre compte n’a pas encore de profil StopFlow.");
+ }
+ if(profile.actif!==true){
+   await supabaseClient.auth.signOut();
+   throw new Error("Ce compte StopFlow est désactivé.");
+ }
+ const mappedRole=mapProfileRole(profile.role);
+ if(!mappedRole){
+   await supabaseClient.auth.signOut();
+   throw new Error("Le rôle de ce compte n’est pas reconnu.");
+ }
+ session={
+   id:user.id,
+   name:profileDisplayName(profile,user),
+   role:mappedRole,
+   email:user.email||profile.email,
+   authMode:"supabase"
+ };
+ localStorage.removeItem("stopflowLogged");
+ showApp();
+}
+function initSupabaseClient(){
+ if(!window.supabase||typeof window.supabase.createClient!=="function")return false;
+ supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ });
+ return true;
+}
+async function signInWithSupabase(email,password){
+ if(!supabaseClient)throw new Error("La connexion Supabase est momentanément indisponible.");
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error||!data.user)throw new Error("E-mail ou mot de passe incorrect, ou compte non autorisé.");
+ await loadAuthenticatedProfile(data.user);
+}
+function restoreLocalFallback(email){
+ const account=LOCAL_FALLBACK_ACCOUNTS[email];
+ if(!account)return false;
+ session={id:null,name:account.name,role:account.role,email,authMode:"local"};
+ localStorage.setItem("stopflowLogged",JSON.stringify(session));
+ showApp();
+ return true;
+}
+function signInWithLocalFallback(){
+ if(!localFallbackAllowed())return setLoginMessage("Le mode local n’est pas autorisé sur cette adresse.","error");
+ const email=$("#email").value.trim().toLowerCase();
+ const password=$("#password").value;
+ if(password!=="stopflow"||!LOCAL_FALLBACK_ACCOUNTS[email]){
+   return setLoginMessage("Identifiants du mode local incorrects.","error");
+ }
+ restoreLocalFallback(email);
+}
+async function bootstrapAuth(){
+ const fallbackAllowed=localFallbackAllowed();
+ $("#localFallbackPanel").classList.toggle("hidden",!fallbackAllowed);
+ showLogin();
+ let authError="";
+ let hadSupabaseSession=false;
+ try{
+   if(!initSupabaseClient())throw new Error("La bibliothèque Supabase n’a pas pu être chargée.");
+   const {data:{session:storedSession},error:sessionError}=await supabaseClient.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(storedSession){
+     hadSupabaseSession=true;
+     const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+     if(userError||!user){
+       await supabaseClient.auth.signOut();
+       throw new Error("La session Supabase n’est plus valide.");
+     }
+     await loadAuthenticatedProfile(user);
+     return;
+   }
+ }catch(error){
+   authError=error?.message||"Impossible de vérifier la session Supabase.";
+ }
+ if(fallbackAllowed&&!hadSupabaseSession){
+   try{
+     const stored=JSON.parse(localStorage.getItem("stopflowLogged")||"null");
+     if(stored?.email&&restoreLocalFallback(String(stored.email).toLowerCase()))return;
+   }catch{}
+ }
+ showLogin();
+ setLoginMessage(authError||"Connectez-vous avec votre compte StopFlow Supabase.",authError?"error":"info");
+}
+
 function isAdmin(){return session.role===ROLE.ADMIN;}
 function isResponsible(){return isAdmin()||session.role===ROLE.RESPONSABLE;}
 function isEmployee(){return session.role===ROLE.EMPLOYE;}
@@ -532,21 +660,29 @@ function renderSuggestions(){
 }
 function loadSettings(){$("#establishment").value=db.settings.establishment;$("#manager").value=db.settings.manager;$("#footerText").value=db.settings.footer}
 
-$("#loginForm").onsubmit=e=>{
+$("#loginForm").onsubmit=async e=>{
  e.preventDefault();
  const email=$("#email").value.trim().toLowerCase();
- if($("#password").value!=="stopflow")return alert("Mot de passe de démonstration incorrect.");
- if(email==="employe@lunion.be"){
-   session={name:"Employé test",role:ROLE.EMPLOYE,email};
- } else if(email==="contact@srlreunion.com"){
-   session={name:"Administrateur",role:ROLE.ADMIN,email};
- } else {
-   session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
+ const password=$("#password").value;
+ setLoginBusy(true);
+ setLoginMessage("Connexion sécurisée en cours…","info");
+ try{
+   await signInWithSupabase(email,password);
+ }catch(error){
+   setLoginMessage(error?.message||"Connexion impossible.","error");
+ }finally{
+   setLoginBusy(false);
  }
- localStorage.setItem("stopflowLogged",JSON.stringify(session));
- $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
 };
-$("#logout").onclick=()=>{localStorage.removeItem("stopflowLogged");location.reload()};
+$("#localFallback").onclick=()=>signInWithLocalFallback();
+$("#logout").onclick=async()=>{
+ try{
+   if(session.authMode==="supabase"&&supabaseClient)await supabaseClient.auth.signOut();
+ }finally{
+   localStorage.removeItem("stopflowLogged");
+   location.reload();
+ }
+};
 $("#closePrintView").onclick=()=>$("#printScreen").classList.add("hidden");
 $("#launchPrint").onclick=()=>{
   $("#printArea").innerHTML=$("#printSheet").innerHTML;
@@ -573,11 +709,7 @@ $("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{t
 $("#importData").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=migrate(r.result);save();alert("Import terminé.");page("dashboard")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
 $("#resetData").onclick=()=>{if(confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
 
-const stored=localStorage.getItem("stopflowLogged");
-if(stored){
- try{session=JSON.parse(stored)}catch{}
- $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
-}
+bootstrapAuth();
 </script>
 
 </body></html>
