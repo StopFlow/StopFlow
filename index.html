@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071d31">
-<title>StopFlow — Colruyt & Leloup v0.2.4</title>
+<title>StopFlow — Colruyt & Leloup v0.3.0</title>
 <style>
 :root{
   --navy:#071d31;--navy2:#0c2a45;--blue:#2463eb;--blue2:#174dcc;
@@ -74,7 +74,7 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.2.4 — Connexion Supabase</p>
+    <p class="muted" style="text-align:center">Version 0.3.0 — Documents partagés</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
@@ -216,6 +216,7 @@ Admin : contact@srlreunion.com / stopflow
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-orders.js"></script>
 <script>
 const COLRUYT = [
  "Campari","Gancia","Aperol","Martini rouge","Martini blanc","Picon","Pineau des Charentes",
@@ -347,6 +348,7 @@ async function loadAuthenticatedProfile(user){
    authMode:"supabase"
  };
  localStorage.removeItem("stopflowLogged");
+ await loadSharedOrders();
  showApp();
 }
 function initSupabaseClient(){
@@ -430,6 +432,12 @@ function applyRole(){
 }
 
 function page(id){
+ if(isCloudMode()&&(id==="dashboard"||id==="history")){
+   loadSharedOrders().then(()=>{
+     if(id==="dashboard")renderDashboard();
+     if(id==="history")renderHistory();
+   }).catch(error=>console.warn(cloudErrorMessage(error)));
+ }
  if((id==="articles"&&!canManageArticles())||(id==="settings"&&!canManageSettings())) id="dashboard";
  $$(".page").forEach(x=>x.classList.add("hidden")); $("#"+id).classList.remove("hidden");
  const titles={dashboard:"Tableau de bord",inventory:"Inventaire "+(current.supplier||""),summary:"Résumé",history:"Historique",articles:"Articles",suggestions:"Suggestions",settings:"Paramètres"};
@@ -458,7 +466,13 @@ function orderSnapshot(status){
  const lines=activeArticles().map(a=>({id:a.id,name:a.name,category:a.category,unit:a.unit,target:a.target,stock:Number(current.stocks[a.id]??0),proposed:calc(a),quantity:Number(current.adjustments[a.id]??calc(a))})).filter(l=>l.quantity>0);
  return {id:current.id||crypto.randomUUID(),number:status==="Brouillon"?"—":nextNumber(),supplier:current.supplier,status,createdAt:current.createdAt||new Date().toISOString(),inventoryAt:new Date().toISOString(),validatedAt:status==="Validé"?new Date().toISOString():null,author:current.author,validator:status==="Validé"?session.name:null,note:current.note,lines,stocks:structuredClone(current.stocks),adjustments:structuredClone(current.adjustments)};
 }
-function upsertOrder(o){const i=db.orders.findIndex(x=>x.id===o.id);if(i>=0)db.orders[i]=o;else db.orders.push(o);save()}
+async function upsertOrder(o){
+ if(isCloudMode())return await saveSharedOrder(o);
+ const i=db.orders.findIndex(x=>x.id===o.id);
+ if(i>=0)db.orders[i]=o;else db.orders.push(o);
+ save();
+ return o;
+}
 
 function renderInventory(){
  $("#inventoryHeading").textContent="Inventaire — "+current.supplier;
@@ -511,11 +525,13 @@ function showDetail(id){
  const o=db.orders.find(x=>x.id===id);if(!o)return;
  const canValidate=canValidateOrders()&&o.status==="À valider";
  const canManageOrder=canValidateOrders();
+ const canResume=o.status==="Brouillon"&&(canValidateOrders()||o.authorId===session.id||!isCloudMode());
  $("#modalBox").innerHTML=`<div class="flex between"><div><h2>${o.number} — ${o.supplier}</h2><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${o.status}</span></div><button class="btn ghost" id="closeModal">Fermer</button></div>
  <p class="muted">Inventaire : ${fmt(o.inventoryAt)} — ${o.author}<br>Validation : ${o.validatedAt?fmt(o.validatedAt)+" — "+o.validator:"Non validé"}</p>
  <div class="tablewrap"><table><thead><tr><th>Article</th><th>Stock</th><th>Cible</th><th>Commande</th></tr></thead><tbody>${o.lines.map(l=>`<tr><td>${l.name}<br><small class="muted">${l.unit}</small></td><td>${l.stock}</td><td>${l.target}</td><td><b>${l.quantity}</b></td></tr>`).join("")||`<tr><td colspan="4">Aucune ligne.</td></tr>`}</tbody></table></div>
  <p><b>Remarque :</b> ${o.note||"—"}</p>
  <div class="flex wrap">
+ ${canResume?`<button class="btn primary" id="resumeDraft">Reprendre le brouillon</button>`:""}
  ${o.status!=="Brouillon"?`<button class="btn primary" id="openPdf">Ouvrir le PDF</button><button class="btn ghost" id="downloadPdf">Télécharger le PDF</button><button class="btn ghost" id="printOrder">Imprimer le bon</button><div id="pdfStatus" style="width:100%"></div>`:""}
  ${canValidate?`<button class="btn secondary" id="approvePending">Valider le bon</button>`:""}
  ${canManageOrder&&o.status==="Validé"?`<button class="btn secondary" id="markOrdered">Marquer commandé</button>`:""}
@@ -525,9 +541,35 @@ function showDetail(id){
  if($("#openPdf"))$("#openPdf").onclick=()=>openPDF(o);
  if($("#downloadPdf"))$("#downloadPdf").onclick=()=>downloadPDF(o);
  if($("#printOrder"))$("#printOrder").onclick=()=>openPrintableWindow(o);
- if($("#approvePending"))$("#approvePending").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");o.status="Validé";o.validatedAt=new Date().toISOString();o.validator=session.name;if(o.number==="—")o.number=nextNumber();save();$("#modal").classList.add("hidden");renderHistory();alert("Bon validé avec succès.")};
- if($("#markOrdered"))$("#markOrdered").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");o.status="Commandé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard();alert("Bon de commande marqué comme commandé.")};
- if($("#cancelOrder"))$("#cancelOrder").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");if(confirm("Annuler ce document ?")){o.status="Annulé";save();$("#modal").classList.add("hidden");renderHistory();renderDashboard()}};
+ if($("#resumeDraft"))$("#resumeDraft").onclick=()=>{
+   current={id:o.id,supplier:o.supplier,stocks:structuredClone(o.stocks||{}),adjustments:structuredClone(o.adjustments||{}),note:o.note||"",author:o.author,createdAt:o.createdAt};
+   activeArticles(o.supplier).forEach(a=>{if(current.stocks[a.id]===undefined)current.stocks[a.id]=null});
+   $("#modal").classList.add("hidden");
+   page("inventory");
+ };
+ if($("#approvePending"))$("#approvePending").onclick=async()=>{
+   if(!canValidateOrders())return alert("Action non autorisée.");
+   try{
+     if(isCloudMode())await updateSharedOrderStatus("validate_order",o.id);
+     else{o.status="Validé";o.validatedAt=new Date().toISOString();o.validator=session.name;if(o.number==="—")o.number=nextNumber();save()}
+     $("#modal").classList.add("hidden");renderHistory();renderDashboard();alert("Bon validé avec succès.");
+   }catch(error){alert(cloudErrorMessage(error,"Validation impossible."))}
+ };
+ if($("#markOrdered"))$("#markOrdered").onclick=async()=>{
+   if(!canValidateOrders())return alert("Action non autorisée.");
+   try{
+     if(isCloudMode())await updateSharedOrderStatus("mark_ordered",o.id);else{o.status="Commandé";save()}
+     $("#modal").classList.add("hidden");renderHistory();renderDashboard();alert("Bon de commande marqué comme commandé.");
+   }catch(error){alert(cloudErrorMessage(error,"Mise à jour impossible."))}
+ };
+ if($("#cancelOrder"))$("#cancelOrder").onclick=async()=>{
+   if(!canValidateOrders())return alert("Action non autorisée.");
+   if(!confirm("Annuler ce document ?"))return;
+   try{
+     if(isCloudMode())await updateSharedOrderStatus("cancel_order",o.id);else{o.status="Annulé";save()}
+     $("#modal").classList.add("hidden");renderHistory();renderDashboard();
+   }catch(error){alert(cloudErrorMessage(error,"Annulation impossible."))}
+ };
 }
 
 function pdfSafe(s){
@@ -695,17 +737,41 @@ $$("[data-start-supplier]").forEach(b=>b.onclick=()=>newInventory(b.dataset.star
 $("#historyNew").onclick=()=>page("dashboard");
 $("#articleSearch").oninput=renderInventory;
 $("#setAllZero").onclick=()=>{activeArticles().forEach(a=>current.stocks[a.id]=0);renderInventory()};
-$("#saveDraft").onclick=()=>{upsertOrder(orderSnapshot("Brouillon"));alert("Inventaire enregistré. Vous pourrez le reprendre depuis l'historique dans une prochaine évolution.");page("dashboard")};
-$("#showSummary").onclick=()=>{const missing=Object.values(current.stocks).some(v=>v===null||v==="");if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;const filled=Object.values(current.stocks).filter(v=>v!==null&&v!=="").length;const total=activeArticles().length;if(isEmployee()&&filled===total){upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard");return;}renderSummary();page("summary")};
+$("#saveDraft").onclick=async()=>{
+ try{await upsertOrder(orderSnapshot("Brouillon"));alert("Brouillon partagé enregistré. Vous pouvez le reprendre depuis l’historique.");page("dashboard")}
+ catch(error){alert(cloudErrorMessage(error,"Enregistrement impossible."))}
+};
+$("#showSummary").onclick=async()=>{
+ const missing=Object.values(current.stocks).some(v=>v===null||v==="");
+ if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;
+ const filled=Object.values(current.stocks).filter(v=>v!==null&&v!=="").length,total=activeArticles().length;
+ if(isEmployee()&&filled===total){
+   try{await upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")}
+   catch(error){alert(cloudErrorMessage(error,"Envoi impossible."))}
+   return;
+ }
+ renderSummary();page("summary");
+};
 $$("[data-back-inventory]").forEach(b=>b.onclick=()=>page("inventory"));
 $("#generalNote").oninput=e=>current.note=e.target.value;
-$("#sendPending").onclick=()=>{if(!canSubmitOrders())return alert("Action non autorisée.");upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")};
-$("#validateOrder").onclick=()=>{if(!canValidateOrders())return alert("Action non autorisée.");const o=orderSnapshot("Validé");upsertOrder(o);alert("Bon validé. Vous pouvez l'enregistrer en PDF ou l'imprimer depuis l'historique.");page("history");showDetail(o.id)};
+$("#sendPending").onclick=async()=>{
+ if(!canSubmitOrders())return alert("Action non autorisée.");
+ try{await upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")}
+ catch(error){alert(cloudErrorMessage(error,"Envoi impossible."))}
+};
+$("#validateOrder").onclick=async()=>{
+ if(!canValidateOrders())return alert("Action non autorisée.");
+ try{
+   const snapshot=orderSnapshot("Validé");
+   const o=await upsertOrder(snapshot)||snapshot;
+   alert("Bon validé. Vous pouvez l'enregistrer en PDF ou l'imprimer depuis l'historique.");page("history");showDetail(o.id);
+ }catch(error){alert(cloudErrorMessage(error,"Validation impossible."))}
+};
 $("#historySearch").oninput=renderHistory;$("#historyStatus").onchange=renderHistory;$("#historySort").onchange=renderHistory;
 $("#articleSupplier").onchange=renderArticles;$("#addArticle").onclick=()=>articleModal();
 $("#suggestionForm").onsubmit=e=>{e.preventDefault();db.suggestions.push({id:Date.now(),title:$("#sugTitle").value,description:$("#sugDesc").value,category:$("#sugCategory").value,priority:$("#sugPriority").value,status:"Nouvelle",createdAt:new Date().toISOString()});save();e.target.reset();renderSuggestions();alert("Suggestion enregistrée.")};
 $("#saveSettings").onclick=()=>{db.settings={establishment:$("#establishment").value,manager:$("#manager").value,footer:$("#footerText").value};save();alert("Paramètres enregistrés.")};
-$("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="StopFlow_v0.2.2_donnees.json";a.click();URL.revokeObjectURL(a.href)};
+$("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="StopFlow_v0.3.0_donnees.json";a.click();URL.revokeObjectURL(a.href)};
 $("#importData").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=migrate(r.result);save();alert("Import terminé.");page("dashboard")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
 $("#resetData").onclick=()=>{if(confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
 
