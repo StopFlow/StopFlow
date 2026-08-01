@@ -1,0 +1,50 @@
+name: StopFlow Step 3B Shared Catalog
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - stopflow-dev
+    paths:
+      - .github/workflows/step-3b-shared-catalog.yml
+      - .github/scripts/step_3b_patch.py
+      - supabase-catalog.js
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stopflow-dev
+        uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+          fetch-depth: 0
+
+      - name: Apply StopFlow 0.3.1 patch
+        run: python3 .github/scripts/step_3b_patch.py
+
+      - name: Validate JavaScript service
+        run: node --check supabase-catalog.js
+
+      - name: Validate expected integration
+        run: |
+          grep -q 'Version 0.3.1 — Catalogue partagé' index.html
+          grep -q 'supabase-catalog.js' index.html
+          grep -q 'loadSharedCatalog' index.html
+          grep -q 'saveSharedArticle' index.html
+          grep -q 'saveSharedSettings' index.html
+
+      - name: Commit application changes
+        run: |
+          if git diff --quiet; then
+            echo "No application change required."
+            exit 0
+          fi
+          git config user.name "StopFlow Automation"
+          git config user.email "contact@srlreunion.com"
+          git add index.html
+          git commit -m "Partage le catalogue et les paramètres via Supabase (étape 3B)"
+          git push origin HEAD:stopflow-dev
