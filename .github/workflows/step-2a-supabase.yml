@@ -1,0 +1,330 @@
+name: StopFlow Step 2A Supabase
+
+on:
+  push:
+    branches:
+      - stopflow-dev
+    paths:
+      - .github/workflows/step-2a-supabase.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-supabase-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stopflow-dev
+        uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+          fetch-depth: 0
+
+      - name: Patch index.html safely
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          pdf_start = text.index("function pdfSafe")
+          pdf_end = text.index("function renderArticles")
+          pdf_hash_before = hashlib.sha256(text[pdf_start:pdf_end].encode("utf-8")).hexdigest()
+
+          def replace_once(old, new, label):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: remplacement attendu 1 fois, trouvé {count}")
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              "<title>StopFlow — Colruyt & Leloup v0.2.3</title>",
+              "<title>StopFlow — Colruyt & Leloup v0.2.4</title>",
+              "version title",
+          )
+          replace_once(
+              "<p class=\"muted\" style=\"text-align:center\">Version 0.2.3 — Colruyt & Leloup</p>",
+              "<p class=\"muted\" style=\"text-align:center\">Version 0.2.4 — Connexion Supabase</p>",
+              "version login",
+          )
+
+          replace_once(
+              '.login-card .field{margin:14px 0}.login-card .btn{width:100%;margin-top:8px}.demo{margin-top:18px;font-size:13px;padding:12px;border-radius:10px;background:#f7f9fc;color:#526174}',
+              '.login-card .field{margin:14px 0}.login-card .btn{width:100%;margin-top:8px}.demo{margin-top:18px;font-size:13px;padding:12px;border-radius:10px;background:#f7f9fc;color:#526174}.login-status{min-height:20px;margin-top:12px;font-size:13px;text-align:center}.login-status.error{color:var(--red)}.login-status.success{color:var(--green)}.login-status.info{color:var(--muted)}',
+              "styles login",
+          )
+
+          old_login = '''    <form id="loginForm">
+      <div class="field"><label>E-mail</label><input class="input" id="email" value="quentin@lunion.be" type="email" required></div>
+      <div class="field"><label>Mot de passe</label><input class="input" id="password" value="stopflow" type="password" required></div>
+      <button class="btn primary" type="submit">Se connecter</button>
+    </form>
+    <div class="demo"><b>Accès de démonstration</b><br>
+Responsable : quentin@lunion.be / stopflow<br>
+Employé : employe@lunion.be / stopflow<br><br>
+Les données restent dans ce navigateur.</div>'''
+          new_login = '''    <form id="loginForm">
+      <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn primary" id="loginButton" type="submit">Se connecter avec Supabase</button>
+    </form>
+    <div id="loginMessage" class="login-status info" aria-live="polite"></div>
+    <div class="demo hidden" id="localFallbackPanel"><b>Mode local de secours</b><br>
+Disponible uniquement en local ou sur la branche de développement pendant les tests.<br><br>
+Responsable : quentin@lunion.be / stopflow<br>
+Employé : employe@lunion.be / stopflow<br>
+Admin : contact@srlreunion.com / stopflow
+<button class="btn ghost" id="localFallback" type="button">Utiliser le mode local de secours</button></div>'''
+          replace_once(old_login, new_login, "formulaire login")
+
+          old_session = '''let db=migrate(localStorage.getItem("stopflowData"));
+const ROLE={ADMIN:"Admin",RESPONSABLE:"Responsable",EMPLOYE:"Employé"};
+let session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
+function repairResponsibleSession(){
+ if(!session || typeof session!=="object") session={};
+ if(session.email==="quentin@lunion.be" || !session.email){
+   session.name="Quentin Pollet";
+   session.email="quentin@lunion.be";
+   session.role=ROLE.RESPONSABLE;
+ }
+}
+repairResponsibleSession();'''
+          new_session = '''let db=migrate(localStorage.getItem("stopflowData"));
+const ROLE={ADMIN:"Admin",RESPONSABLE:"Responsable",EMPLOYE:"Employé"};
+let session={id:null,name:"",role:"",email:"",authMode:"none"};'''
+          replace_once(old_session, new_session, "session locale")
+
+          anchor = 'const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="—").length+1)).padStart(6,"0");'
+          auth_code = r'''
+
+const SUPABASE_URL="https://gjwvquhoecfikjorapud.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_z1gJuq-2eggMLbpRVy925A_oyUIkNUs";
+const LOCAL_FALLBACK_ACCOUNTS={
+ "contact@srlreunion.com":{name:"Administrateur",role:ROLE.ADMIN},
+ "quentin@lunion.be":{name:"Quentin Pollet",role:ROLE.RESPONSABLE},
+ "employe@lunion.be":{name:"Employé test",role:ROLE.EMPLOYE}
+};
+let supabaseClient=null;
+
+function localFallbackAllowed(){
+ const host=location.hostname.toLowerCase();
+ return location.protocol==="file:"||host==="localhost"||host==="127.0.0.1"||host.includes("git-stopflow-dev");
+}
+function setLoginMessage(message="",type="info"){
+ const box=$("#loginMessage");
+ if(!box)return;
+ box.textContent=message;
+ box.className="login-status "+type;
+}
+function setLoginBusy(busy){
+ const button=$("#loginButton");
+ if(!button)return;
+ button.disabled=busy;
+ button.textContent=busy?"Connexion en cours…":"Se connecter avec Supabase";
+}
+function showApp(){
+ $("#login").classList.add("hidden");
+ $("#app").classList.remove("hidden");
+ applyRole();
+ page("dashboard");
+}
+function showLogin(){
+ $("#app").classList.add("hidden");
+ $("#login").classList.remove("hidden");
+}
+function mapProfileRole(role){
+ return {admin:ROLE.ADMIN,responsable:ROLE.RESPONSABLE,employe:ROLE.EMPLOYE}[String(role||"").toLowerCase()]||null;
+}
+function profileDisplayName(profile,user){
+ const fullName=[profile.prenom,profile.nom].filter(Boolean).join(" ").trim();
+ if(fullName)return fullName;
+ if(profile.role==="admin")return "Administrateur";
+ return user.email||profile.email||"Utilisateur StopFlow";
+}
+async function loadAuthenticatedProfile(user){
+ const {data:profile,error}=await supabaseClient.from("profiles").select("id,email,prenom,nom,role,actif").eq("id",user.id).single();
+ if(error||!profile){
+   await supabaseClient.auth.signOut();
+   throw new Error("Votre compte n’a pas encore de profil StopFlow.");
+ }
+ if(profile.actif!==true){
+   await supabaseClient.auth.signOut();
+   throw new Error("Ce compte StopFlow est désactivé.");
+ }
+ const mappedRole=mapProfileRole(profile.role);
+ if(!mappedRole){
+   await supabaseClient.auth.signOut();
+   throw new Error("Le rôle de ce compte n’est pas reconnu.");
+ }
+ session={
+   id:user.id,
+   name:profileDisplayName(profile,user),
+   role:mappedRole,
+   email:user.email||profile.email,
+   authMode:"supabase"
+ };
+ localStorage.removeItem("stopflowLogged");
+ showApp();
+}
+function initSupabaseClient(){
+ if(!window.supabase||typeof window.supabase.createClient!=="function")return false;
+ supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ });
+ return true;
+}
+async function signInWithSupabase(email,password){
+ if(!supabaseClient)throw new Error("La connexion Supabase est momentanément indisponible.");
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error||!data.user)throw new Error("E-mail ou mot de passe incorrect, ou compte non autorisé.");
+ await loadAuthenticatedProfile(data.user);
+}
+function restoreLocalFallback(email){
+ const account=LOCAL_FALLBACK_ACCOUNTS[email];
+ if(!account)return false;
+ session={id:null,name:account.name,role:account.role,email,authMode:"local"};
+ localStorage.setItem("stopflowLogged",JSON.stringify(session));
+ showApp();
+ return true;
+}
+function signInWithLocalFallback(){
+ if(!localFallbackAllowed())return setLoginMessage("Le mode local n’est pas autorisé sur cette adresse.","error");
+ const email=$("#email").value.trim().toLowerCase();
+ const password=$("#password").value;
+ if(password!=="stopflow"||!LOCAL_FALLBACK_ACCOUNTS[email]){
+   return setLoginMessage("Identifiants du mode local incorrects.","error");
+ }
+ restoreLocalFallback(email);
+}
+async function bootstrapAuth(){
+ const fallbackAllowed=localFallbackAllowed();
+ $("#localFallbackPanel").classList.toggle("hidden",!fallbackAllowed);
+ showLogin();
+ let authError="";
+ let hadSupabaseSession=false;
+ try{
+   if(!initSupabaseClient())throw new Error("La bibliothèque Supabase n’a pas pu être chargée.");
+   const {data:{session:storedSession},error:sessionError}=await supabaseClient.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(storedSession){
+     hadSupabaseSession=true;
+     const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+     if(userError||!user){
+       await supabaseClient.auth.signOut();
+       throw new Error("La session Supabase n’est plus valide.");
+     }
+     await loadAuthenticatedProfile(user);
+     return;
+   }
+ }catch(error){
+   authError=error?.message||"Impossible de vérifier la session Supabase.";
+ }
+ if(fallbackAllowed&&!hadSupabaseSession){
+   try{
+     const stored=JSON.parse(localStorage.getItem("stopflowLogged")||"null");
+     if(stored?.email&&restoreLocalFallback(String(stored.email).toLowerCase()))return;
+   }catch{}
+ }
+ showLogin();
+ setLoginMessage(authError||"Connectez-vous avec votre compte StopFlow Supabase.",authError?"error":"info");
+}
+'''
+          replace_once(anchor, anchor + auth_code, "insertion auth Supabase")
+
+          replace_once(
+              '<script>\nconst COLRUYT = [',
+              '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8"></script>\n<script>\nconst COLRUYT = [',
+              "chargement supabase-js",
+          )
+
+          old_handler = '''$("#loginForm").onsubmit=e=>{
+ e.preventDefault();
+ const email=$("#email").value.trim().toLowerCase();
+ if($("#password").value!=="stopflow")return alert("Mot de passe de démonstration incorrect.");
+ if(email==="employe@lunion.be"){
+   session={name:"Employé test",role:ROLE.EMPLOYE,email};
+ } else if(email==="contact@srlreunion.com"){
+   session={name:"Administrateur",role:ROLE.ADMIN,email};
+ } else {
+   session={name:"Quentin Pollet",role:ROLE.RESPONSABLE,email:"quentin@lunion.be"};
+ }
+ localStorage.setItem("stopflowLogged",JSON.stringify(session));
+ $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
+};
+$("#logout").onclick=()=>{localStorage.removeItem("stopflowLogged");location.reload()};'''
+          new_handler = '''$("#loginForm").onsubmit=async e=>{
+ e.preventDefault();
+ const email=$("#email").value.trim().toLowerCase();
+ const password=$("#password").value;
+ setLoginBusy(true);
+ setLoginMessage("Connexion sécurisée en cours…","info");
+ try{
+   await signInWithSupabase(email,password);
+ }catch(error){
+   setLoginMessage(error?.message||"Connexion impossible.","error");
+ }finally{
+   setLoginBusy(false);
+ }
+};
+$("#localFallback").onclick=()=>signInWithLocalFallback();
+$("#logout").onclick=async()=>{
+ try{
+   if(session.authMode==="supabase"&&supabaseClient)await supabaseClient.auth.signOut();
+ }finally{
+   localStorage.removeItem("stopflowLogged");
+   location.reload();
+ }
+};'''
+          replace_once(old_handler, new_handler, "gestion connexion")
+
+          old_bootstrap = '''const stored=localStorage.getItem("stopflowLogged");
+if(stored){
+ try{session=JSON.parse(stored)}catch{}
+ $("#login").classList.add("hidden");$("#app").classList.remove("hidden");applyRole();page("dashboard");
+}'''
+          replace_once(old_bootstrap, "bootstrapAuth();", "démarrage auth")
+
+          pdf_start_after = text.index("function pdfSafe")
+          pdf_end_after = text.index("function renderArticles")
+          pdf_hash_after = hashlib.sha256(text[pdf_start_after:pdf_end_after].encode("utf-8")).hexdigest()
+          if pdf_hash_before != pdf_hash_after:
+              raise SystemExit("Le bloc PDF / impression a été modifié, arrêt de sécurité.")
+
+          required = [
+              "signInWithPassword",
+              'from("profiles")',
+              "profile.actif!==true",
+              'authMode:"supabase"',
+              "git-stopflow-dev",
+              "bootstrapAuth();",
+          ]
+          for marker in required:
+              if marker not in text:
+                  raise SystemExit(f"Marqueur obligatoire absent: {marker}")
+          if "Mot de passe de démonstration incorrect" in text:
+              raise SystemExit("Ancien gestionnaire de connexion encore présent")
+
+          path.write_text(text, encoding="utf-8")
+
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', text, flags=re.S)
+          if not scripts:
+              raise SystemExit("Script principal introuvable")
+          Path("/tmp/stopflow-inline.js").write_text(scripts[-1], encoding="utf-8")
+          print("Patch Supabase appliqué; bloc PDF inchangé:", pdf_hash_after)
+          PY
+
+      - name: Vérifier la syntaxe JavaScript
+        run: node --check /tmp/stopflow-inline.js
+
+      - name: Commit sur stopflow-dev
+        run: |
+          git config user.name "StopFlow Automation"
+          git config user.email "contact@srlreunion.com"
+          git add index.html
+          git diff --cached --check
+          git commit -m "Connecte l’authentification Supabase réelle (étape 2A)"
+          git push origin HEAD:stopflow-dev
