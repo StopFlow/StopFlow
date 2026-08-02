@@ -34,8 +34,9 @@ jobs:
           grep -q 'supabase-article-tools.js' index.html
           grep -q 'Ajout multiple' supabase-article-tools.js
           grep -q 'purchase_price' supabase-article-tools.js
+          grep -q 'articleSupplierInput.onchange=renderArticles' supabase-article-tools.js
 
-      - name: Commit index update
+      - name: Commit integration changes
         run: |
           if git diff --quiet; then
             echo "No integration change required."
@@ -43,6 +44,6 @@ jobs:
           fi
           git config user.name "StopFlow Automation"
           git config user.email "contact@srlreunion.com"
-          git add index.html
-          git commit -m "Intègre l’ajout multiple des articles"
+          git add index.html supabase-article-tools.js
+          git commit -m "Finalise l’ajout multiple des articles"
           git push origin HEAD:stopflow-dev
