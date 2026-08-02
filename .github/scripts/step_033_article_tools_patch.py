@@ -6,17 +6,23 @@ index_original = index_text
 
 catalog_script = '<script src="supabase-catalog.js"></script>'
 tools_script = '<script src="supabase-article-tools.js"></script>'
+compact_link = '<link rel="stylesheet" href="stopflow-compact.css?v=0331">'
 
 if tools_script not in index_text:
     if catalog_script not in index_text:
         raise SystemExit("Module catalogue introuvable dans index.html")
     index_text = index_text.replace(catalog_script, catalog_script + "\n" + tools_script, 1)
 
+if compact_link not in index_text:
+    if "</head>" not in index_text:
+        raise SystemExit("Balise head introuvable dans index.html")
+    index_text = index_text.replace("</head>", compact_link + "\n</head>", 1)
+
 if index_text != index_original:
     index_path.write_text(index_text, encoding="utf-8")
-    print("Module d’ajout multiple intégré à index.html.")
+    print("Outils articles et affichage compact intégrés à index.html.")
 else:
-    print("Module articles déjà intégré à index.html.")
+    print("Outils articles et affichage compact déjà intégrés à index.html.")
 
 tools_path = Path("supabase-article-tools.js")
 tools_text = tools_path.read_text(encoding="utf-8")
