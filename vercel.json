@@ -10,23 +10,23 @@
   "rewrites": [
     {
       "source": "/favicon.ico",
-      "destination": "/api/favicon?format=ico"
+      "destination": "/api/favicon"
     },
     {
       "source": "/favicon.png",
-      "destination": "/api/favicon?format=png"
+      "destination": "/api/favicon"
     },
     {
       "source": "/favicon-32x32.png",
-      "destination": "/api/favicon?format=png"
+      "destination": "/api/favicon"
     },
     {
       "source": "/apple-touch-icon.png",
-      "destination": "/api/favicon?format=apple"
+      "destination": "/api/favicon"
     },
     {
       "source": "/apple-touch-icon-precomposed.png",
-      "destination": "/api/favicon?format=apple"
+      "destination": "/api/favicon"
     }
   ],
   "headers": [
