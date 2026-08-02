@@ -1,0 +1,39 @@
+/* StopFlow — densité d’affichage compacte sur ordinateur.
+   Cette feuille ne modifie ni le PDF ni les styles d’impression. */
+
+@media screen and (min-width:951px){
+  html{font-size:15px}
+  .shell{grid-template-columns:220px minmax(0,1fr)}
+  .sidebar{padding:20px 15px}
+  .brand{font-size:21px;gap:10px}
+  .logo{width:34px;height:34px}
+  .tagline{margin-bottom:22px}
+  .nav{gap:5px}
+  .nav button{padding:10px 12px}
+  .usercard{left:15px;right:15px;bottom:15px;padding:10px}
+  .avatar{width:32px;height:32px}
+  .main{padding:22px 26px 48px}
+  .topbar{margin-bottom:20px}
+  h1{font-size:27px}
+  h2{font-size:21px}
+  .grid4{gap:12px}
+  .stat{padding:15px;min-height:105px}
+  .stat .num{font-size:28px;margin-top:9px}
+  .card{padding:18px;margin-top:16px}
+  .supplier-grid{gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,250px))}
+  .supplier{padding:18px;max-width:250px}
+  .supplier-mark{width:100px;height:66px;margin-bottom:11px}
+  .rules{gap:9px;margin-top:14px}
+  .kpis{gap:9px;margin:13px 0}
+  .kpi{padding:11px}
+  .kpi strong{font-size:22px}
+  th,td{padding:10px 11px}
+  .filters{gap:8px;margin-bottom:11px}
+  .input{padding:9px 10px}
+  .btn{padding:9px 14px}
+  .modalbox{padding:20px}
+}
+
+@media print{
+  html{font-size:initial}
+}
