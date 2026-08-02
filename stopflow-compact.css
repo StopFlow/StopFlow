@@ -1,6 +1,11 @@
 /* StopFlow — affichage très compact et épuré sur ordinateur.
    Objectif : montrer davantage d’informations au zoom navigateur 100 %.
-   Cette feuille ne modifie ni le mobile, ni le PDF, ni les styles d’impression. */
+   Cette feuille ne modifie ni le PDF, ni les styles d’impression. */
+
+/* Le démarrage d’un inventaire se fait uniquement depuis l’accueil,
+   où tous les fournisseurs actifs sont présentés sans préférence. */
+.nav button[data-page="inventory"],
+.mobilebar button[data-page="inventory"]{display:none!important}
 
 @media screen and (min-width:951px){
   html{font-size:13px}
@@ -15,7 +20,6 @@
   .nav{gap:2px}
   .nav button{padding:7px 9px;border-radius:8px;font-size:13px;gap:0}
   .nav button[data-page="dashboard"],
-  .nav button[data-page="inventory"],
   .nav button[data-page="history"],
   .nav button[data-page="articles"],
   .nav button[data-page="suggestions"],
@@ -23,7 +27,6 @@
   .nav button[data-page="suppliers"],
   .nav button[data-page="users"]{font-size:0}
   .nav button[data-page="dashboard"]::after{content:"Accueil"}
-  .nav button[data-page="inventory"]::after{content:"Inventaire"}
   .nav button[data-page="history"]::after{content:"Historique"}
   .nav button[data-page="articles"]::after{content:"Articles"}
   .nav button[data-page="suggestions"]::after{content:"Suggestions"}
