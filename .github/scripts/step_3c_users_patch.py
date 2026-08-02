@@ -31,8 +31,15 @@ if count == 0:
         raise SystemExit("Emplacement du favicon introuvable")
     text = text.replace(marker, marker + "\n" + favicon_links, 1)
 
+users_script = '<script src="supabase-users.js"></script>'
+delete_script = '<script src="supabase-user-delete.js"></script>'
+if delete_script not in text:
+    if users_script not in text:
+        raise SystemExit("Module utilisateurs introuvable")
+    text = text.replace(users_script, users_script + "\n" + delete_script, 1)
+
 if text == original:
-    print("Identité de l’onglet déjà correcte.")
+    print("Identité et modules utilisateurs déjà corrects.")
 else:
     path.write_text(text, encoding="utf-8")
-    print("Identité StopFlow corrigée avec un favicon externe versionné.")
+    print("Identité StopFlow et suppression des utilisateurs intégrées.")
