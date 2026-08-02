@@ -1,0 +1,48 @@
+name: StopFlow 0.3.3 Article Tools
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - stopflow-dev
+    paths:
+      - supabase-article-tools.js
+      - .github/scripts/step_033_article_tools_patch.py
+      - .github/workflows/step-033-article-tools.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-article-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stopflow-dev
+        uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+          fetch-depth: 0
+
+      - name: Integrate article tools
+        run: python3 .github/scripts/step_033_article_tools_patch.py
+
+      - name: Validate JavaScript
+        run: node --check supabase-article-tools.js
+
+      - name: Validate integration
+        run: |
+          grep -q 'supabase-article-tools.js' index.html
+          grep -q 'Ajout multiple' supabase-article-tools.js
+          grep -q 'purchase_price' supabase-article-tools.js
+
+      - name: Commit index update
+        run: |
+          if git diff --quiet; then
+            echo "No integration change required."
+            exit 0
+          fi
+          git config user.name "StopFlow Automation"
+          git config user.email "contact@srlreunion.com"
+          git add index.html
+          git commit -m "Intègre l’ajout multiple des articles"
+          git push origin HEAD:stopflow-dev
