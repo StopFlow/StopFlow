@@ -5,16 +5,51 @@
       "source": "/favicon.svg",
       "destination": "/favicon-stopflow-20260802.svg",
       "permanent": false
-    },
+    }
+  ],
+  "rewrites": [
     {
       "source": "/favicon.ico",
-      "destination": "/favicon-stopflow-20260802.svg",
-      "permanent": false
+      "destination": "/api/favicon?format=ico"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "/api/favicon?format=png"
+    },
+    {
+      "source": "/favicon-32x32.png",
+      "destination": "/api/favicon?format=png"
+    },
+    {
+      "source": "/apple-touch-icon.png",
+      "destination": "/api/favicon?format=apple"
+    },
+    {
+      "source": "/apple-touch-icon-precomposed.png",
+      "destination": "/api/favicon?format=apple"
     }
   ],
   "headers": [
     {
       "source": "/favicon-stopflow-20260802.svg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.ico",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/apple-touch-icon.png",
       "headers": [
         {
           "key": "Cache-Control",
