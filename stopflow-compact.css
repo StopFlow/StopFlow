@@ -1,39 +1,64 @@
-/* StopFlow — densité d’affichage compacte sur ordinateur.
-   Cette feuille ne modifie ni le PDF ni les styles d’impression. */
+/* StopFlow — affichage très compact sur ordinateur.
+   Objectif : montrer davantage d’informations au zoom navigateur 100 %.
+   Cette feuille ne modifie ni le mobile, ni le PDF, ni les styles d’impression. */
 
 @media screen and (min-width:951px){
-  html{font-size:15px}
-  .shell{grid-template-columns:220px minmax(0,1fr)}
-  .sidebar{padding:20px 15px}
-  .brand{font-size:21px;gap:10px}
-  .logo{width:34px;height:34px}
-  .tagline{margin-bottom:22px}
-  .nav{gap:5px}
-  .nav button{padding:10px 12px}
-  .usercard{left:15px;right:15px;bottom:15px;padding:10px}
-  .avatar{width:32px;height:32px}
-  .main{padding:22px 26px 48px}
-  .topbar{margin-bottom:20px}
-  h1{font-size:27px}
-  h2{font-size:21px}
-  .grid4{gap:12px}
-  .stat{padding:15px;min-height:105px}
-  .stat .num{font-size:28px;margin-top:9px}
-  .card{padding:18px;margin-top:16px}
-  .supplier-grid{gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,250px))}
-  .supplier{padding:18px;max-width:250px}
-  .supplier-mark{width:100px;height:66px;margin-bottom:11px}
-  .rules{gap:9px;margin-top:14px}
-  .kpis{gap:9px;margin:13px 0}
-  .kpi{padding:11px}
-  .kpi strong{font-size:22px}
-  th,td{padding:10px 11px}
-  .filters{gap:8px;margin-bottom:11px}
-  .input{padding:9px 10px}
-  .btn{padding:9px 14px}
-  .modalbox{padding:20px}
+  html{font-size:13px}
+  body{font-size:13px}
+
+  .shell{grid-template-columns:184px minmax(0,1fr)}
+  .sidebar{padding:14px 11px}
+  .brand{font-size:19px;gap:8px}
+  .logo{width:29px;height:29px}
+  .tagline{font-size:11px;line-height:1.35;margin:7px 0 15px}
+  .nav{gap:2px}
+  .nav button{padding:7px 9px;border-radius:8px;font-size:13px}
+  .usercard{left:11px;right:11px;bottom:11px;padding:8px;border-radius:10px}
+  .avatar{width:28px;height:28px;font-size:11px}
+
+  .main{padding:14px 17px 34px}
+  .topbar{margin-bottom:12px}
+  h1{font-size:23px;line-height:1.1}
+  h2{font-size:18px;line-height:1.15}
+  h3{font-size:15px}
+  .muted{line-height:1.3}
+
+  .grid4{gap:8px}
+  .stat{padding:10px;min-height:82px;border-radius:10px}
+  .stat .num{font-size:23px;margin-top:5px}
+  .card{padding:12px;margin-top:10px;border-radius:12px}
+
+  .supplier-grid{gap:8px;grid-template-columns:repeat(auto-fit,minmax(170px,205px))}
+  .supplier{padding:12px;max-width:205px;border-radius:10px}
+  .supplier-mark{width:82px;height:50px;margin-bottom:7px}
+  .supplier h3{margin:4px 0}
+  .supplier .btn{margin-top:8px}
+
+  .rules{gap:6px;margin-top:9px}
+  .kpis{gap:6px;margin:8px 0}
+  .kpi{padding:8px;border-radius:9px}
+  .kpi strong{font-size:19px;margin-top:3px}
+
+  table{font-size:12px}
+  th,td{padding:7px 8px}
+  .filters{gap:6px;margin-bottom:8px}
+  .input{padding:7px 8px;border-radius:8px}
+  .btn{padding:7px 10px;border-radius:8px}
+  .notice{padding:9px 11px;border-radius:8px}
+  .stepper{margin:9px 0 13px}
+  .step b{width:23px;height:23px}
+
+  .modal{padding:14px}
+  .modalbox{padding:14px;border-radius:13px;max-height:94vh}
+
+  .login-page{padding:16px}
+  .login-card{width:min(360px,100%);padding:22px;border-radius:16px}
+  .login-brand{margin-bottom:15px}
+  .login-card .field{margin:9px 0}
+  .demo{margin-top:12px;padding:9px;font-size:11px}
 }
 
 @media print{
   html{font-size:initial}
+  body{font-size:initial}
 }
