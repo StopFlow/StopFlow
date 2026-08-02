@@ -1,0 +1,51 @@
+name: StopFlow Step 3C User Management
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - stopflow-dev
+    paths:
+      - .github/workflows/step-3c-users.yml
+      - .github/scripts/step_3c_users_patch.py
+      - supabase-users.js
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-users:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stopflow-dev
+        uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+          fetch-depth: 0
+
+      - name: Apply StopFlow 0.3.2 patch
+        run: python3 .github/scripts/step_3c_users_patch.py
+
+      - name: Validate JavaScript service
+        run: node --check supabase-users.js
+
+      - name: Validate expected integration
+        run: |
+          grep -q 'StopFlow — v0.3.2' index.html
+          grep -q 'Version 0.3.2 — Gestion des utilisateurs' index.html
+          grep -q 'supabase-users.js' index.html
+          grep -q 'data-page="users"' index.html
+          grep -q 'loadSharedUsers' index.html
+          grep -q 'renderUsers' index.html
+
+      - name: Commit application changes
+        run: |
+          if git diff --quiet; then
+            echo "No application change required."
+            exit 0
+          fi
+          git config user.name "StopFlow Automation"
+          git config user.email "contact@srlreunion.com"
+          git add index.html
+          git commit -m "Ajoute la gestion des utilisateurs StopFlow 0.3.2"
+          git push origin HEAD:stopflow-dev
