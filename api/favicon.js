@@ -1,0 +1,27 @@
+/* StopFlow — favicon binaire compatible Safari, servi sans cache. */
+
+const ICONS = {
+  ico: {
+    type: "image/x-icon",
+    data: "AAABAAEAEBAAAAAAIADRAAAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAJhJREFUeJxjZJc1/M9AAWCiRDMDAwMDCy6J2OZzGGKLa42IcwE2zbjEMVwAU7RycjjDpzMrsRhzDsUlKC5A1owPILuECV2QkGaYPEw9UbHAZ4LbUJwGwPyPTzMDA45oxBZ4uAzCcAGyZkK2oxgAi5rUhfg1h+euRFGP4gJ0QwhpZmBgYGDElplwpUR0zRguwKUInzhWF5ACALo4N7lYWpq3AAAAAElFTkSuQmCC"
+  },
+  png: {
+    type: "image/png",
+    data: "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA+UlEQVR4nO2Xuw3CMBBALwiJjg0YAsQuqSgpGYEqIzABovIuiGFYAAp04grb97WcItfG9nvn8y/DZrf/QMdY9YQvArMQWFs6naZX8dvjelCNNWh2QQ1sFRELUHi6jcV24yWpJFgBKdgqIl4DOfj7mTIt/3G+8+NWdwFmr8mcBvarrZ1iCbTw3Gxsj7++WI5cKULOAQpHqDSyAprsJfBaKVwz4Mk8RMALdwlg9h44gPEu4Pa/Rko9AxF1NwtEw4sCeGDQ89wDdx9ELTJnBegsINQCr2UPoLiOLRcSBwdQLEK6HiLbz/9FVJLgIvxNKBVp+ipuEd1/TBaBL2sSdyrqew5EAAAAAElFTkSuQmCC"
+  },
+  apple: {
+    type: "image/png",
+    data: "iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAF+0lEQVR4nO3dwY3cRhCF4VpDgG7OQEFIcC570tFHh+CTQlAEhk+bi6FgnIB8kAkNZndm2M1udr1X/3/WArPNb4pNUhKf3n/4+D2ITPpl9QcgGhmgySpAk1WAJqsATVYBmqwCNFkFaLIK0GQVoMkqQJNVgCarAE1WAZqsAjRZBWiyCtBkFaDJKkCTVYAmqwBNVgGarAI0WQVosgrQZBWgySpAk1WAJqsATVa9W/0BnPr85Vv3z/7956eBn6RuT/x3uu0dgdsa0NsC9I7OBPwogN8P0DfKhPhW4H4doK9SgHwdsH8G6NBEfKvquEuDdoJ8XVXYJUE7Q76uGuxyD1YqYY6o9/uWmdDVDuxbVZjWJSY0mH9UYR2sJ/TZB/Dl63P3zz7/8TLwkzzOdVrbgp6N+Qjevc1G7ojaEvQszGcgvtUs3G6orUDPgLwS8a1m4HaBbQN6NOaMkK8bDdsBtQXokZgVIF83ErY6annQozArQr5uFGxl1NKgR2B2gHzdCNiqqGVBZ8f87z/n3lfe0+9/tf15RdSS/6bwKGbHqTyjz1++yaGWe/QN5nNTe1wuB/pIYPZPCnTvtHj5+gzm6P9CK01pGdBHMNPP3FFL3OVQxJzxLse99t4ByX6RKDOhW2My1yw96J7pDOZ5Zd96pAadffGqlvm4pAbdE9O5dmlBs9XIXdYpnRI0mM+vZ/0yok4Jmqi3dPehmc6vO+Oe9q+//VjDnr96munetPyEBvPY1NczFeiMe7KVqTxtzHTcUoFuTX2a3GslZuV1lQbtmspkzlga0K2nLeUpcq8smFvXN8u2Iw1oyoNZuRSgmc45MStO6RSgq5cRs2pyoN2m80jM28ORkamt93LQGU5Tq8qOuafVx3M56Ko5Ys6QFGi109+t1DArrbsUaIfUMKu1FPTq/dbZVcG88rjKTGil095bqWNWWX8Z0MqpY1YK0JMD87kBemJgPj9ATwrMa1oGuuVKWOWCZMsVc8txWHWngwk9OFfMKgF6YGBeH6AHBeYcAXpAYM4ToA8G5lwB+kBgzhegOwNzzgDdEZjzJvkm2ZVlx1z9C8KEbig7ZgL07sCsEaB3BGadAP0gMGsF6DuBWa9loFteY9DzmoSjgfl1Lcdh1WsqmNBvBGbdAH0VmLUD9EVg1g/Q/wdmj2RAz7wwBPPjVlyY97QUdIYXNoJ5fCuPq8yEnhGY/ZICPfK0B+b9qWw3IsRAjwrMvi0HffZ+C8xzW31dtBx0a0dOf2BuT2m7ESEIujcw1ygF6NbTVOvUAHNfreu8ersRkQT0zMBcqzSgZ0xpMPenOJ0jEoEeHZhrJg363hQZhbAiZrU7G5elAj36tHUUY0XMPWXZbkQkA93To2nSi7IqZuXpHJEQdM+3fTRqMO8v03SOSAh6VnuRVsXsUkrQM6Z0xGOslTE7TOeIpKAjzkcN5rYyYo5IDLq3HtRg9ik16JlTYENcGXNvWadzRMTT+w8fv6/+EI/qeYmj2ss6V+S01dhKPaGP5HYqHZ3r+kiA7p0KrgftaL3rkn06R4iAjgD1qJwxR4jsoS878lL0yvvqI19sFcwRQhN6RFWndaXfWw700WlR6eBGHP99laZzhOCWY+vI1mPLeQsy4ourhjlCcEJvjVhs12ldFXOE8ITeGjGpIzym9agvqCrmCAPQEeNQR2jCHnmmUcYcYQI6YizqCA3Yo7dM6pgjjEBHjEcdkRP2jL2/A+YIM9BbM2BHrMU96wLWBfKWJeiIeai3zsA9+y6MG+YIY9AR81FfdwT52bcQHTFHmIPeOht25lwhb8k+WGnJ/SDurcI6lJjQl1Wc1hUgb5WY0JdVOrgR9X7fchP6MudpXQ3yVmnQW06wq0LeAvRVirirI74M0DdSgA3k1wF6R5lwg/h+gO7oTOAAbgvQAzsCHbhjAjRZVe7BCnkHaLIK0GQVoMkqQJNVgGarAE1WAZqsAjRZBWiyCtBkFaDJKkCTVYAmqwBNVgGarAI0WQVosgrQZBWgySpAk1WAJqsATVYBmqwCNFkFaLIK0GQVoMmq/wBM3VT4FfnyCwAAAABJRU5ErkJggg=="
+  }
+};
+
+module.exports = function handler(req, res) {
+  const format = String(req.query?.format || "ico").toLowerCase();
+  const icon = ICONS[format] || ICONS.ico;
+  res.setHeader("Content-Type", icon.type);
+  res.setHeader("Cache-Control", "no-store, max-age=0, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.statusCode = 200;
+  res.end(Buffer.from(icon.data, "base64"));
+};
