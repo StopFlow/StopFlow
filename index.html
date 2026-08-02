@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071d31">
-<title>StopFlow — Colruyt & Leloup v0.3.1</title>
+<title>StopFlow</title>
+<meta name="application-name" content="StopFlow">
+<meta name="apple-mobile-web-app-title" content="StopFlow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=0322">
+<link rel="shortcut icon" href="/favicon.svg?v=0322">
 <style>
 :root{
   --navy:#071d31;--navy2:#0c2a45;--blue:#2463eb;--blue2:#174dcc;
@@ -74,7 +78,7 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.3.1 — Catalogue partagé</p>
+    <p class="muted" style="text-align:center">Version 0.3.2 — Gestion des utilisateurs</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
@@ -101,6 +105,7 @@ Admin : contact@srlreunion.com / stopflow
     <button data-page="articles">□ Articles</button>
     <button data-page="suggestions">◌ Suggestions</button>
     <button data-page="settings">⚙ Paramètres</button>
+    <button data-page="users">♙ Utilisateurs</button>
    </nav>
    <div class="usercard"><span class="avatar">QP</span><div><b>Quentin Pollet</b><br><small id="userRoleLabel">Responsable</small></div></div>
  </aside>
@@ -200,8 +205,26 @@ Admin : contact@srlreunion.com / stopflow
    </div>
    <div class="card"><h2>Données locales</h2><p class="muted">Cette première version conserve les données sur l'appareil utilisé.</p><div class="flex wrap"><button class="btn ghost" id="exportData">Exporter les données</button><label class="btn ghost">Importer<input id="importData" type="file" accept=".json" hidden></label><button class="btn danger" id="resetData">Réinitialiser la démonstration</button></div></div>
   </section>
+
+  <section id="users" class="page hidden">
+   <div class="card">
+    <div class="flex between wrap">
+      <div><h2>Utilisateurs StopFlow</h2><p class="muted">Créer les comptes, attribuer les rôles et désactiver les accès sans supprimer l’historique.</p></div>
+      <button class="btn primary" id="addUser">Ajouter un utilisateur</button>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><span class="muted">Comptes actifs</span><strong id="userStatActive">0</strong></div>
+      <div class="kpi"><span class="muted">Employés</span><strong id="userStatEmployees">0</strong></div>
+      <div class="kpi"><span class="muted">Responsables</span><strong id="userStatResponsibles">0</strong></div>
+      <div class="kpi"><span class="muted">Administrateurs</span><strong id="userStatAdmins">0</strong></div>
+    </div>
+    <div class="field" style="margin-bottom:14px"><label>Rechercher</label><input id="userSearch" class="input" placeholder="Nom, e-mail ou rôle…"></div>
+    <div class="tablewrap"><table><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Statut</th><th>E-mail</th><th>Dernière connexion</th><th></th></tr></thead><tbody id="userRows"><tr><td colspan="6" class="muted">Chargement…</td></tr></tbody></table></div>
+    <div class="notice" style="margin-top:16px"><b>Comptes protégés :</b> contact@srlreunion.com reste Administrateur actif et quentin@lunion.be reste Responsable actif.</div>
+   </div>
+  </section>
  </main>
- <nav class="mobilebar"><button data-page="dashboard" class="active">⌂<br>Accueil</button><button data-page="inventory">▣<br>Inventaire</button><button data-page="history">◷<br>Historique</button><button data-page="suggestions">◌<br>Idées</button></nav>
+ <nav class="mobilebar"><button data-page="dashboard" class="active">⌂<br>Accueil</button><button data-page="inventory">▣<br>Inventaire</button><button data-page="history">◷<br>Historique</button><button data-page="suggestions">◌<br>Idées</button><button data-page="users">♙<br>Utilisateurs</button></nav>
 </div>
 
 <div id="modal" class="modal hidden"><div class="modalbox" id="modalBox"></div></div>
@@ -218,6 +241,8 @@ Admin : contact@srlreunion.com / stopflow
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-orders.js"></script>
 <script src="supabase-catalog.js"></script>
+<script src="supabase-users.js"></script>
+<script src="supabase-user-delete.js"></script>
 <script>
 const COLRUYT = [
  "Campari","Gancia","Aperol","Martini rouge","Martini blanc","Picon","Pineau des Charentes",
@@ -430,6 +455,7 @@ function applyRole(){
  $(".avatar").textContent=session.name.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
  $$('[data-page="articles"]').forEach(el=>el.classList.toggle("hidden",!canManageArticles()));
  $$('[data-page="settings"]').forEach(el=>el.classList.toggle("hidden",!canManageSettings()));
+ $$('[data-page="users"]').forEach(el=>el.classList.toggle("hidden",!canManageUsers()));
 }
 
 function page(id){
@@ -445,9 +471,12 @@ function page(id){
      if(id==="settings")loadSettings();
    }).catch(error=>alert(catalogErrorMessage(error)));
  }
- if((id==="articles"&&!canManageArticles())||(id==="settings"&&!canManageSettings())) id="dashboard";
+ if(isCloudMode()&&id==="users"){
+   loadSharedUsers().then(()=>renderUsers()).catch(error=>alert(userAdminErrorMessage(error)));
+ }
+ if((id==="articles"&&!canManageArticles())||(id==="settings"&&!canManageSettings())||(id==="users"&&!canManageUsers())) id="dashboard";
  $$(".page").forEach(x=>x.classList.add("hidden")); $("#"+id).classList.remove("hidden");
- const titles={dashboard:"Tableau de bord",inventory:"Inventaire "+(current.supplier||""),summary:"Résumé",history:"Historique",articles:"Articles",suggestions:"Suggestions",settings:"Paramètres"};
+ const titles={dashboard:"Tableau de bord",inventory:"Inventaire "+(current.supplier||""),summary:"Résumé",history:"Historique",articles:"Articles",suggestions:"Suggestions",settings:"Paramètres",users:"Utilisateurs"};
  $("#pageTitle").textContent=titles[id]||"StopFlow";
  $$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
  if(id==="dashboard") renderDashboard();
@@ -456,6 +485,7 @@ function page(id){
  if(id==="articles")renderArticles();
  if(id==="suggestions")renderSuggestions();
  if(id==="settings")loadSettings();
+ if(id==="users")renderUsers();
 }
 
 function activeArticles(supplier=current.supplier){return db.articles.filter(a=>a.active&&a.supplier===supplier)}
@@ -762,6 +792,7 @@ $("#launchPrint").onclick=()=>{
 
 $("#today").textContent=new Intl.DateTimeFormat("fr-BE",{dateStyle:"full",timeStyle:"short"}).format(new Date());
 $$("[data-page]").forEach(b=>b.onclick=()=>page(b.dataset.page));$$("[data-go]").forEach(a=>a.onclick=e=>{e.preventDefault();page(a.dataset.go)});
+$("#userSearch").oninput=renderUsers;
 $$("[data-start-supplier]").forEach(b=>b.onclick=()=>newInventory(b.dataset.startSupplier));
 $("#historyNew").onclick=()=>page("dashboard");
 $("#articleSearch").oninput=renderInventory;
@@ -807,7 +838,7 @@ $("#saveSettings").onclick=async()=>{
  catch(error){alert(catalogErrorMessage(error,"Enregistrement des paramètres impossible."))}
  finally{button.disabled=false;button.textContent="Enregistrer les paramètres"}
 };
-$("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="StopFlow_v0.3.1_donnees.json";a.click();URL.revokeObjectURL(a.href)};
+$("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="StopFlow_v0.3.2_donnees.json";a.click();URL.revokeObjectURL(a.href)};
 $("#importData").onchange=e=>{if(isCloudMode()){e.target.value="";return alert("L’import global est désactivé en mode partagé afin de protéger les données Supabase.")}const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=migrate(r.result);save();alert("Import terminé.");page("dashboard")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
 $("#resetData").onclick=()=>{if(isCloudMode())return alert("La réinitialisation est désactivée en mode partagé afin de protéger les données Supabase.");if(confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
 
