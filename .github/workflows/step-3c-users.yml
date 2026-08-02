@@ -9,6 +9,7 @@ on:
       - .github/workflows/step-3c-users.yml
       - .github/scripts/step_3c_users_patch.py
       - supabase-users.js
+      - supabase-user-delete.js
 
 permissions:
   contents: write
@@ -26,8 +27,10 @@ jobs:
       - name: Apply StopFlow 0.3.2 patch
         run: python3 .github/scripts/step_3c_users_patch.py
 
-      - name: Validate JavaScript service
-        run: node --check supabase-users.js
+      - name: Validate JavaScript services
+        run: |
+          node --check supabase-users.js
+          node --check supabase-user-delete.js
 
       - name: Validate expected integration
         run: |
@@ -36,6 +39,7 @@ jobs:
           grep -q 'apple-mobile-web-app-title" content="StopFlow' index.html
           grep -q 'Version 0.3.2 — Gestion des utilisateurs' index.html
           grep -q 'supabase-users.js' index.html
+          grep -q 'supabase-user-delete.js' index.html
           grep -q 'data-page="users"' index.html
           grep -q 'loadSharedUsers' index.html
           grep -q 'renderUsers' index.html
@@ -49,5 +53,5 @@ jobs:
           git config user.name "StopFlow Automation"
           git config user.email "contact@srlreunion.com"
           git add index.html
-          git commit -m "Affiche StopFlow dans l’onglet du navigateur"
+          git commit -m "Ajoute la suppression définitive des utilisateurs"
           git push origin HEAD:stopflow-dev
