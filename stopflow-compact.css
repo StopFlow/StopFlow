@@ -1,4 +1,4 @@
-/* StopFlow — affichage très compact sur ordinateur.
+/* StopFlow — affichage très compact et épuré sur ordinateur.
    Objectif : montrer davantage d’informations au zoom navigateur 100 %.
    Cette feuille ne modifie ni le mobile, ni le PDF, ni les styles d’impression. */
 
@@ -6,56 +6,88 @@
   html{font-size:13px}
   body{font-size:13px}
 
+  /* Barre latérale compacte, sans pictogrammes devant les rubriques. */
   .shell{grid-template-columns:184px minmax(0,1fr)}
   .sidebar{padding:14px 11px}
   .brand{font-size:19px;gap:8px}
   .logo{width:29px;height:29px}
   .tagline{font-size:11px;line-height:1.35;margin:7px 0 15px}
   .nav{gap:2px}
-  .nav button{padding:7px 9px;border-radius:8px;font-size:13px}
+  .nav button{padding:7px 9px;border-radius:8px;font-size:13px;gap:0}
+  .nav button[data-page="dashboard"],
+  .nav button[data-page="inventory"],
+  .nav button[data-page="history"],
+  .nav button[data-page="articles"],
+  .nav button[data-page="suggestions"],
+  .nav button[data-page="settings"],
+  .nav button[data-page="suppliers"],
+  .nav button[data-page="users"]{font-size:0}
+  .nav button[data-page="dashboard"]::after{content:"Accueil"}
+  .nav button[data-page="inventory"]::after{content:"Inventaire"}
+  .nav button[data-page="history"]::after{content:"Historique"}
+  .nav button[data-page="articles"]::after{content:"Articles"}
+  .nav button[data-page="suggestions"]::after{content:"Suggestions"}
+  .nav button[data-page="settings"]::after{content:"Paramètres"}
+  .nav button[data-page="suppliers"]::after{content:"Fournisseurs"}
+  .nav button[data-page="users"]::after{content:"Utilisateurs"}
+  .nav button::after{font-size:12.5px;line-height:1.2}
   .usercard{left:11px;right:11px;bottom:11px;padding:8px;border-radius:10px}
   .avatar{width:28px;height:28px;font-size:11px}
 
-  .main{padding:14px 17px 34px}
-  .topbar{margin-bottom:12px}
-  h1{font-size:23px;line-height:1.1}
-  h2{font-size:18px;line-height:1.15}
-  h3{font-size:15px}
-  .muted{line-height:1.3}
+  /* Zone centrale plus légère et moins imposante. */
+  .main{padding:13px 16px 30px;font-size:12px}
+  .topbar{margin-bottom:9px}
+  h1{font-size:20px;line-height:1.1}
+  h2{font-size:16px;line-height:1.15;margin-bottom:4px}
+  h3{font-size:14px}
+  .muted{line-height:1.25}
 
-  .grid4{gap:8px}
-  .stat{padding:10px;min-height:82px;border-radius:10px}
-  .stat .num{font-size:23px;margin-top:5px}
-  .card{padding:12px;margin-top:10px;border-radius:12px}
+  .grid4{gap:6px}
+  .stat{padding:8px 9px;min-height:67px;border-radius:9px;box-shadow:none}
+  .stat .num{font-size:20px;margin-top:3px;line-height:1}
+  .stat a{font-size:11px}
 
-  .supplier-grid{gap:8px;grid-template-columns:repeat(auto-fit,minmax(170px,205px))}
-  .supplier{padding:12px;max-width:205px;border-radius:10px}
-  .supplier-mark{width:82px;height:50px;margin-bottom:7px}
-  .supplier h3{margin:4px 0}
-  .supplier .btn{margin-top:8px}
+  .card{padding:10px 11px;margin-top:8px;border-radius:10px;box-shadow:0 4px 14px rgba(13,35,62,.05)}
+  .card > p{margin:5px 0 8px}
 
-  .rules{gap:6px;margin-top:9px}
-  .kpis{gap:6px;margin:8px 0}
-  .kpi{padding:8px;border-radius:9px}
-  .kpi strong{font-size:19px;margin-top:3px}
+  .supplier-grid{gap:7px;grid-template-columns:repeat(auto-fit,minmax(155px,190px))}
+  .supplier{padding:10px;max-width:190px;border-radius:9px}
+  .supplier-mark{width:72px;height:42px;margin-bottom:5px;border-radius:11px}
+  .supplier h3{margin:3px 0}
+  .supplier .btn{margin-top:6px}
 
-  table{font-size:12px}
-  th,td{padding:7px 8px}
-  .filters{gap:6px;margin-bottom:8px}
-  .input{padding:7px 8px;border-radius:8px}
-  .btn{padding:7px 10px;border-radius:8px}
-  .notice{padding:9px 11px;border-radius:8px}
-  .stepper{margin:9px 0 13px}
-  .step b{width:23px;height:23px}
+  .rules{gap:5px;margin-top:7px}
+  .rule{font-size:11px;gap:5px}
 
-  .modal{padding:14px}
-  .modalbox{padding:14px;border-radius:13px;max-height:94vh}
+  /* Les indicateurs deviennent de petits bandeaux, pas de grandes cartes. */
+  .kpis{gap:5px;margin:7px 0;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .kpi{padding:6px 8px;min-height:42px;border-radius:7px;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;gap:7px;text-align:left;color:#617086}
+  .kpi strong{font-size:17px;line-height:1;margin:0;color:var(--text)}
 
-  .login-page{padding:16px}
-  .login-card{width:min(360px,100%);padding:22px;border-radius:16px}
-  .login-brand{margin-bottom:15px}
-  .login-card .field{margin:9px 0}
-  .demo{margin-top:12px;padding:9px;font-size:11px}
+  table{font-size:11px}
+  th,td{padding:6px 7px}
+  th{font-size:10px}
+  td{font-size:11px}
+  .tablewrap{border-radius:9px}
+  .filters{gap:5px;margin-bottom:7px}
+  .input{padding:6px 7px;border-radius:7px;font-size:12px}
+  .field{gap:4px}
+  .field label{font-size:11px}
+  .btn{padding:6px 9px;border-radius:7px;font-size:12px}
+  .btn.small{padding:5px 7px;font-size:11px}
+  .badge{padding:3px 6px;font-size:10px}
+  .notice{padding:8px 9px;border-radius:7px}
+  .stepper{margin:7px 0 10px}
+  .step b{width:21px;height:21px}
+
+  .modal{padding:12px}
+  .modalbox{padding:12px;border-radius:11px;max-height:95vh;font-size:12px}
+
+  .login-page{padding:14px}
+  .login-card{width:min(340px,100%);padding:18px;border-radius:14px}
+  .login-brand{margin-bottom:12px}
+  .login-card .field{margin:7px 0}
+  .demo{margin-top:9px;padding:7px;font-size:10px}
 }
 
 @media print{
