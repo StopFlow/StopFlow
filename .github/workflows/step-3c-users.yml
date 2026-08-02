@@ -31,7 +31,9 @@ jobs:
 
       - name: Validate expected integration
         run: |
-          grep -q 'StopFlow — v0.3.2' index.html
+          grep -q '<title>StopFlow</title>' index.html
+          grep -q 'application-name" content="StopFlow' index.html
+          grep -q 'apple-mobile-web-app-title" content="StopFlow' index.html
           grep -q 'Version 0.3.2 — Gestion des utilisateurs' index.html
           grep -q 'supabase-users.js' index.html
           grep -q 'data-page="users"' index.html
@@ -47,5 +49,5 @@ jobs:
           git config user.name "StopFlow Automation"
           git config user.email "contact@srlreunion.com"
           git add index.html
-          git commit -m "Ajoute la gestion des utilisateurs StopFlow 0.3.2"
+          git commit -m "Affiche StopFlow dans l’onglet du navigateur"
           git push origin HEAD:stopflow-dev
