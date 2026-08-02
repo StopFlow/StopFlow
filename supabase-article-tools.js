@@ -24,7 +24,7 @@ function stopFlowUnitListMarkup(id="stopflowUnitOptions"){
 }
 
 function stopFlowArticleSupplier(article){
-  return supplierById(article.supplierId)||supplierByName(article.supplier);
+  return supplierByName(article.supplier)||supplierById(article.supplierId);
 }
 
 function stopFlowArticleBelongsToSupplier(article,supplier){
@@ -353,6 +353,11 @@ function stopFlowInstallArticleTools(){
     addArticleButton.parentElement.insertBefore(multiple,addArticleButton);
     multiple.onclick=bulkArticleModal;
   }
+
+  const articleSupplierInput=document.querySelector("#articleSupplier");
+  if(articleSupplierInput)articleSupplierInput.onchange=renderArticles;
+  const supplierSearchInput=document.querySelector("#supplierSearch");
+  if(supplierSearchInput)supplierSearchInput.oninput=renderSuppliers;
 
   /* Actualise les données si une session avait été restaurée avant l’installation du module. */
   if(document.querySelector("#app")&&!document.querySelector("#app").classList.contains("hidden")&&isCloudMode()){
