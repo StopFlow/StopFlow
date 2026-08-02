@@ -1,0 +1,26 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/favicon.svg",
+      "destination": "/favicon-stopflow-20260802.svg",
+      "permanent": false
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon-stopflow-20260802.svg",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/favicon-stopflow-20260802.svg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
