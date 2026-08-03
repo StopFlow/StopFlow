@@ -1,0 +1,39 @@
+name: Fix StopFlow mobile script placement
+on:
+  push:
+    branches: [stopflow-dev]
+    paths: ['.github/workflows/fix-mobile-script-placement.yml']
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Move mobile script to real document footer
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          tag='<script src="stopflow-mobile.js?v=0400"></script>\n'
+          s=s.replace(tag,'')
+          pos=s.rfind('</body>')
+          if pos<0: raise SystemExit('Closing body not found')
+          s=s[:pos]+tag+s[pos:]
+          p.write_text(s)
+          PY
+          node --check stopflow-mobile.js
+          node --check service-worker.js
+      - name: Commit fix
+        run: |
+          git config user.name 'StopFlow Automation'
+          git config user.email 'contact@srlreunion.com'
+          git add index.html
+          git commit -m 'Corrige le chargement mobile sans toucher à l’impression' || true
+          git push origin stopflow-dev
