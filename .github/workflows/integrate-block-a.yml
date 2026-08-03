@@ -1,0 +1,42 @@
+name: Integrate StopFlow Block A
+on:
+  push:
+    branches: [stopflow-dev]
+    paths: ['.github/workflows/integrate-block-a.yml']
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Patch index and validate assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          if 'manifest.webmanifest' not in s:
+              s=s.replace('<meta name="apple-mobile-web-app-title" content="StopFlow">','<meta name="apple-mobile-web-app-title" content="StopFlow">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n<link rel="manifest" href="/manifest.webmanifest?v=0400">\n<link rel="apple-touch-icon" href="/stopflow-app-icon.svg">')
+          if 'stopflow-mobile.css' not in s:
+              s=s.replace('<link rel="stylesheet" href="stopflow-compact.css?v=0331">','<link rel="stylesheet" href="stopflow-compact.css?v=0331">\n<link rel="stylesheet" href="stopflow-mobile.css?v=0400">')
+          if 'stopflow-mobile.js' not in s:
+              s=s.replace('</body>','<script src="stopflow-mobile.js?v=0400"></script>\n</body>')
+          s=s.replace('Version 0.3.2 — Gestion des utilisateurs','Version 0.4.0 — Mobile, tablette et PWA')
+          p.write_text(s)
+          PY
+          node --check stopflow-mobile.js
+          node --check service-worker.js
+          python3 -m json.tool manifest.webmanifest >/dev/null
+      - name: Commit integration
+        run: |
+          git config user.name 'StopFlow Automation'
+          git config user.email 'contact@srlreunion.com'
+          git add index.html
+          git commit -m 'Active la refonte mobile et la PWA StopFlow 0.4.0' || true
+          git push origin stopflow-dev
