@@ -11,6 +11,11 @@ function cloudErrorMessage(error, fallback="Une erreur de synchronisation est su
   return message;
 }
 
+function isRevisionConflict(error){
+  const text=`${error?.message||""} ${error?.details||""}`;
+  return text.includes("CONFLIT_REVISION")||error?.code==="40001";
+}
+
 function mapSharedLine(line){
   return {
     id:line.article_id,
@@ -31,12 +36,16 @@ function mapSharedOrder(row){
     supplier:row.supplier,
     status:row.status,
     createdAt:row.created_at,
+    updatedAt:row.updated_at,
     inventoryAt:row.inventory_at,
     validatedAt:row.validated_at,
     authorId:row.author_id,
     author:row.author_name,
     validatorId:row.validator_id,
     validator:row.validator_name,
+    lastEditedBy:row.last_edited_by||null,
+    lastEditedName:row.last_edited_name||row.author_name||"",
+    revision:Number(row.revision||1),
     note:row.note||"",
     stocks:row.stocks||{},
     adjustments:row.adjustments||{},
@@ -56,6 +65,7 @@ async function loadSharedOrders(){
       id, number, supplier, status,
       author_id, author_name,
       validator_id, validator_name,
+      last_edited_by, last_edited_name, revision,
       note, stocks, adjustments,
       inventory_at, validated_at, created_at, updated_at,
       order_lines (
@@ -71,16 +81,8 @@ async function loadSharedOrders(){
   return db.orders;
 }
 
-async function replaceSharedOrderLines(order){
-  const {error:deleteError}=await supabaseClient
-    .from("order_lines")
-    .delete()
-    .eq("order_id",order.id);
-  if(deleteError)throw new Error(cloudErrorMessage(deleteError,"Impossible de mettre à jour les lignes du document."));
-
-  const rows=(order.lines||[]).map((line,index)=>({
-    order_id:order.id,
-    line_position:index,
+function sharedOrderLinesPayload(order){
+  return (order.lines||[]).map(line=>({
     article_id:String(line.id??""),
     article_name:line.name||"Article",
     category:line.category||"",
@@ -90,10 +92,6 @@ async function replaceSharedOrderLines(order){
     proposed:Number(line.proposed||0),
     quantity:Number(line.quantity||0)
   }));
-
-  if(!rows.length)return;
-  const {error:insertError}=await supabaseClient.from("order_lines").insert(rows);
-  if(insertError)throw new Error(cloudErrorMessage(insertError,"Impossible d’enregistrer les lignes du document."));
 }
 
 async function callSharedOrderAction(action,orderId){
@@ -105,45 +103,28 @@ async function saveSharedOrder(order){
   if(!isCloudMode())return null;
 
   const desiredStatus=order.status;
-  const {data:existing,error:readError}=await supabaseClient
-    .from("orders")
-    .select("id,status")
-    .eq("id",order.id)
-    .maybeSingle();
-  if(readError)throw new Error(cloudErrorMessage(readError,"Impossible de vérifier le brouillon."));
+  const expectedRevision=Number.isFinite(Number(order.revision))?Number(order.revision):null;
 
-  if(existing&&existing.status!=="Brouillon"){
-    throw new Error("Ce document a déjà été envoyé et ne peut plus être remplacé comme brouillon.");
+  const {error}=await supabaseClient.rpc("save_order_draft_atomic",{
+    p_order_id:order.id,
+    p_supplier:order.supplier,
+    p_author_name:order.author||session.name,
+    p_note:order.note||"",
+    p_stocks:order.stocks||{},
+    p_adjustments:order.adjustments||{},
+    p_inventory_at:order.inventoryAt||new Date().toISOString(),
+    p_created_at:order.createdAt||new Date().toISOString(),
+    p_expected_revision:expectedRevision,
+    p_lines:sharedOrderLinesPayload(order)
+  });
+
+  if(error){
+    if(isRevisionConflict(error)){
+      await loadSharedOrders().catch(()=>{});
+      throw new Error("Ce brouillon a été modifié sur un autre appareil. La version la plus récente a été rechargée : vérifiez-la avant de continuer.");
+    }
+    throw new Error(cloudErrorMessage(error,"Impossible d’enregistrer le brouillon partagé."));
   }
-
-  if(!existing){
-    const {error:insertError}=await supabaseClient.from("orders").insert({
-      id:order.id,
-      supplier:order.supplier,
-      status:"Brouillon",
-      author_id:session.id,
-      author_name:order.author||session.name,
-      note:order.note||"",
-      stocks:order.stocks||{},
-      adjustments:order.adjustments||{},
-      inventory_at:order.inventoryAt||new Date().toISOString(),
-      created_at:order.createdAt||new Date().toISOString()
-    });
-    if(insertError)throw new Error(cloudErrorMessage(insertError,"Impossible de créer le brouillon partagé."));
-  }else{
-    const {error:updateError}=await supabaseClient
-      .from("orders")
-      .update({
-        note:order.note||"",
-        stocks:order.stocks||{},
-        adjustments:order.adjustments||{},
-        inventory_at:order.inventoryAt||new Date().toISOString()
-      })
-      .eq("id",order.id);
-    if(updateError)throw new Error(cloudErrorMessage(updateError,"Impossible de mettre à jour le brouillon partagé."));
-  }
-
-  await replaceSharedOrderLines(order);
 
   if(desiredStatus==="À valider"||desiredStatus==="Validé"){
     await callSharedOrderAction("submit_order",order.id);
