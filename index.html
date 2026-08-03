@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.9.0 test — préparation StopFlow 1.0</p>
+    <p class="muted" style="text-align:center">Version 0.11.2 test — architecture et checklists</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
@@ -704,7 +704,8 @@ function openPrintableWindow(o){
  table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:10px;text-align:left}th{background:#f3f3f3}
  .print-foot{margin-top:42px;font-size:12px;color:#555}.toolbar{margin-bottom:22px;padding:12px;background:#f2f5f8;border-radius:8px}
  @media print{.toolbar{display:none}body{margin:14mm}}
- </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}</body></html>`;
+ </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}<script src="stopflow-checklists.js?v=0112"></script>
+</body></html>`;
  const blob=new Blob([doc],{type:"text/html;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const win=window.open(url,"_blank");
@@ -854,4 +855,5 @@ bootstrapAuth();
 
 <script src="stopflow-mobile.js?v=0400"></script>
 <script src="stopflow-ops.js?v=0900"></script>
+<script src="stopflow-checklists.js?v=0112"></script>
 </body></html>
