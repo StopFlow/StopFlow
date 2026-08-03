@@ -1,0 +1,35 @@
+name: StopFlow Fix v0.3.4 Current
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - stopflow-dev
+    paths:
+      - .github/scripts/fix_v034_current.py
+      - .github/workflows/fix-v034-current.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-current:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+          fetch-depth: 0
+      - run: python3 .github/scripts/fix_v034_current.py
+      - run: node --check supabase-orders.js
+      - name: Commit correction
+        run: |
+          if git diff --quiet; then
+            echo "No change required."
+            exit 0
+          fi
+          git config user.name "StopFlow Automation"
+          git config user.email "contact@srlreunion.com"
+          git add supabase-orders.js
+          git commit -m "Corrige la reprise locale des inventaires"
+          git push origin HEAD:stopflow-dev
