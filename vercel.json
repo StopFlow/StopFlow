@@ -8,53 +8,19 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/favicon.ico",
-      "destination": "/api/favicon"
-    },
-    {
-      "source": "/favicon.png",
-      "destination": "/api/favicon"
-    },
-    {
-      "source": "/favicon-32x32.png",
-      "destination": "/api/favicon"
-    },
-    {
-      "source": "/apple-touch-icon.png",
-      "destination": "/api/favicon"
-    },
-    {
-      "source": "/apple-touch-icon-precomposed.png",
-      "destination": "/api/favicon"
-    }
+    {"source": "/favicon.ico", "destination": "/api/favicon"},
+    {"source": "/favicon.png", "destination": "/api/favicon"},
+    {"source": "/favicon-32x32.png", "destination": "/api/favicon"},
+    {"source": "/apple-touch-icon.png", "destination": "/api/favicon"},
+    {"source": "/apple-touch-icon-precomposed.png", "destination": "/api/favicon"}
   ],
   "headers": [
     {
-      "source": "/favicon-stopflow-20260802.svg",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/favicon.ico",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/apple-touch-icon.png",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
+        {"key": "Cache-Control", "value": "no-store, no-cache, max-age=0, must-revalidate"},
+        {"key": "Pragma", "value": "no-cache"},
+        {"key": "Expires", "value": "0"}
       ]
     }
   ]
