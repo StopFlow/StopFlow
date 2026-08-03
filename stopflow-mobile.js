@@ -1,71 +1,24 @@
-/* StopFlow 0.4.0 — adaptation mobile/tablette et installation PWA. */
+/* StopFlow 0.4 — mobile/PWA + blocs B/C. */
 (function(){
-  const isMobile=()=>window.matchMedia('(max-width:950px)').matches;
-
-  function labelTables(root=document){
-    if(!isMobile())return;
-    root.querySelectorAll('.tablewrap table').forEach(table=>{
-      const labels=[...table.querySelectorAll('thead th')].map(th=>th.textContent.trim());
-      table.querySelectorAll('tbody tr').forEach(row=>{
-        [...row.children].forEach((cell,index)=>cell.setAttribute('data-label',labels[index]||''));
-      });
-    });
-  }
-
-  function simplifyMobileNav(){
-    const bar=document.querySelector('.mobilebar');
-    if(!bar)return;
-    const wanted=['dashboard','history','suggestions','users'];
-    [...bar.querySelectorAll('[data-page]')].forEach(btn=>{
-      const page=btn.dataset.page;
-      btn.style.display=wanted.includes(page)?'block':'none';
-      const labels={dashboard:'Accueil',history:'Historique',suggestions:'Idées',users:'Utilisateurs'};
-      if(labels[page])btn.textContent=labels[page];
-    });
-  }
-
-  function observeChanges(){
-    const observer=new MutationObserver(mutations=>{
-      for(const mutation of mutations){
-        mutation.addedNodes.forEach(node=>{
-          if(node.nodeType===1)labelTables(node.matches?.('.tablewrap')?node:node);
-        });
-      }
-      labelTables();
-    });
-    observer.observe(document.body,{childList:true,subtree:true});
-  }
-
-  function isStandalone(){
-    return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-  }
-
-  function installBanner(){
-    if(!isMobile()||isStandalone()||sessionStorage.getItem('stopflow_install_dismissed'))return;
-    const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-    const banner=document.createElement('div');
-    banner.className='sf-install-banner';
-    banner.innerHTML=`<b>Installer StopFlow</b><p>${ios?'Dans Safari : Partager puis « Sur l’écran d’accueil ».':'Ajoutez StopFlow à votre écran d’accueil pour l’ouvrir comme une application.'}</p><div class="flex"><button class="btn secondary" id="sfInstallHelp">Voir les étapes</button><button class="btn ghost" id="sfInstallClose">Plus tard</button></div>`;
-    document.body.appendChild(banner);
-    banner.querySelector('#sfInstallClose').onclick=()=>{sessionStorage.setItem('stopflow_install_dismissed','1');banner.remove()};
-    banner.querySelector('#sfInstallHelp').onclick=()=>{
-      alert(ios?'1. Touchez le bouton Partager de Safari.\n2. Choisissez « Sur l’écran d’accueil ».\n3. Touchez Ajouter.':'Utilisez l’option « Installer l’application » ou « Ajouter à l’écran d’accueil » du navigateur.');
-    };
-  }
-
-  async function registerServiceWorker(){
-    if(!('serviceWorker' in navigator)||location.protocol==='file:')return;
-    try{await navigator.serviceWorker.register('/service-worker.js?v=0400')}catch(error){console.warn('StopFlow PWA:',error)}
-  }
-
-  function boot(){
-    simplifyMobileNav();
-    labelTables();
-    observeChanges();
-    registerServiceWorker();
-    setTimeout(installBanner,1600);
-    window.addEventListener('resize',()=>{simplifyMobileNav();labelTables()});
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+ const isMobile=()=>matchMedia('(max-width:950px)').matches;
+ function labelTables(root=document){if(!isMobile())return;root.querySelectorAll('.tablewrap table').forEach(t=>{const labels=[...t.querySelectorAll('thead th')].map(x=>x.textContent.trim());t.querySelectorAll('tbody tr').forEach(r=>[...r.children].forEach((c,i)=>c.setAttribute('data-label',labels[i]||'')))})}
+ function simplifyMobileNav(){const bar=document.querySelector('.mobilebar');if(!bar)return;const wanted=['dashboard','history','suggestions','users'];[...bar.querySelectorAll('[data-page]')].forEach(b=>{b.style.display=wanted.includes(b.dataset.page)?'block':'none';const l={dashboard:'Accueil',history:'Historique',suggestions:'Idées',users:'Utilisateurs'};if(l[b.dataset.page])b.textContent=l[b.dataset.page]})}
+ function observeChanges(){new MutationObserver(()=>{labelTables();installCommerceButtons()}).observe(document.body,{childList:true,subtree:true})}
+ function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
+ function installBanner(){if(!isMobile()||isStandalone()||sessionStorage.getItem('stopflow_install_dismissed'))return;const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),b=document.createElement('div');b.className='sf-install-banner';b.innerHTML=`<b>Installer StopFlow</b><p>${ios?'Dans Safari : Partager puis « Sur l’écran d’accueil ».':'Ajoutez StopFlow à votre écran d’accueil.'}</p><div class="flex"><button class="btn secondary" id="sfInstallHelp">Voir les étapes</button><button class="btn ghost" id="sfInstallClose">Plus tard</button></div>`;document.body.appendChild(b);b.querySelector('#sfInstallClose').onclick=()=>{sessionStorage.setItem('stopflow_install_dismissed','1');b.remove()};b.querySelector('#sfInstallHelp').onclick=()=>alert(ios?'1. Touchez Partager.\n2. Choisissez « Sur l’écran d’accueil ».\n3. Touchez Ajouter.':'Utilisez « Installer l’application » dans le navigateur.')}
+ async function registerServiceWorker(){if(!('serviceWorker'in navigator)||location.protocol==='file:')return;try{await navigator.serviceWorker.register('/service-worker.js?v=0401')}catch(e){console.warn(e)}}
+ const money=v=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(Number(v||0));
+ function articlePrice(id){const a=(window.db?.articles||[]).find(x=>String(x.id)===String(id));return a?.purchasePrice==null?null:Number(a.purchasePrice)}
+ function enrichOrder(order){if(!order?.lines)return order;order.lines=order.lines.map(l=>{const price=articlePrice(l.id);return {...l,purchasePrice:price,lineTotal:price==null?null:Math.round(price*Number(l.quantity||0)*100)/100}});order.estimatedTotal=Math.round(order.lines.reduce((s,l)=>s+Number(l.lineTotal||0),0)*100)/100;return order}
+ function installSmartOrderHooks(){if(typeof window.orderSnapshot==='function'&&!window.orderSnapshot.__smart){const original=window.orderSnapshot;const wrapped=function(status){return enrichOrder(original(status))};wrapped.__smart=true;window.orderSnapshot=wrapped}
+  if(typeof window.renderSummary==='function'&&!window.renderSummary.__smart){const original=window.renderSummary;const wrapped=function(){original();const rows=document.querySelectorAll('#summaryRows tr');rows.forEach(r=>{const id=r.querySelector('[data-adjust]')?.dataset.adjust;const price=articlePrice(id);if(!r.querySelector('.sf-line-cost')){const td=document.createElement('td');td.className='sf-line-cost';r.appendChild(td)}const qty=Number(r.querySelector('[data-adjust]')?.value||0);r.querySelector('.sf-line-cost').textContent=price==null?'Prix manquant':money(price*qty)});const table=document.querySelector('#summaryRows')?.closest('table'),head=table?.querySelector('thead tr');if(head&&!head.querySelector('.sf-cost-head')){const th=document.createElement('th');th.className='sf-cost-head';th.textContent='Montant HTVA';head.appendChild(th)}let box=document.querySelector('#sfOrderCostBox');if(!box){box=document.createElement('div');box.id='sfOrderCostBox';box.className='notice';document.querySelector('#summaryRows')?.closest('.card')?.appendChild(box)}const articles=activeArticles(),total=articles.reduce((sum,a)=>{const q=Number(current.adjustments?.[a.id]??calc(a));return sum+(a.purchasePrice==null?0:Number(a.purchasePrice)*q)},0),missing=articles.filter(a=>Number(current.adjustments?.[a.id]??calc(a))>0&&a.purchasePrice==null).length;box.innerHTML=`<div class="flex between wrap"><div><b>Estimation de la commande</b><br><span class="muted">${missing?missing+' article(s) sans prix':'Tous les prix sont renseignés'}</span></div><strong style="font-size:22px">${money(total)} HTVA</strong></div>`;labelTables()};wrapped.__smart=true;window.renderSummary=wrapped}
+  if(typeof window.showDetail==='function'&&!window.showDetail.__smart){const original=window.showDetail;const wrapped=function(id){original(id);const o=(window.db?.orders||[]).find(x=>x.id===id);if(!o)return;const total=(o.lines||[]).reduce((s,l)=>s+Number(l.lineTotal??(l.purchasePrice==null?0:Number(l.purchasePrice)*Number(l.quantity||0))),0);if(total>0){const p=document.createElement('div');p.className='notice';p.style.marginTop='12px';p.innerHTML=`<b>Total estimé HTVA : ${money(total)}</b>`;document.querySelector('#modalBox .tablewrap')?.after(p)}};wrapped.__smart=true;window.showDetail=wrapped}}
+ async function loadCommerceMetadata(){if(!window.supabaseClient||!window.isCloudMode?.())return;try{const {data,error}=await supabaseClient.from('suppliers').select('id,order_day,order_deadline_time,delivery_day,minimum_order,order_email,order_rules');if(error)throw error;(data||[]).forEach(row=>{const s=(db.suppliers||[]).find(x=>x.id===row.id);if(s)Object.assign(s,{orderDay:row.order_day,orderDeadlineTime:row.order_deadline_time,deliveryDay:row.delivery_day,minimumOrder:row.minimum_order,orderEmail:row.order_email||'',orderRules:row.order_rules||''})});save()}catch(e){console.warn('Métadonnées fournisseurs',e)}}
+ function installCommerceButtons(){const area=document.querySelector('#articles .flex.between .flex');if(area&&!document.querySelector('#sfImportCatalog')){const b=document.createElement('button');b.id='sfImportCatalog';b.className='btn secondary';b.textContent='Importer CSV / Excel';b.onclick=openImportModal;area.appendChild(b)}const supplierRows=document.querySelectorAll('#supplierRows tr');supplierRows.forEach(row=>{const edit=row.querySelector('[data-supplier-edit]');if(edit&&!row.querySelector('.sf-rules')){const b=document.createElement('button');b.className='btn small secondary sf-rules';b.textContent='Règles';b.onclick=()=>openSupplierRules(edit.dataset.supplierEdit);edit.parentElement?.insertBefore(b,edit)}})}
+ function parseDelimited(text){const lines=text.replace(/\r/g,'').split('\n').filter(x=>x.trim());if(!lines.length)return[];const sep=lines[0].includes(';')?';':lines[0].includes('\t')?'\t':',';const cells=l=>l.split(sep).map(x=>x.trim().replace(/^"|"$/g,''));const header=cells(lines[0]).map(x=>x.toLowerCase());const idx=(...names)=>header.findIndex(h=>names.some(n=>h.includes(n)));return lines.slice(1).map(line=>{const c=cells(line);return{name:c[idx('article','nom','produit')]||c[0],category:c[idx('catégorie','categorie','category')]||'',unit:c[idx('condition','unité','unite','unit')]||'',target:c[idx('cible','stock cible','target')]||0,purchasePrice:c[idx('prix','price')]||null}}).filter(x=>x.name)}
+ async function readImportFile(file){if(/\.xlsx?$/i.test(file.name)){if(!window.XLSX)await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});const data=await file.arrayBuffer(),book=XLSX.read(data),sheet=book.Sheets[book.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{defval:''});return rows.map(r=>{const keys=Object.keys(r),get=(words)=>{const k=keys.find(x=>words.some(w=>x.toLowerCase().includes(w)));return k?r[k]:''};return{name:get(['article','nom','produit'])||r[keys[0]],category:get(['catégorie','categorie','category']),unit:get(['condition','unité','unite','unit']),target:get(['cible','target']),purchasePrice:get(['prix','price'])}}).filter(x=>x.name)}return parseDelimited(await file.text())}
+ function openImportModal(){const supplier=supplierByName(document.querySelector('#articleSupplier')?.value);if(!supplier)return alert('Choisissez un fournisseur.');document.querySelector('#modalBox').innerHTML=`<div class="flex between"><div><h2>Importer un catalogue</h2><p class="muted">${supplierText(supplier.name)} — CSV, Excel ou texte copié depuis un tableur.</p></div><button class="btn ghost" id="closeModal">Fermer</button></div><div class="field"><label>Fichier CSV / Excel</label><input id="sfImportFile" class="input" type="file" accept=".csv,.txt,.xlsx,.xls"></div><div class="field" style="margin-top:12px"><label>Ou coller des lignes</label><textarea id="sfImportText" class="input" rows="7" placeholder="Article;Catégorie;Conditionnement;Stock cible;Prix HTVA"></textarea></div><div class="notice" style="margin-top:12px">Aucune suppression automatique. Les doublons seront bloqués avant l’enregistrement.</div><button class="btn primary" id="sfRunImport" style="margin-top:14px">Prévisualiser et importer</button>`;document.querySelector('#modal').classList.remove('hidden');document.querySelector('#closeModal').onclick=()=>document.querySelector('#modal').classList.add('hidden');document.querySelector('#sfRunImport').onclick=async()=>{const b=document.querySelector('#sfRunImport');try{b.disabled=true;b.textContent='Lecture…';const file=document.querySelector('#sfImportFile').files[0],text=document.querySelector('#sfImportText').value;const rows=file?await readImportFile(file):parseDelimited(text);if(!rows.length)throw new Error('Aucune ligne exploitable.');if(!confirm(`Importer ${rows.length} article(s) chez ${supplier.name} ?`))return;b.textContent='Importation…';await saveSharedArticlesBulk(supplier,rows);await loadSharedCatalog();document.querySelector('#modal').classList.add('hidden');renderArticles();alert(`${rows.length} article(s) importé(s).`)}catch(e){alert(catalogErrorMessage(e,e.message));b.disabled=false;b.textContent='Prévisualiser et importer'}}}
+ function openSupplierRules(key){const s=supplierById(key)||ensureLocalSuppliers().find(x=>x.code===key);if(!s)return;const days=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];const opts=v=>days.map((d,i)=>`<option value="${i}" ${Number(v)===i?'selected':''}>${d}</option>`).join('');document.querySelector('#modalBox').innerHTML=`<div class="flex between"><div><h2>Règles — ${supplierText(s.name)}</h2><p class="muted">Calendrier et minimum de commande.</p></div><button class="btn ghost" id="closeModal">Fermer</button></div><div class="filters" style="grid-template-columns:1fr 1fr 1fr"><div class="field"><label>Jour de commande</label><select id="sfOrderDay" class="input"><option value="">—</option>${opts(s.orderDay)}</select></div><div class="field"><label>Heure limite</label><input id="sfDeadline" class="input" type="time" value="${s.orderDeadlineTime||''}"></div><div class="field"><label>Jour de livraison</label><select id="sfDeliveryDay" class="input"><option value="">—</option>${opts(s.deliveryDay)}</select></div></div><div class="filters" style="grid-template-columns:1fr 1fr"><div class="field"><label>Minimum HTVA</label><input id="sfMinimum" class="input" type="number" min="0" step="0.01" value="${s.minimumOrder??''}"></div><div class="field"><label>E-mail commandes</label><input id="sfOrderEmail" class="input" type="email" value="${supplierText(s.orderEmail||s.email||'')}"></div></div><div class="field"><label>Règles / notes</label><textarea id="sfRules" class="input" rows="4">${supplierText(s.orderRules||'')}</textarea></div><button class="btn primary" id="sfSaveRules" style="margin-top:14px">Enregistrer</button>`;document.querySelector('#modal').classList.remove('hidden');document.querySelector('#closeModal').onclick=()=>document.querySelector('#modal').classList.add('hidden');document.querySelector('#sfSaveRules').onclick=async()=>{const payload={order_day:document.querySelector('#sfOrderDay').value===''?null:Number(document.querySelector('#sfOrderDay').value),order_deadline_time:document.querySelector('#sfDeadline').value||null,delivery_day:document.querySelector('#sfDeliveryDay').value===''?null:Number(document.querySelector('#sfDeliveryDay').value),minimum_order:document.querySelector('#sfMinimum').value===''?null:Number(document.querySelector('#sfMinimum').value),order_email:document.querySelector('#sfOrderEmail').value.trim(),order_rules:document.querySelector('#sfRules').value.trim(),updated_by:session.id};const {error}=await supabaseClient.from('suppliers').update(payload).eq('id',s.id);if(error)return alert(catalogErrorMessage(error));Object.assign(s,{orderDay:payload.order_day,orderDeadlineTime:payload.order_deadline_time,deliveryDay:payload.delivery_day,minimumOrder:payload.minimum_order,orderEmail:payload.order_email,orderRules:payload.order_rules});save();document.querySelector('#modal').classList.add('hidden');alert('Règles fournisseur enregistrées.')}}
+ function boot(){simplifyMobileNav();labelTables();observeChanges();registerServiceWorker();setTimeout(installBanner,1300);setTimeout(()=>{installSmartOrderHooks();loadCommerceMetadata();installCommerceButtons()},800);setInterval(()=>{installSmartOrderHooks();installCommerceButtons()},1800);addEventListener('resize',()=>{simplifyMobileNav();labelTables()})}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
