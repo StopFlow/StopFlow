@@ -7,6 +7,10 @@
 <title>StopFlow</title>
 <meta name="application-name" content="StopFlow">
 <meta name="apple-mobile-web-app-title" content="StopFlow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest?v=0400">
+<link rel="apple-touch-icon" href="/stopflow-app-icon.svg">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=0322">
 <link rel="shortcut icon" href="/favicon.svg?v=0322">
 <style>
@@ -73,13 +77,14 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
 }
 </style>
 <link rel="stylesheet" href="stopflow-compact.css?v=0331">
+<link rel="stylesheet" href="stopflow-mobile.css?v=0400">
 </head>
 <body>
 <div id="login" class="login-page">
   <div class="login-card">
     <div class="flex login-brand"><div class="brand"><span class="logo"></span>StopFlow</div></div>
     <h2 style="text-align:center">Connexion à votre compte</h2>
-    <p class="muted" style="text-align:center">Version 0.3.2 — Gestion des utilisateurs</p>
+    <p class="muted" style="text-align:center">Version 0.4.0 — Mobile, tablette et PWA</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
@@ -699,7 +704,8 @@ function openPrintableWindow(o){
  table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:10px;text-align:left}th{background:#f3f3f3}
  .print-foot{margin-top:42px;font-size:12px;color:#555}.toolbar{margin-bottom:22px;padding:12px;background:#f2f5f8;border-radius:8px}
  @media print{.toolbar{display:none}body{margin:14mm}}
- </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}</body></html>`;
+ </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}<script src="stopflow-mobile.js?v=0400"></script>
+</body></html>`;
  const blob=new Blob([doc],{type:"text/html;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const win=window.open(url,"_blank");
@@ -847,4 +853,5 @@ $("#resetData").onclick=()=>{if(isCloudMode())return alert("La réinitialisation
 bootstrapAuth();
 </script>
 
+<script src="stopflow-mobile.js?v=0400"></script>
 </body></html>
