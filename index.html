@@ -704,8 +704,7 @@ function openPrintableWindow(o){
  table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:10px;text-align:left}th{background:#f3f3f3}
  .print-foot{margin-top:42px;font-size:12px;color:#555}.toolbar{margin-bottom:22px;padding:12px;background:#f2f5f8;border-radius:8px}
  @media print{.toolbar{display:none}body{margin:14mm}}
- </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}<script src="stopflow-mobile.js?v=0400"></script>
-</body></html>`;
+ </style></head><body><div class="toolbar"><button onclick="window.print()" style="padding:10px 16px;font-weight:bold">Lancer l’impression</button> &nbsp; Le bon reste visible même si la fenêtre d’impression est bloquée.</div>${body}</body></html>`;
  const blob=new Blob([doc],{type:"text/html;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const win=window.open(url,"_blank");
