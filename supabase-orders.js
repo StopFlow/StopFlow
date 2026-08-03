@@ -39,6 +39,7 @@ function setSyncState(state,detail=""){
     offline:["Hors connexion","#ffe8e8","#a92f2f"],
     saving:["Enregistrement…","#edf3ff","#225ecf"],
     saved:["Synchronisé","#e6f7ef","#0f7f50"],
+    pending:["Copie locale en attente","#fff3d8","#976100"],
     conflict:["Version récente rechargée","#fff3d8","#976100"],
     error:["Non synchronisé","#ffe8e8","#a92f2f"]
   };
@@ -53,6 +54,12 @@ function stopFlowShortTime(value=new Date()){
   const date=value instanceof Date?value:new Date(value);
   if(Number.isNaN(date.getTime()))return "";
   return date.toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});
+}
+
+function stopFlowDateTime(value){
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "—";
+  return date.toLocaleString("fr-BE",{dateStyle:"short",timeStyle:"short"});
 }
 
 function mapSharedLine(line){
@@ -214,9 +221,189 @@ async function refreshSharedViews(){
   if(!document.querySelector("#history")?.classList.contains("hidden"))renderHistory();
 }
 
+/* 0.3.4B — copie locale de secours par utilisateur. */
+function stopFlowDraftKey(){
+  return `stopflow_pending_draft_v034_${session?.id||session?.email||"local"}`;
+}
+
+function stopFlowReadLocalDraft(){
+  try{
+    const value=JSON.parse(localStorage.getItem(stopFlowDraftKey())||"null");
+    return value?.order?.id?value:null;
+  }catch{return null}
+}
+
+function stopFlowClearLocalDraft(orderId=null){
+  const draft=stopFlowReadLocalDraft();
+  if(!orderId||draft?.order?.id===orderId)localStorage.removeItem(stopFlowDraftKey());
+  stopFlowRenderRecovery();
+}
+
+function stopFlowCurrentOrder(){
+  if(!window.current?.id||!window.current?.supplier)return null;
+  const articles=typeof activeArticles==="function"?activeArticles(window.current.supplier):[];
+  const lines=articles.map(article=>{
+    const stock=Number(window.current.stocks?.[article.id]??0);
+    const proposed=Math.max(0,Number(article.target||0)-stock);
+    return {
+      id:article.id,name:article.name,category:article.category||"",unit:article.unit||"",
+      target:Number(article.target||0),stock,proposed,
+      quantity:Number(window.current.adjustments?.[article.id]??proposed)
+    };
+  }).filter(line=>line.quantity>0);
+  return {
+    id:window.current.id,
+    number:"—",
+    supplier:window.current.supplier,
+    status:"Brouillon",
+    createdAt:window.current.createdAt||new Date().toISOString(),
+    inventoryAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+    authorId:window.current.authorId||session?.id||null,
+    author:window.current.author||session?.name||"",
+    lastEditedBy:session?.id||null,
+    lastEditedName:session?.name||"",
+    revision:Number(window.current.revision||0)||null,
+    note:document.querySelector("#generalNote")?.value||window.current.note||"",
+    stocks:structuredClone(window.current.stocks||{}),
+    adjustments:structuredClone(window.current.adjustments||{}),
+    lines
+  };
+}
+
+function stopFlowStoreLocalDraft(){
+  const order=stopFlowCurrentOrder();
+  if(!order)return;
+  localStorage.setItem(stopFlowDraftKey(),JSON.stringify({savedAt:new Date().toISOString(),order}));
+  if(!navigator.onLine)setSyncState("pending",stopFlowShortTime());
+  stopFlowRenderRecovery();
+}
+
+let stopFlowLocalSaveTimer=null;
+function stopFlowScheduleLocalSave(){
+  clearTimeout(stopFlowLocalSaveTimer);
+  stopFlowLocalSaveTimer=setTimeout(stopFlowStoreLocalDraft,350);
+}
+
+function stopFlowResumeOrder(order,source="cloud"){
+  if(!order||order.status!=="Brouillon")return;
+  window.current={
+    id:order.id,
+    supplier:order.supplier,
+    stocks:structuredClone(order.stocks||{}),
+    adjustments:structuredClone(order.adjustments||{}),
+    note:order.note||"",
+    author:order.author||session?.name||"",
+    authorId:order.authorId||session?.id||null,
+    createdAt:order.createdAt||new Date().toISOString(),
+    revision:Number(order.revision||0)||null
+  };
+  if(typeof page==="function")page("inventory");
+  if(typeof renderInventory==="function")renderInventory();
+  const note=document.querySelector("#generalNote");
+  if(note)note.value=order.note||"";
+  setSyncState(source==="local"?"pending":"saved",source==="local"?"copie locale":stopFlowShortTime(order.updatedAt||order.inventoryAt));
+}
+
+function stopFlowRenderRecovery(){
+  const dashboard=document.querySelector("#dashboard");
+  if(!dashboard)return;
+  let box=document.querySelector("#stopflowRecoveryBox");
+  const local=stopFlowReadLocalDraft();
+  if(!local){box?.remove();return}
+  const remote=(db.orders||[]).find(order=>order.id===local.order.id);
+  const localDate=new Date(local.savedAt).getTime();
+  const remoteDate=remote?new Date(remote.updatedAt||remote.inventoryAt).getTime():0;
+  const needsAttention=!remote||localDate>remoteDate||!navigator.onLine;
+  if(!needsAttention){stopFlowClearLocalDraft(local.order.id);return}
+  if(!box){
+    box=document.createElement("div");
+    box.id="stopflowRecoveryBox";
+    box.className="notice";
+    box.style.cssText="margin:0 0 10px;background:#fff8e8;border-color:#f1d493;color:#76520b";
+    dashboard.prepend(box);
+  }
+  box.innerHTML=`<div class="flex between wrap"><div><b>Saisie locale à récupérer</b><br><span style="font-size:11px">${local.order.supplier} · enregistrée sur cet appareil le ${stopFlowDateTime(local.savedAt)}</span></div><div class="flex wrap"><button class="btn small secondary" id="stopflowResumeLocal">Reprendre</button><button class="btn small ghost" id="stopflowDeleteLocal">Supprimer la copie</button></div></div>`;
+  box.querySelector("#stopflowResumeLocal").onclick=()=>stopFlowResumeOrder(local.order,"local");
+  box.querySelector("#stopflowDeleteLocal").onclick=()=>{
+    if(confirm("Supprimer la copie locale de cette saisie ?"))stopFlowClearLocalDraft();
+  };
+}
+
+async function stopFlowTryPendingSync(){
+  const local=stopFlowReadLocalDraft();
+  if(!local||!isCloudMode()||!navigator.onLine)return;
+  await loadSharedOrders();
+  const remote=(db.orders||[]).find(order=>order.id===local.order.id);
+  if(remote&&Number(remote.revision||0)!==Number(local.order.revision||0)){
+    setSyncState("conflict","copie locale conservée");
+    stopFlowRenderRecovery();
+    return;
+  }
+  try{
+    const saved=await saveSharedOrder(local.order);
+    stopFlowClearLocalDraft(local.order.id);
+    if(saved)setSyncState("saved",stopFlowShortTime());
+  }catch(error){
+    setSyncState(isRevisionConflict(error)?"conflict":"pending","copie locale conservée");
+  }
+}
+
+function stopFlowInstallDraftExperience(){
+  if(window.__stopflowDraftExperienceInstalled)return;
+  window.__stopflowDraftExperienceInstalled=true;
+
+  const originalRenderHistory=window.renderHistory;
+  window.renderHistory=function(){
+    const q=document.querySelector("#historySearch")?.value.toLowerCase()||"";
+    const st=document.querySelector("#historyStatus")?.value||"";
+    const dir=document.querySelector("#historySort")?.value||"desc";
+    const rows=[...(db.orders||[])].filter(order=>(!st||order.status===st)&&(!q||JSON.stringify(order).toLowerCase().includes(q))).sort((a,b)=>(new Date(b.inventoryAt)-new Date(a.inventoryAt))*(dir==="desc"?1:-1));
+    const target=document.querySelector("#historyRows");
+    if(!target){if(originalRenderHistory)originalRenderHistory();return}
+    target.innerHTML=rows.length?rows.map(order=>{
+      const badge=order.status==="Brouillon"?"draft":order.status==="À valider"?"pending":order.status==="Validé"?"validated":order.status==="Commandé"?"ordered":"cancelled";
+      const edited=order.lastEditedName||order.author||"—";
+      const editDate=order.updatedAt||order.inventoryAt;
+      const resume=order.status==="Brouillon"?`<button class="btn small secondary" data-resume-order="${order.id}">Reprendre</button>`:"";
+      return `<tr><td><b>${order.number}</b></td><td>${order.supplier}</td><td>${typeof fmt==="function"?fmt(order.inventoryAt):stopFlowDateTime(order.inventoryAt)}</td><td><span class="badge ${badge}">${order.status}</span></td><td>${order.author}<br><small class="muted">Modifié par ${edited} · ${stopFlowDateTime(editDate)}</small></td><td>${order.validator||"—"}</td><td><div class="flex wrap">${resume}<button class="btn small ghost" data-detail="${order.id}">Détail</button></div></td></tr>`;
+    }).join(""):`<tr><td colspan="7" class="muted">Aucun document.</td></tr>`;
+    document.querySelectorAll("[data-detail]").forEach(button=>button.onclick=()=>showDetail(button.dataset.detail));
+    document.querySelectorAll("[data-resume-order]").forEach(button=>button.onclick=()=>{
+      const order=(db.orders||[]).find(item=>item.id===button.dataset.resumeOrder);
+      stopFlowResumeOrder(order,"cloud");
+    });
+  };
+
+  const originalSaveSharedOrder=window.saveSharedOrder;
+  window.saveSharedOrder=async function(order){
+    localStorage.setItem(stopFlowDraftKey(),JSON.stringify({savedAt:new Date().toISOString(),order}));
+    try{
+      const result=await originalSaveSharedOrder(order);
+      stopFlowClearLocalDraft(order.id);
+      return result;
+    }catch(error){
+      stopFlowRenderRecovery();
+      throw error;
+    }
+  };
+
+  document.addEventListener("input",event=>{
+    if(event.target.closest("#inventory"))stopFlowScheduleLocalSave();
+  });
+  document.addEventListener("change",event=>{
+    if(event.target.closest("#inventory"))stopFlowScheduleLocalSave();
+  });
+  document.addEventListener("click",event=>{
+    if(event.target.closest("#inventory"))setTimeout(stopFlowScheduleLocalSave,0);
+  });
+  window.addEventListener("beforeunload",stopFlowStoreLocalDraft);
+  stopFlowRenderRecovery();
+}
+
 window.addEventListener("focus",()=>{
   if(!isCloudMode())return;
-  refreshSharedViews().catch(error=>{
+  refreshSharedViews().then(stopFlowRenderRecovery).catch(error=>{
     setSyncState(navigator.onLine?"error":"offline");
     console.warn(cloudErrorMessage(error));
   });
@@ -225,11 +412,19 @@ window.addEventListener("focus",()=>{
 window.addEventListener("online",()=>{
   if(!isCloudMode())return;
   setSyncState("saving","reconnexion");
-  refreshSharedViews().catch(()=>setSyncState("error"));
+  stopFlowTryPendingSync().then(()=>refreshSharedViews()).then(stopFlowRenderRecovery).catch(()=>setSyncState("error"));
 });
 
-window.addEventListener("offline",()=>setSyncState("offline"));
+window.addEventListener("offline",()=>{
+  stopFlowStoreLocalDraft();
+  setSyncState("offline");
+  stopFlowRenderRecovery();
+});
 
 document.addEventListener("DOMContentLoaded",()=>{
-  setTimeout(()=>setSyncState(isCloudMode()?(navigator.onLine?"saved":"offline"):"local"),0);
+  setTimeout(()=>{
+    setSyncState(isCloudMode()?(navigator.onLine?"saved":"offline"):"local");
+    stopFlowInstallDraftExperience();
+    stopFlowRenderRecovery();
+  },0);
 });
