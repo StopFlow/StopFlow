@@ -240,33 +240,33 @@ function stopFlowClearLocalDraft(orderId=null){
 }
 
 function stopFlowCurrentOrder(){
-  if(!window.current?.id||!window.current?.supplier)return null;
-  const articles=typeof activeArticles==="function"?activeArticles(window.current.supplier):[];
+  if(!current?.id||!current?.supplier)return null;
+  const articles=typeof activeArticles==="function"?activeArticles(current.supplier):[];
   const lines=articles.map(article=>{
-    const stock=Number(window.current.stocks?.[article.id]??0);
+    const stock=Number(current.stocks?.[article.id]??0);
     const proposed=Math.max(0,Number(article.target||0)-stock);
     return {
       id:article.id,name:article.name,category:article.category||"",unit:article.unit||"",
       target:Number(article.target||0),stock,proposed,
-      quantity:Number(window.current.adjustments?.[article.id]??proposed)
+      quantity:Number(current.adjustments?.[article.id]??proposed)
     };
   }).filter(line=>line.quantity>0);
   return {
-    id:window.current.id,
+    id:current.id,
     number:"—",
-    supplier:window.current.supplier,
+    supplier:current.supplier,
     status:"Brouillon",
-    createdAt:window.current.createdAt||new Date().toISOString(),
+    createdAt:current.createdAt||new Date().toISOString(),
     inventoryAt:new Date().toISOString(),
     updatedAt:new Date().toISOString(),
-    authorId:window.current.authorId||session?.id||null,
-    author:window.current.author||session?.name||"",
+    authorId:current.authorId||session?.id||null,
+    author:current.author||session?.name||"",
     lastEditedBy:session?.id||null,
     lastEditedName:session?.name||"",
-    revision:Number(window.current.revision||0)||null,
-    note:document.querySelector("#generalNote")?.value||window.current.note||"",
-    stocks:structuredClone(window.current.stocks||{}),
-    adjustments:structuredClone(window.current.adjustments||{}),
+    revision:Number(current.revision||0)||null,
+    note:document.querySelector("#generalNote")?.value||current.note||"",
+    stocks:structuredClone(current.stocks||{}),
+    adjustments:structuredClone(current.adjustments||{}),
     lines
   };
 }
@@ -287,7 +287,7 @@ function stopFlowScheduleLocalSave(){
 
 function stopFlowResumeOrder(order,source="cloud"){
   if(!order||order.status!=="Brouillon")return;
-  window.current={
+  current={
     id:order.id,
     supplier:order.supplier,
     stocks:structuredClone(order.stocks||{}),
