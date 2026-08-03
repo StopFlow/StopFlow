@@ -1,0 +1,32 @@
+name: Integrate StopFlow Version Fix
+on:
+  push:
+    branches: [stopflow-dev]
+    paths: ['.github/workflows/integrate-version-fix.yml']
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stopflow-dev
+      - name: Inject version guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          if 'stopflow-version-fix.js' not in s:
+              s=s.replace('</body>','<script src="stopflow-version-fix.js?v=0112-2"></script>\n</body>')
+          s=s.replace('Version 0.3.3 — Gestion des fournisseurs','Version 0.11.2 test — architecture et checklists')
+          s=s.replace('Version 0.3.3 — Gestion des fournisseurs','Version 0.11.2 test — architecture et checklists')
+          p.write_text(s)
+          PY
+          node --check stopflow-version-fix.js
+          git config user.name 'StopFlow Automation'
+          git config user.email 'contact@srlreunion.com'
+          git add index.html
+          git commit -m 'Corrige la version affichée et le cache PWA' || exit 0
+          git push origin stopflow-dev
