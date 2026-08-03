@@ -16,6 +16,45 @@ function isRevisionConflict(error){
   return text.includes("CONFLIT_REVISION")||error?.code==="40001";
 }
 
+function ensureSyncIndicator(){
+  let indicator=document.querySelector("#stopflowSyncState");
+  if(indicator)return indicator;
+  const topbar=document.querySelector(".topbar");
+  if(!topbar)return null;
+  indicator=document.createElement("div");
+  indicator.id="stopflowSyncState";
+  indicator.setAttribute("role","status");
+  indicator.setAttribute("aria-live","polite");
+  indicator.style.cssText="margin-left:auto;margin-right:8px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#eef3f8;color:#536176;white-space:nowrap";
+  const logout=document.querySelector("#logout");
+  topbar.insertBefore(indicator,logout||null);
+  return indicator;
+}
+
+function setSyncState(state,detail=""){
+  const indicator=ensureSyncIndicator();
+  if(!indicator)return;
+  const states={
+    local:["Mode local","#fff4dd","#8a5b00"],
+    offline:["Hors connexion","#ffe8e8","#a92f2f"],
+    saving:["Enregistrement…","#edf3ff","#225ecf"],
+    saved:["Synchronisé","#e6f7ef","#0f7f50"],
+    conflict:["Version récente rechargée","#fff3d8","#976100"],
+    error:["Non synchronisé","#ffe8e8","#a92f2f"]
+  };
+  const config=states[state]||states.saved;
+  indicator.textContent=detail?`${config[0]} · ${detail}`:config[0];
+  indicator.style.background=config[1];
+  indicator.style.color=config[2];
+  indicator.title=detail||config[0];
+}
+
+function stopFlowShortTime(value=new Date()){
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime()))return "";
+  return date.toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});
+}
+
 function mapSharedLine(line){
   return {
     id:line.article_id,
@@ -57,7 +96,14 @@ function mapSharedOrder(row){
 }
 
 async function loadSharedOrders(){
-  if(!isCloudMode())return db.orders;
+  if(!isCloudMode()){
+    setSyncState("local");
+    return db.orders;
+  }
+  if(!navigator.onLine){
+    setSyncState("offline");
+    return db.orders;
+  }
 
   const {data,error}=await supabaseClient
     .from("orders")
@@ -75,9 +121,13 @@ async function loadSharedOrders(){
     `)
     .order("inventory_at",{ascending:false});
 
-  if(error)throw new Error(cloudErrorMessage(error,"Impossible de charger les inventaires partagés."));
+  if(error){
+    setSyncState("error");
+    throw new Error(cloudErrorMessage(error,"Impossible de charger les inventaires partagés."));
+  }
   db.orders=(data||[]).map(mapSharedOrder);
   save();
+  setSyncState("saved",stopFlowShortTime());
   return db.orders;
 }
 
@@ -100,8 +150,16 @@ async function callSharedOrderAction(action,orderId){
 }
 
 async function saveSharedOrder(order){
-  if(!isCloudMode())return null;
+  if(!isCloudMode()){
+    setSyncState("local");
+    return null;
+  }
+  if(!navigator.onLine){
+    setSyncState("offline");
+    throw new Error("Aucune connexion internet. La saisie reste sur cet appareil, mais elle n’est pas encore synchronisée avec StopFlow.");
+  }
 
+  setSyncState("saving");
   const desiredStatus=order.status;
   const expectedRevision=Number.isFinite(Number(order.revision))?Number(order.revision):null;
 
@@ -121,8 +179,10 @@ async function saveSharedOrder(order){
   if(error){
     if(isRevisionConflict(error)){
       await loadSharedOrders().catch(()=>{});
+      setSyncState("conflict");
       throw new Error("Ce brouillon a été modifié sur un autre appareil. La version la plus récente a été rechargée : vérifiez-la avant de continuer.");
     }
+    setSyncState("error");
     throw new Error(cloudErrorMessage(error,"Impossible d’enregistrer le brouillon partagé."));
   }
 
@@ -134,13 +194,16 @@ async function saveSharedOrder(order){
   }
 
   await loadSharedOrders();
+  setSyncState("saved",stopFlowShortTime());
   return db.orders.find(item=>item.id===order.id)||null;
 }
 
 async function updateSharedOrderStatus(action,orderId){
   if(!isCloudMode())return null;
+  setSyncState("saving");
   await callSharedOrderAction(action,orderId);
   await loadSharedOrders();
+  setSyncState("saved",stopFlowShortTime());
   return db.orders.find(item=>item.id===orderId)||null;
 }
 
@@ -153,5 +216,20 @@ async function refreshSharedViews(){
 
 window.addEventListener("focus",()=>{
   if(!isCloudMode())return;
-  refreshSharedViews().catch(error=>console.warn(cloudErrorMessage(error)));
+  refreshSharedViews().catch(error=>{
+    setSyncState(navigator.onLine?"error":"offline");
+    console.warn(cloudErrorMessage(error));
+  });
+});
+
+window.addEventListener("online",()=>{
+  if(!isCloudMode())return;
+  setSyncState("saving","reconnexion");
+  refreshSharedViews().catch(()=>setSyncState("error"));
+});
+
+window.addEventListener("offline",()=>setSyncState("offline"));
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>setSyncState(isCloudMode()?(navigator.onLine?"saved":"offline"):"local"),0);
 });
