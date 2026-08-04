@@ -32,5 +32,5 @@ html,body{font-size:11.5px!important;line-height:1.35!important}
 .checklist-section-title{padding:6px 0!important;background:transparent!important;font-size:11.5px!important}.checklist-item{padding:6px 0!important;gap:5px!important}.checklist-item-help{font-size:9.5px!important}
 #app .modal{padding:6px!important}#app .modalbox{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:11px!important;border-radius:9px!important}
 .sf52-section-toggle{width:100%;min-height:34px;border:0;background:transparent;color:var(--text);display:grid;grid-template-columns:1fr auto;align-items:center;padding:6px 0;text-align:left;font-size:12px;font-weight:800}
-.sf52-section-toggle span:last-child{font-size:15px}.sf52-secondary-card:not(.sf52-section-open)>.sf52-secondary-content{display:none!important}.sf52-secondary-card>.sf52-secondary-content{padding-top:3px}.version-pill{display:none!important}
+.sf52-section-toggle span:last-child{font-size:15px}.sf52-secondary-card:not(.sf52-section-open)>.sf52-secondary-content{display:none!important}.sf52-secondary-card>.sf52-secondary-content{padding-top:3px}.sf52-original-section-heading{display:none!important}.version-pill{display:none!important}
 }
