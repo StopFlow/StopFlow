@@ -1,9 +1,14 @@
 /* StopFlow 0.5.0 — correction de vocabulaire et rappel des droits. */
 (function(){
   let initialized=false;
+  let correctionScheduled=false;
 
   function isManager(){
     return typeof isResponsible==="function"&&isResponsible();
+  }
+
+  function setText(element,text){
+    if(element&&element.textContent!==text)element.textContent=text;
   }
 
   function injectCorrectionStyles(){
@@ -24,14 +29,15 @@
 
   function renameMonthlySuggestions(){
     document.querySelectorAll('[data-page="suggestions"]').forEach(button=>{
-      button.textContent="Suggestions du mois";
-      button.title="Préparation et validation des suggestions de carte pour le mois suivant";
+      setText(button,"Suggestions du mois");
+      if(button.title!=="Préparation et validation des suggestions de carte pour le mois suivant"){
+        button.title="Préparation et validation des suggestions de carte pour le mois suivant";
+      }
     });
 
     const pageSection=document.getElementById("suggestions");
     if(pageSection){
-      const heading=pageSection.querySelector("h2");
-      if(heading)heading.textContent="Suggestions du mois";
+      setText(pageSection.querySelector("h2"),"Suggestions du mois");
 
       if(!pageSection.querySelector(".monthly-suggestions-notice")){
         const notice=document.createElement("div");
@@ -42,8 +48,7 @@
     }
 
     if(document.querySelector('[data-page="suggestions"].active')){
-      const title=document.getElementById("pageTitle");
-      if(title)title.textContent="Suggestions du mois";
+      setText(document.getElementById("pageTitle"),"Suggestions du mois");
     }
   }
 
@@ -55,21 +60,17 @@
       const heading=card.querySelector("h2");
       if(!heading)return;
 
-      if(heading.textContent.trim()==="Proposer une amélioration"){
-        heading.textContent="Proposer une modification de checklist";
-        const description=card.querySelector("p.muted");
-        if(description)description.textContent="Chaque membre peut proposer une tâche à ajouter à une checklist. La proposition reste en attente jusqu’à la décision d’un Responsable ou d’un Administrateur.";
-        const button=card.querySelector("#submitChecklistSuggestion");
-        if(button)button.textContent="Envoyer la proposition de checklist";
+      if(heading.textContent.trim()==="Proposer une amélioration"||heading.textContent.trim()==="Proposer une modification de checklist"){
+        setText(heading,"Proposer une modification de checklist");
+        setText(card.querySelector("p.muted"),"Chaque membre peut proposer une tâche à ajouter à une checklist. La proposition reste en attente jusqu’à la décision d’un Responsable ou d’un Administrateur.");
+        setText(card.querySelector("#submitChecklistSuggestion"),"Envoyer la proposition de checklist");
       }
     });
 
     const managerPanel=document.getElementById("checklistManagerPanel");
     if(managerPanel){
-      const heading=managerPanel.querySelector("h2");
-      if(heading)heading.textContent="Gestion des modèles de checklist";
-      const description=managerPanel.querySelector("p.muted");
-      if(description)description.textContent="Créer un modèle, ajouter directement une tâche ou accepter/refuser les propositions de l’équipe.";
+      setText(managerPanel.querySelector("h2"),"Gestion des modèles de checklist");
+      setText(managerPanel.querySelector("p.muted"),"Créer un modèle, ajouter directement une tâche ou accepter/refuser les propositions de l’équipe.");
 
       if(!managerPanel.querySelector(".checklist-rights-note")){
         const note=document.createElement("div");
@@ -84,13 +85,17 @@
   function enforceVisibleRights(){
     const allowed=isManager();
     const managerPanel=document.getElementById("checklistManagerPanel");
-    if(managerPanel&&!allowed)managerPanel.classList.add("hidden");
+    if(managerPanel&&!allowed&&!managerPanel.classList.contains("hidden"))managerPanel.classList.add("hidden");
 
     if(!allowed){
-      document.querySelectorAll("[data-add-template-item],[data-accept-suggestion],[data-refuse-suggestion],#createChecklistTemplate").forEach(control=>control.classList.add("hidden"));
+      document.querySelectorAll("[data-add-template-item],[data-accept-suggestion],[data-refuse-suggestion],#createChecklistTemplate").forEach(control=>{
+        if(!control.classList.contains("hidden"))control.classList.add("hidden");
+      });
       document.querySelectorAll("#checklistRunnerActions .btn").forEach(button=>{
         const text=button.textContent.trim().toLowerCase();
-        if(text.includes("valider la checklist")||text.includes("demander un suivi"))button.classList.add("hidden");
+        if((text.includes("valider la checklist")||text.includes("demander un suivi"))&&!button.classList.contains("hidden")){
+          button.classList.add("hidden");
+        }
       });
     }
   }
@@ -101,11 +106,8 @@
     const previousPage=page;
     page=function(id){
       previousPage(id);
-      if(id==="suggestions"){
-        const title=document.getElementById("pageTitle");
-        if(title)title.textContent="Suggestions du mois";
-      }
-      setTimeout(applyCorrection,0);
+      if(id==="suggestions")setText(document.getElementById("pageTitle"),"Suggestions du mois");
+      scheduleCorrection();
     };
   }
 
@@ -114,6 +116,15 @@
     renameMonthlySuggestions();
     clarifyChecklistSuggestions();
     enforceVisibleRights();
+  }
+
+  function scheduleCorrection(){
+    if(correctionScheduled)return;
+    correctionScheduled=true;
+    requestAnimationFrame(()=>{
+      correctionScheduled=false;
+      applyCorrection();
+    });
   }
 
   function initialize(){
@@ -126,9 +137,9 @@
     patchPageTitle();
     applyCorrection();
 
-    const observer=new MutationObserver(()=>applyCorrection());
+    const observer=new MutationObserver(scheduleCorrection);
     observer.observe(document.getElementById("app"),{childList:true,subtree:true});
-    window.addEventListener("load",applyCorrection);
+    window.addEventListener("load",scheduleCorrection);
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize);else initialize();
