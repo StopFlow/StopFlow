@@ -244,7 +244,7 @@ if(typeof STOPFLOW_STABLE_PAGES!=="undefined")STOPFLOW_STABLE_PAGES.add("users")
         <button class="shortcut-card disabled" disabled><strong>Faire une checklist</strong><span class="muted">Prévu pour la version 0.5.0.</span></button>
         <button class="shortcut-card disabled" disabled><strong>Encoder les températures</strong><span class="muted">Prévu pour la version 0.6.0.</span></button>
       </div>
-      <div class="architecture-note"><div><b>Rôle</b><span class="muted">Employé, Responsable ou Administrateur</span></div><div><b>Département principal</b><span class="muted">Salle, Cuisine, Nettoyage ou Bureau</span></div><div><b>Permissions complémentaires</b><span class="muted">Accès ciblés sans créer de rôles supplémentaires</span></div></div>`;
+      <div class="architecture-note"><div><b>Rôle</b><span class="muted">Employé, Responsable ou Administrateur</span></div><div><b>Département principal</b><span class="muted">Salle, Cuisine, Technicien de surface ou Bureau</span></div><div><b>Permissions complémentaires</b><span class="muted">Accès ciblés sans créer de rôles supplémentaires</span></div></div>`;
     const stats=dashboard.querySelector(".grid4");
     if(stats)stats.insertAdjacentElement("afterend",block);else dashboard.prepend(block);
     block.querySelectorAll("[data-shortcut-page]").forEach(button=>button.addEventListener("click",()=>{
