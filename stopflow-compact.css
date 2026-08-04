@@ -294,3 +294,7 @@
   table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) tr{padding:3px 10px;border-radius:11px}
   table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td{padding:8px 0;gap:7px}
 }
+
+/* Appellation validée pour le département. */
+.architecture-note>div:nth-child(2) .muted{font-size:0}
+.architecture-note>div:nth-child(2) .muted::after{content:"Salle, Cuisine, Entretien & hygiène ou Bureau";font-size:12px;line-height:1.25}
