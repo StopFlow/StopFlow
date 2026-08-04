@@ -130,27 +130,3 @@
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
 })();
-
-/* Charge StopFlow 0.5.4 uniquement sur la branche qui contient ses modules. */
-(function(){
-  if(document.querySelector('script[data-stopflow-054-data="0.5.4"]'))return;
-  const data=document.createElement("script");
-  data.src="stopflow-054-data.js?v=0541";
-  data.async=false;
-  data.dataset.stopflow054Data="0.5.4";
-  data.onload=()=>{
-    const ui=document.createElement("script");
-    ui.src="stopflow-054-ui.js?v=0541";
-    ui.async=false;
-    ui.dataset.stopflow054Ui="0.5.4";
-    ui.onload=()=>{
-      const menu=document.createElement("script");
-      menu.src="stopflow-054-menu.js?v=0541";
-      menu.async=false;
-      menu.dataset.stopflow054Menu="0.5.4";
-      document.head.appendChild(menu);
-    };
-    document.head.appendChild(ui);
-  };
-  document.head.appendChild(data);
-})();
