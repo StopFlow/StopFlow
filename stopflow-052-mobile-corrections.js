@@ -9,7 +9,7 @@
     if(document.querySelector('link[data-stopflow-052-mobile-corrections="0.5.2"]'))return;
     const link=document.createElement("link");
     link.rel="stylesheet";
-    link.href="stopflow-052-mobile-corrections.css?v=0521";
+    link.href="stopflow-052-mobile-corrections.css?v=0522";
     link.dataset.stopflow052MobileCorrections="0.5.2";
     document.head.appendChild(link);
   }
@@ -32,6 +32,7 @@
     const content=document.createElement("div");
     content.className="sf52-secondary-content";
     while(card.firstChild)content.appendChild(card.firstChild);
+    heading.classList.add("sf52-original-section-heading");
     const toggle=document.createElement("button");
     toggle.type="button";
     toggle.className="sf52-section-toggle";
