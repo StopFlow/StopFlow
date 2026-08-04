@@ -61,8 +61,7 @@ showEditUserModal=function(id){
 const usersDescription=document.querySelector("#users .card .flex.between .muted");
 if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer les rôles, désactiver temporairement ou supprimer définitivement les accès.";
 
-/* Charge le module autonome 0.5.0 après les extensions utilisateurs,
-   puis sa correction finale de vocabulaire et de droits visibles. */
+/* Charge les modules autonomes du bloc 0.5.0 dans l’ordre nécessaire. */
 (function(){
   if(document.querySelector('script[data-stopflow-checklists="0.5.0"]'))return;
   const script=document.createElement("script");
@@ -72,9 +71,17 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
   script.onload=()=>{
     if(document.querySelector('script[data-stopflow-checklists-correction="0.5.0"]'))return;
     const correction=document.createElement("script");
-    correction.src="stopflow-050-correction.js?v=0500c1";
+    correction.src="stopflow-050-correction.js?v=0500c2";
     correction.async=false;
     correction.dataset.stopflowChecklistsCorrection="0.5.0";
+    correction.onload=()=>{
+      if(document.querySelector('script[data-stopflow-checklists-history="0.5.0"]'))return;
+      const history=document.createElement("script");
+      history.src="stopflow-050-history.js?v=0500h1";
+      history.async=false;
+      history.dataset.stopflowChecklistsHistory="0.5.0";
+      document.head.appendChild(history);
+    };
     document.head.appendChild(correction);
   };
   document.head.appendChild(script);
