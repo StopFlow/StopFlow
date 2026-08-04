@@ -9,7 +9,7 @@
     if(document.querySelector('link[data-stopflow-053-readability-orders="0.5.3"]'))return;
     const link=document.createElement("link");
     link.rel="stylesheet";
-    link.href="stopflow-053-readability-orders.css?v=0531";
+    link.href="stopflow-053-readability-orders.css?v=0532";
     link.dataset.stopflow053ReadabilityOrders="0.5.3";
     document.head.appendChild(link);
   }
@@ -18,6 +18,12 @@
     document.querySelectorAll(
       ".sf52-nav-home>span:first-child,.sf52-nav-group-toggle>span:first-child,.sf52-nav-item>span:first-child,.sf53-icon"
     ).forEach(icon=>icon.setAttribute("aria-hidden","true"));
+  }
+
+  function formatDateOnly(value){
+    if(!value)return "Date inconnue";
+    try{return new Intl.DateTimeFormat("fr-BE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(value))}
+    catch{return "Date inconnue"}
   }
 
   function decorateOrderRows(){
@@ -29,8 +35,12 @@
       const detail=row.querySelector("[data-detail]");
       if(!detail)return;
 
+      const dateCell=row.cells?.[2];
       if(!detail.dataset.sf53OriginalLabel){
         detail.dataset.sf53OriginalLabel=detail.textContent.trim()||"Détail";
+      }
+      if(dateCell&&!dateCell.dataset.sf53OriginalDate){
+        dateCell.dataset.sf53OriginalDate=dateCell.textContent.trim();
       }
 
       row.classList.toggle("sf53-order-mobile-row",mobile);
@@ -41,11 +51,15 @@
         detail.classList.remove("sf53-order-arrow");
         detail.textContent=detail.dataset.sf53OriginalLabel;
         detail.removeAttribute("aria-label");
+        if(dateCell?.dataset.sf53OriginalDate)dateCell.textContent=dateCell.dataset.sf53OriginalDate;
         return;
       }
 
       const number=row.cells?.[0]?.textContent.trim()||"—";
-      const date=row.cells?.[2]?.textContent.trim()||"Date inconnue";
+      const orderId=detail.dataset.detail;
+      const order=typeof db!=="undefined"&&Array.isArray(db?.orders)?db.orders.find(entry=>String(entry.id)===String(orderId)):null;
+      const date=order?.inventoryAt?formatDateOnly(order.inventoryAt):(dateCell?.dataset.sf53OriginalDate||"Date inconnue");
+      if(dateCell)dateCell.textContent=date;
       const status=row.cells?.[3]?.textContent.trim()||"";
       const label=number==="—"?`Brouillon du ${date}`:`Commande ${number} du ${date}`;
 
