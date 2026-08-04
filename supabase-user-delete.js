@@ -61,7 +61,7 @@ showEditUserModal=function(id){
 const usersDescription=document.querySelector("#users .card .flex.between .muted");
 if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer les rôles, désactiver temporairement ou supprimer définitivement les accès.";
 
-/* Charge les modules validés et les corrections d’interface StopFlow 0.5.3. */
+/* Charge les modules validés jusqu’à StopFlow 0.5.4. */
 (function(){
   if(document.querySelector('script[data-stopflow-checklists="0.5.0"]'))return;
   const script=document.createElement("script");
@@ -122,6 +122,38 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                     readability.src="stopflow-053-readability-orders.js?v=0532";
                     readability.async=false;
                     readability.dataset.stopflowReadabilityOrders="0.5.3";
+                    readability.onload=()=>{
+                      if(document.querySelector('script[data-stopflow-department-data="0.5.4"]'))return;
+                      const data=document.createElement("script");
+                      data.src="stopflow-054-data.js?v=0541";
+                      data.async=false;
+                      data.dataset.stopflowDepartmentData="0.5.4";
+                      data.onload=()=>{
+                        if(document.querySelector('script[data-stopflow-department-ui="0.5.4"]'))return;
+                        const ui=document.createElement("script");
+                        ui.src="stopflow-054-ui.js?v=0541";
+                        ui.async=false;
+                        ui.dataset.stopflowDepartmentUi="0.5.4";
+                        ui.onload=()=>{
+                          if(document.querySelector('script[data-stopflow-department-menu="0.5.4"]'))return;
+                          const menu=document.createElement("script");
+                          menu.src="stopflow-054-menu.js?v=0541";
+                          menu.async=false;
+                          menu.dataset.stopflowDepartmentMenu="0.5.4";
+                          menu.onload=()=>{
+                            if(document.querySelector('script[data-stopflow-department-final="0.5.4"]'))return;
+                            const finalChecks=document.createElement("script");
+                            finalChecks.src="stopflow-054-final.js?v=0541";
+                            finalChecks.async=false;
+                            finalChecks.dataset.stopflowDepartmentFinal="0.5.4";
+                            document.head.appendChild(finalChecks);
+                          };
+                          document.head.appendChild(menu);
+                        };
+                        document.head.appendChild(ui);
+                      };
+                      document.head.appendChild(data);
+                    };
                     document.head.appendChild(readability);
                   };
                   document.head.appendChild(desktop);
