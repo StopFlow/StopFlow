@@ -107,7 +107,7 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
               mobile.onload=()=>{
                 if(document.querySelector('script[data-stopflow-mobile-corrections="0.5.2"]'))return;
                 const compact=document.createElement("script");
-                compact.src="stopflow-052-mobile-corrections.js?v=0521";
+                compact.src="stopflow-052-mobile-corrections.js?v=0522";
                 compact.async=false;
                 compact.dataset.stopflowMobileCorrections="0.5.2";
                 document.head.appendChild(compact);
