@@ -119,7 +119,7 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                   desktop.onload=()=>{
                     if(document.querySelector('script[data-stopflow-readability-orders="0.5.3"]'))return;
                     const readability=document.createElement("script");
-                    readability.src="stopflow-053-readability-orders.js?v=0531";
+                    readability.src="stopflow-053-readability-orders.js?v=0532";
                     readability.async=false;
                     readability.dataset.stopflowReadabilityOrders="0.5.3";
                     document.head.appendChild(readability);
