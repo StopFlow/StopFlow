@@ -18,7 +18,13 @@
     if(typeof showApp==="function"&&!window.sf54ShowPatched){window.sf54ShowPatched=true;const old=showApp;showApp=function(){old();setTimeout(startApp,0);setTimeout(startApp,800)}}
     if(typeof applyRole==="function"&&!window.sf54RolePatched){window.sf54RolePatched=true;const old=applyRole;applyRole=function(){old();setTimeout(menus,0)}}
   }
-  async function startApp(){const app=$("#app");if(!app||app.classList.contains("hidden"))return;await S.ensureSessionDepartment().catch(console.warn);await Promise.all([S.loadDepartments().catch(console.warn),S.loadFeatures().catch(console.warn)]);S.ensurePages();S.render();menus()}
+  async function startApp(){
+    const app=$("#app");if(!app||app.classList.contains("hidden"))return;
+    await S.ensureSessionDepartment().catch(console.warn);
+    if(!S.valid(S.own())&&!S.manager()){session.department="salle";session.departement="salle";try{applyRole()}catch{}}
+    await Promise.all([S.loadDepartments().catch(console.warn),S.loadFeatures().catch(console.warn)]);
+    S.ensurePages();S.render();menus();
+  }
   function loadStyles(){["stopflow-054-base.css?v=0540","stopflow-054-modules.css?v=0540","stopflow-054-mobile.css?v=0540"].forEach((href,index)=>{if(document.querySelector(`link[data-stopflow-054-style="${index}"]`))return;const link=document.createElement("link");link.rel="stylesheet";link.href=href;link.dataset.stopflow054Style=String(index);document.head.appendChild(link)})}
   function init(){if(window.sf54Initialized)return;window.sf54Initialized=true;loadStyles();patch();versions();$("#sf52MenuButton")?.addEventListener("click",()=>setTimeout(menus,0));let n=0,t=setInterval(()=>{menus();if(++n>30)clearInterval(t)},300);startApp()}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
