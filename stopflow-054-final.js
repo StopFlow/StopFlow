@@ -82,3 +82,13 @@
 
   [0,300,900,1800].forEach(delay=>setTimeout(apply,delay));
 })();
+
+/* Correction ciblée : recharger les fournisseurs attribués aux départements. */
+(function(){
+  if(document.querySelector('script[data-stopflow-054-supplier-refresh="0.5.4"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-054-supplier-refresh-fix.js?v=0543";
+  script.async=false;
+  script.dataset.stopflow054SupplierRefresh="0.5.4";
+  document.head.appendChild(script);
+})();
