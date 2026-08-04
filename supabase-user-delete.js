@@ -61,7 +61,7 @@ showEditUserModal=function(id){
 const usersDescription=document.querySelector("#users .card .flex.between .muted");
 if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer les rôles, désactiver temporairement ou supprimer définitivement les accès.";
 
-/* Charge les modules autonomes validés 0.5.0, l’installation 0.5.1 et la refonte mobile 0.5.2. */
+/* Charge les modules validés jusqu’au menu ordinateur StopFlow 0.5.3. */
 (function(){
   if(document.querySelector('script[data-stopflow-checklists="0.5.0"]'))return;
   const script=document.createElement("script");
@@ -110,6 +110,14 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                 compact.src="stopflow-052-mobile-corrections.js?v=0522";
                 compact.async=false;
                 compact.dataset.stopflowMobileCorrections="0.5.2";
+                compact.onload=()=>{
+                  if(document.querySelector('script[data-stopflow-desktop-menu="0.5.3"]'))return;
+                  const desktop=document.createElement("script");
+                  desktop.src="stopflow-053-desktop.js?v=0530";
+                  desktop.async=false;
+                  desktop.dataset.stopflowDesktopMenu="0.5.3";
+                  document.head.appendChild(desktop);
+                };
                 document.head.appendChild(compact);
               };
               document.head.appendChild(mobile);
