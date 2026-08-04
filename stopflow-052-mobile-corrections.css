@@ -1,0 +1,36 @@
+/* StopFlow 0.5.2 — seconde passe mobile épurée. */
+@media(max-width:950px){
+html,body{font-size:11.5px!important;line-height:1.35!important}
+.sf52-mobile-header{grid-template-columns:38px 1fr 38px!important;min-height:calc(46px + env(safe-area-inset-top))!important;padding:env(safe-area-inset-top) 5px 0!important}
+.sf52-menu-button,.sf52-header-action,.sf52-drawer-close{width:34px!important;height:34px!important;min-height:34px!important}
+.sf52-mobile-title{font-size:13px!important}.sf52-drawer{width:min(78vw,286px)!important;max-width:286px!important}
+.sf52-drawer-brand{font-size:15px!important}.sf52-drawer-subtitle{font-size:9.5px!important}
+.sf52-nav-home,.sf52-nav-group-toggle{min-height:38px!important;padding:7px 8px!important;font-size:11.5px!important}
+.sf52-nav-item{min-height:35px!important;padding:6px 8px 6px 28px!important;font-size:11px!important}
+.sf52-user-avatar{width:30px!important;height:30px!important}.sf52-user-name{font-size:11px!important}.sf52-user-meta{font-size:9.5px!important}
+#app .main{padding:calc(52px + env(safe-area-inset-top)) 8px calc(18px + env(safe-area-inset-bottom))!important}
+#app h2{font-size:14px!important;margin:0 0 4px!important}#app h3{font-size:12.5px!important;margin:0 0 3px!important}
+#app p{margin:4px 0!important}#app .muted{font-size:10.5px!important;line-height:1.3!important}
+#app .card{margin:0 0 7px!important;padding:7px 0!important;border:0!important;border-bottom:1px solid #e6ebf1!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+#dashboard .card>p.muted,#checklistHome>.checklist-toolbar p,#checklistHome>.card:not(:first-of-type)>p.muted{display:none!important}
+#dashboard .grid4{grid-template-columns:1fr 1fr!important;gap:0!important;margin:0 0 7px!important;border-block:1px solid #e6ebf1!important}
+#dashboard .stat{min-height:59px!important;padding:6px 7px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}
+#dashboard .stat:nth-child(odd){border-right:1px solid #e6ebf1!important}#dashboard .stat:nth-child(-n+2){border-bottom:1px solid #e6ebf1!important}
+#dashboard .stat .num{font-size:18px!important;margin:3px 0 0!important;line-height:1!important}#dashboard .stat a{font-size:9.5px!important}
+#dashboard .supplier-grid{grid-template-columns:1fr!important;gap:0!important;border-top:1px solid #e6ebf1!important}
+#dashboard .supplier{width:100%!important;max-width:none!important;min-height:48px!important;padding:6px 0!important;margin:0!important;border:0!important;border-bottom:1px solid #e6ebf1!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;text-align:left!important;display:flex!important;align-items:center!important;gap:8px!important}
+#dashboard .supplier-mark{width:48px!important;height:32px!important;margin:0!important;padding:3px!important;border-radius:5px!important;flex:0 0 auto!important}#dashboard .supplier p{display:none!important}#dashboard .supplier .btn{margin-left:auto!important}
+#app .btn{min-height:34px!important;padding:6px 9px!important;border-radius:7px!important;font-size:11px!important}#app .btn.small{min-height:29px!important;padding:5px 7px!important;font-size:10.5px!important}
+#app .input{padding:7px 8px!important;border-radius:7px!important}#app input.input,#app select.input,#app textarea.input{font-size:16px!important}
+#app .filters{gap:5px!important;margin-bottom:7px!important}#app .flex{gap:6px!important}
+#app .notice{padding:6px 8px!important;border:0!important;border-left:3px solid #a9c7ee!important;border-radius:0!important;background:#f5f8fc!important;font-size:10.5px!important}
+#app .badge,#app .checklist-pill{padding:3px 5px!important;font-size:9.5px!important}
+#app .tablewrap{border:0!important;border-block:1px solid #e6ebf1!important;border-radius:0!important}#app table{min-width:620px!important}#app th,#app td{padding:6px 7px!important;font-size:10.5px!important}#app th{font-size:9px!important}
+#checklistTemplates.checklist-template-grid,#checklistRuns.checklist-run-list,#checklistSuggestions.checklist-run-list,.checklist-history-list{grid-template-columns:1fr!important;gap:0!important}
+#checklistTemplates .checklist-template,#checklistRuns .checklist-run-row,#checklistSuggestions .checklist-suggestion,.checklist-history-row{padding:7px 0!important;border:0!important;border-bottom:1px solid #e6ebf1!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+#checklistTemplates .checklist-template p.muted{display:none!important}.checklist-section{margin-top:7px!important;border:0!important;border-block:1px solid #dfe6ee!important;border-radius:0!important}
+.checklist-section-title{padding:6px 0!important;background:transparent!important;font-size:11.5px!important}.checklist-item{padding:6px 0!important;gap:5px!important}.checklist-item-help{font-size:9.5px!important}
+#app .modal{padding:6px!important}#app .modalbox{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:11px!important;border-radius:9px!important}
+.sf52-section-toggle{width:100%;min-height:34px;border:0;background:transparent;color:var(--text);display:grid;grid-template-columns:1fr auto;align-items:center;padding:6px 0;text-align:left;font-size:12px;font-weight:800}
+.sf52-section-toggle span:last-child{font-size:15px}.sf52-secondary-card:not(.sf52-section-open)>.sf52-secondary-content{display:none!important}.sf52-secondary-card>.sf52-secondary-content{padding-top:3px}.version-pill{display:none!important}
+}
