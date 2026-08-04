@@ -1,0 +1,18 @@
+/* StopFlow 0.5.4 — base départementale. */
+#login .login-card>p.muted{font-size:0!important}
+#login .login-card>p.muted::after{content:"Version 0.5.4 — Organisation par département"!important;font-size:12px!important}
+.version-pill{font-size:0!important}.version-pill::after{content:"StopFlow 0.5.4"!important;font-size:10px!important}
+.sf54-old-supplier-card,.sf54-old-shortcuts,.sf54-filtered{display:none!important}
+.sf54-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.sf54-page-head h2{margin:0 0 5px}.sf54-version{display:inline-flex;padding:5px 8px;border-radius:999px;background:#eaf1ff;color:#2457a7;font-size:11px;font-weight:800;white-space:nowrap}
+.sf54-action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:0 0 16px}
+.sf54-action-card,.sf54-department-card{border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);padding:15px;text-align:left;min-height:84px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.sf54-action-card:hover,.sf54-department-card:hover{border-color:#9dbbff;box-shadow:0 6px 18px rgba(36,99,235,.08)}
+.sf54-action-card strong,.sf54-department-card strong{font-size:15px}.sf54-action-card span,.sf54-department-card span{font-size:12px;color:var(--muted);line-height:1.35}
+.sf54-home-links{margin-top:16px!important}.sf54-home-department-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:13px}
+.sf54-supplier-section{margin-top:0!important}.sf54-supplier-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;min-height:170px}.sf54-supplier-card .btn{margin-top:auto}
+.sf54-supplier-name{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.sf54-supplier-name h3{margin:0}
+.sf54-department-pill{display:inline-flex;margin-top:4px;padding:3px 7px;border-radius:999px;background:#eef3f8;color:#526174;font-size:10px;font-weight:800;white-space:nowrap}
+.sf54-department-field{margin:12px 0}.sf54-filter-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:9px 11px;border:1px solid #cfe0ff;border-radius:10px;background:#eef4ff;color:#2457a7;font-size:13px}
+.sf54-filter-banner button{border:0;background:transparent;color:#2457a7;font-weight:800;padding:4px 6px}.sf54-detail-department{display:inline-flex;margin:3px 0 8px;padding:4px 8px;border-radius:999px;background:#eef3f8;color:#526174;font-size:11px;font-weight:800}
+@media screen and (min-width:951px){.sf54-menu-entry .sf53-icon{display:none!important}.sf54-menu-entry{grid-template-columns:minmax(0,1fr)!important;padding-left:22px!important}.sf54-menu-entry .sf53-label{display:block!important}}
