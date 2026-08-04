@@ -58,8 +58,12 @@
     document.head.appendChild(style);
   }
 
+  function setText(element,value){
+    if(element&&element.textContent!==value)element.textContent=value;
+  }
+
   function normalizeVersion(){
-    document.querySelectorAll(".version-pill").forEach(element=>{element.textContent=""});
+    document.querySelectorAll(".version-pill").forEach(element=>{if(element.textContent)element.textContent=""});
   }
 
   function removeInstallCard(){
@@ -86,7 +90,7 @@
       actions.appendChild(button);
     }
     const description=card.querySelector("h2 + p");
-    if(description)description.textContent=`Instructions adaptées à ${deviceLabel()}.`;
+    setText(description,`Instructions adaptées à ${deviceLabel()}.`);
   }
 
   function createInstallationPage(){
@@ -135,10 +139,10 @@
     const status=document.getElementById("installationStatus");
     const instruction=document.getElementById("installationInstructions");
     const button=document.getElementById("installationHelpButton");
-    if(device)device.textContent=deviceLabel();
-    if(status)status.textContent=isStandalone()?"Installée sur cet appareil":"Ouverte dans le navigateur";
-    if(instruction)instruction.textContent=isStandalone()?"StopFlow est déjà ouvert depuis son icône. Aucune autre action n’est nécessaire.":instructions();
-    if(button){button.textContent=isStandalone()?"StopFlow est installé":"Voir les instructions";button.disabled=isStandalone()}
+    setText(device,deviceLabel());
+    setText(status,isStandalone()?"Installée sur cet appareil":"Ouverte dans le navigateur");
+    setText(instruction,isStandalone()?"StopFlow est déjà ouvert depuis son icône. Aucune autre action n’est nécessaire.":instructions());
+    if(button){setText(button,isStandalone()?"StopFlow est installé":"Voir les instructions");if(button.disabled!==isStandalone())button.disabled=isStandalone()}
   }
 
   function patchPage(){
@@ -167,7 +171,12 @@
     injectStyles();
     patchPage();
     refresh();
-    const observer=new MutationObserver(()=>refresh());
+    let scheduled=false;
+    const observer=new MutationObserver(()=>{
+      if(scheduled)return;
+      scheduled=true;
+      requestAnimationFrame(()=>{scheduled=false;refresh()});
+    });
     observer.observe(document.body,{childList:true,subtree:true});
     window.addEventListener("appinstalled",()=>setTimeout(refresh,0));
     window.matchMedia?.("(display-mode: standalone)").addEventListener?.("change",()=>setTimeout(refresh,0));
