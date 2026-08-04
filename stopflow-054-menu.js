@@ -25,7 +25,7 @@
     await Promise.all([S.loadDepartments().catch(console.warn),S.loadFeatures().catch(console.warn)]);
     S.ensurePages();S.render();menus();
   }
-  function loadStyles(){["stopflow-054-base.css?v=0540","stopflow-054-modules.css?v=0540","stopflow-054-mobile.css?v=0540"].forEach((href,index)=>{if(document.querySelector(`link[data-stopflow-054-style="${index}"]`))return;const link=document.createElement("link");link.rel="stylesheet";link.href=href;link.dataset.stopflow054Style=String(index);document.head.appendChild(link)})}
+  function loadStyles(){["stopflow-054-base.css?v=0541","stopflow-054-modules.css?v=0541","stopflow-054-mobile.css?v=0541"].forEach((href,index)=>{if(document.querySelector(`link[data-stopflow-054-style="${index}"]`))return;const link=document.createElement("link");link.rel="stylesheet";link.href=href;link.dataset.stopflow054Style=String(index);document.head.appendChild(link)})}
   function init(){if(window.sf54Initialized)return;window.sf54Initialized=true;loadStyles();patch();versions();$("#sf52MenuButton")?.addEventListener("click",()=>setTimeout(menus,0));let n=0,t=setInterval(()=>{menus();if(++n>30)clearInterval(t)},300);startApp()}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
