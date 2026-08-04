@@ -86,47 +86,39 @@
     });
   }
 
-  function apply(){
-    decorateMenuIcons();
-    decorateOrderRows();
-  }
-
-  function schedule(){
-    if(state.scheduled)return;
-    state.scheduled=true;
-    requestAnimationFrame(()=>{
-      state.scheduled=false;
-      apply();
-    });
-  }
-
+  function apply(){decorateMenuIcons();decorateOrderRows()}
+  function schedule(){if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;apply()})}
   function patchHistory(){
     if(typeof window.renderHistory!=="function"||window.stopflow053HistoryReadabilityPatched)return;
     window.stopflow053HistoryReadabilityPatched=true;
     const previous=window.renderHistory;
-    window.renderHistory=function(){
-      const result=previous.apply(this,arguments);
-      setTimeout(decorateOrderRows,0);
-      return result;
-    };
+    window.renderHistory=function(){const result=previous.apply(this,arguments);setTimeout(decorateOrderRows,0);return result};
   }
-
-  function observe(){
-    const observer=new MutationObserver(mutations=>{
-      if(mutations.some(mutation=>mutation.type==="childList"||mutation.type==="attributes"))schedule();
-    });
-    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
-  }
-
-  function start(){
-    if(state.started)return;
-    state.started=true;
-    loadCss();
-    patchHistory();
-    observe();
-    apply();
-    mobileMedia?.addEventListener?.("change",schedule);
-  }
-
+  function observe(){const observer=new MutationObserver(mutations=>{if(mutations.some(mutation=>mutation.type==="childList"||mutation.type==="attributes"))schedule()});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]})}
+  function start(){if(state.started)return;state.started=true;loadCss();patchHistory();observe();apply();mobileMedia?.addEventListener?.("change",schedule)}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+})();
+
+/* Charge StopFlow 0.5.4 uniquement sur la branche qui contient ses modules. */
+(function(){
+  if(document.querySelector('script[data-stopflow-054-data="0.5.4"]'))return;
+  const data=document.createElement("script");
+  data.src="stopflow-054-data.js?v=0540";
+  data.async=false;
+  data.dataset.stopflow054Data="0.5.4";
+  data.onload=()=>{
+    const ui=document.createElement("script");
+    ui.src="stopflow-054-ui.js?v=0540";
+    ui.async=false;
+    ui.dataset.stopflow054Ui="0.5.4";
+    ui.onload=()=>{
+      const menu=document.createElement("script");
+      menu.src="stopflow-054-menu.js?v=0540";
+      menu.async=false;
+      menu.dataset.stopflow054Menu="0.5.4";
+      document.head.appendChild(menu);
+    };
+    document.head.appendChild(ui);
+  };
+  document.head.appendChild(data);
 })();
