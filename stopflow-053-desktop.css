@@ -1,0 +1,96 @@
+/* StopFlow 0.5.3 — menu ordinateur accordéon et repliable. */
+#login .login-card>p.muted{font-size:0!important}
+#login .login-card>p.muted::after{content:"Version 0.5.3 — Menu ordinateur"!important;font-size:12px!important}
+.version-pill{font-size:0!important}
+.version-pill::after{content:"StopFlow 0.5.3"!important;font-size:10px!important}
+
+@media screen and (min-width:951px){
+  #app.shell{grid-template-columns:264px minmax(0,1fr);transition:grid-template-columns .2s ease}
+  #app.shell.sf53-desktop-collapsed{grid-template-columns:76px minmax(0,1fr)}
+
+  #app>.sidebar{
+    display:flex!important;
+    flex-direction:column;
+    min-width:0;
+    padding:20px 14px;
+    overflow:hidden;
+  }
+  #app>.sidebar>.nav{display:none!important}
+  #app>.sidebar>.tagline{margin:0 4px 14px}
+
+  .sf53-sidebar-toolbar{display:flex;justify-content:flex-end;align-items:center;margin:0 0 8px}
+  .sf53-collapse-button{
+    width:30px;height:30px;border:1px solid rgba(255,255,255,.18);border-radius:8px;
+    background:rgba(255,255,255,.06);color:#dbe7f4;font-size:20px;line-height:1;padding:0;
+    display:grid;place-items:center;
+  }
+  .sf53-collapse-button:hover{background:rgba(255,255,255,.13);color:#fff}
+
+  .sf53-desktop-nav{
+    display:grid;
+    align-content:start;
+    gap:5px;
+    min-height:0;
+    overflow-y:auto;
+    padding:1px 2px 96px 0;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.25) transparent;
+  }
+  .sf53-desktop-nav button{font:inherit}
+  .sf53-home,.sf53-group-toggle,.sf53-nav-item{
+    width:100%;border:0;color:#dbe7f4;text-align:left;display:grid;align-items:center;
+    transition:background .15s ease,color .15s ease;
+  }
+  .sf53-home,.sf53-group-toggle{
+    grid-template-columns:28px minmax(0,1fr) 18px;
+    min-height:40px;padding:8px 10px;border-radius:9px;background:transparent;font-size:13px;font-weight:750;
+  }
+  .sf53-home{grid-template-columns:28px minmax(0,1fr)}
+  .sf53-home:hover,.sf53-group-toggle:hover{background:rgba(255,255,255,.09);color:#fff}
+  .sf53-home.active,.sf53-group-toggle.active{background:rgba(36,99,235,.27);color:#fff}
+  .sf53-icon{display:grid;place-items:center;width:24px;min-width:24px;font-size:15px;line-height:1}
+  .sf53-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sf53-chevron{font-size:18px;line-height:1;transition:transform .16s ease;text-align:center}
+  .sf53-group-toggle[aria-expanded="true"] .sf53-chevron{transform:rotate(90deg)}
+
+  .sf53-group-panel{display:none;padding:2px 0 3px}
+  .sf53-group-panel.open{display:grid;gap:2px}
+  .sf53-nav-item{
+    grid-template-columns:25px minmax(0,1fr);
+    min-height:34px;padding:6px 8px 6px 29px;border-radius:8px;background:transparent;font-size:12px;font-weight:650;
+  }
+  .sf53-nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .sf53-nav-item.active{background:var(--blue);color:#fff}
+  .sf53-nav-item.disabled{opacity:.48;cursor:not-allowed}
+
+  .sf53-department-filter{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:0 0 14px;padding:10px 12px;border:1px solid #cfe0ff;border-radius:10px;
+    background:#eef4ff;color:#2457a7;font-size:13px;
+  }
+  .sf53-department-filter button{
+    border:0;background:transparent;color:#2457a7;font-weight:800;padding:4px 6px;
+  }
+  .sf53-desktop-filtered{display:none!important}
+
+  #app.sf53-desktop-collapsed>.sidebar{padding:18px 10px}
+  #app.sf53-desktop-collapsed>.sidebar>.brand{justify-content:center;gap:0;font-size:0;margin-bottom:10px}
+  #app.sf53-desktop-collapsed>.sidebar>.brand .logo{width:38px;height:38px}
+  #app.sf53-desktop-collapsed>.sidebar>.tagline{display:none}
+  #app.sf53-desktop-collapsed .sf53-sidebar-toolbar{justify-content:center;margin-bottom:8px}
+  #app.sf53-desktop-collapsed .sf53-desktop-nav{justify-items:center;padding-right:0}
+  #app.sf53-desktop-collapsed .sf53-home,
+  #app.sf53-desktop-collapsed .sf53-group-toggle{
+    width:44px;grid-template-columns:1fr;justify-items:center;padding:8px;border-radius:10px;
+  }
+  #app.sf53-desktop-collapsed .sf53-home .sf53-label,
+  #app.sf53-desktop-collapsed .sf53-group-toggle .sf53-label,
+  #app.sf53-desktop-collapsed .sf53-chevron,
+  #app.sf53-desktop-collapsed .sf53-group-panel{display:none!important}
+  #app.sf53-desktop-collapsed .sf53-icon{width:26px;min-width:26px;font-size:17px}
+  #app.sf53-desktop-collapsed>.sidebar>.usercard{
+    left:10px;right:10px;padding:8px;justify-content:center;border-radius:10px;
+  }
+  #app.sf53-desktop-collapsed>.sidebar>.usercard>div{display:none}
+  #app.sf53-desktop-collapsed>.sidebar>.usercard .avatar{width:34px;height:34px}
+}
