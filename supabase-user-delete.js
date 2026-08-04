@@ -92,6 +92,14 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
           pwa.src="stopflow-pwa.js?v=0510";
           pwa.async=false;
           pwa.dataset.stopflowPwa="0.5.1";
+          pwa.onload=()=>{
+            if(document.querySelector('script[data-stopflow-pwa-iphone-fix="0.5.1"]'))return;
+            const fix=document.createElement("script");
+            fix.src="stopflow-051-iphone-fix.js?v=0511";
+            fix.async=false;
+            fix.dataset.stopflowPwaIphoneFix="0.5.1";
+            document.head.appendChild(fix);
+          };
           document.head.appendChild(pwa);
         };
         document.head.appendChild(historyPdf);
