@@ -125,25 +125,25 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                     readability.onload=()=>{
                       if(document.querySelector('script[data-stopflow-department-data="0.5.4"]'))return;
                       const data=document.createElement("script");
-                      data.src="stopflow-054-data.js?v=0541";
+                      data.src="stopflow-054-data.js?v=0542";
                       data.async=false;
                       data.dataset.stopflowDepartmentData="0.5.4";
                       data.onload=()=>{
                         if(document.querySelector('script[data-stopflow-department-ui="0.5.4"]'))return;
                         const ui=document.createElement("script");
-                        ui.src="stopflow-054-ui.js?v=0541";
+                        ui.src="stopflow-054-ui.js?v=0542";
                         ui.async=false;
                         ui.dataset.stopflowDepartmentUi="0.5.4";
                         ui.onload=()=>{
                           if(document.querySelector('script[data-stopflow-department-menu="0.5.4"]'))return;
                           const menu=document.createElement("script");
-                          menu.src="stopflow-054-menu.js?v=0541";
+                          menu.src="stopflow-054-menu.js?v=0542";
                           menu.async=false;
                           menu.dataset.stopflowDepartmentMenu="0.5.4";
                           menu.onload=()=>{
                             if(document.querySelector('script[data-stopflow-department-final="0.5.4"]'))return;
                             const finalChecks=document.createElement("script");
-                            finalChecks.src="stopflow-054-final.js?v=0541";
+                            finalChecks.src="stopflow-054-final.js?v=0542";
                             finalChecks.async=false;
                             finalChecks.dataset.stopflowDepartmentFinal="0.5.4";
                             document.head.appendChild(finalChecks);
