@@ -77,9 +77,17 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
     correction.onload=()=>{
       if(document.querySelector('script[data-stopflow-checklists-history="0.5.0"]'))return;
       const history=document.createElement("script");
-      history.src="stopflow-050-history.js?v=0500h1";
+      history.src="stopflow-050-history.js?v=0500h2";
       history.async=false;
       history.dataset.stopflowChecklistsHistory="0.5.0";
+      history.onload=()=>{
+        if(document.querySelector('script[data-stopflow-checklists-history-pdf="0.5.0"]'))return;
+        const historyPdf=document.createElement("script");
+        historyPdf.src="stopflow-050-history-pdf.js?v=0500p1";
+        historyPdf.async=false;
+        historyPdf.dataset.stopflowChecklistsHistoryPdf="0.5.0";
+        document.head.appendChild(historyPdf);
+      };
       document.head.appendChild(history);
     };
     document.head.appendChild(correction);
