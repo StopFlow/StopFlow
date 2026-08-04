@@ -7,6 +7,12 @@
 .nav button[data-page="inventory"],
 .mobilebar button[data-page="inventory"]{display:none!important}
 
+/* Version affichée sans modifier le code métier de la version stable. */
+#login .login-card>p.muted{font-size:0}
+#login .login-card>p.muted::after{content:"Version 0.4.1 — Mobile et tablette";font-size:13px}
+.version-pill{font-size:0}
+.version-pill::after{content:"StopFlow 0.4.1";font-size:11px}
+
 @media screen and (min-width:951px){
   html{font-size:13px}
   body{font-size:13px}
@@ -51,7 +57,7 @@
   .stat a{font-size:11px}
 
   .card{padding:10px 11px;margin-top:8px;border-radius:10px;box-shadow:0 4px 14px rgba(13,35,62,.05)}
-  .card > p{margin:5px 0 8px}
+  .card>p{margin:5px 0 8px}
 
   .supplier-grid{gap:7px;grid-template-columns:repeat(auto-fit,minmax(155px,190px))}
   .supplier{padding:10px;max-width:190px;border-radius:9px}
@@ -91,6 +97,137 @@
   .login-brand{margin-bottom:12px}
   .login-card .field{margin:7px 0}
   .demo{margin-top:9px;padding:7px;font-size:10px}
+}
+
+/* StopFlow 0.4.1 — couche tactile et responsive.
+   L’ordinateur conserve strictement le style compact ci-dessus. */
+@media screen and (max-width:950px){
+  html{-webkit-text-size-adjust:100%;scroll-padding-top:62px}
+  body{min-width:0;overflow-x:hidden}
+  .shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100dvh}
+
+  /* Navigation complète horizontale : aucune rubrique active n’est inaccessible. */
+  .sidebar{display:block!important;position:sticky;top:0;z-index:15;height:auto;min-height:0;padding:8px 10px calc(8px + env(safe-area-inset-top));overflow:visible;background:linear-gradient(90deg,var(--navy),#092844)}
+  .sidebar>.brand,.sidebar>.tagline,.sidebar>.usercard,.sidebar .nav-section,.sidebar .future-module{display:none!important}
+  .sidebar .nav{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:0 1px 3px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .sidebar .nav::-webkit-scrollbar{display:none}
+  .sidebar .nav button{display:flex!important;flex:0 0 auto;min-height:44px;padding:10px 14px;border-radius:10px;white-space:nowrap;scroll-snap-align:start;font-size:14px}
+  .sidebar .nav button.hidden{display:none!important}
+  .sidebar .nav button.active{background:var(--blue)}
+  .mobilebar{display:none!important}
+
+  .main{min-width:0;padding:14px 13px calc(30px + env(safe-area-inset-bottom))}
+  .topbar{gap:10px;margin-bottom:14px;align-items:flex-start}
+  .topbar>div{min-width:0}
+  .topbar h1{font-size:24px;line-height:1.1}
+  #today{font-size:12px;margin-top:3px}
+
+  /* Cibles tactiles de minimum 44 px. */
+  .btn,.input,.qty button,.nav button,.shortcut-card{min-height:44px}
+  .btn{padding:11px 14px}
+  .btn.small{min-height:40px;padding:9px 12px}
+  .input{font-size:16px;padding:11px 12px}
+  textarea.input{min-height:96px}
+  select.input{background-color:#fff}
+  .qty{min-height:44px}
+  .qty button{width:44px;height:44px;font-size:20px}
+  .qty input{width:62px;min-height:44px;font-size:17px}
+
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .stat{min-height:92px;padding:13px;border-radius:13px;box-shadow:none}
+  .stat .num{font-size:25px;margin-top:7px}
+  .card{padding:15px;margin-top:12px;border-radius:14px;box-shadow:0 5px 18px rgba(13,35,62,.06)}
+  .shortcut-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .shortcut-card{min-height:116px;padding:15px}
+  .architecture-note{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .architecture-note>div{padding:11px}
+  .supplier-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .supplier{max-width:none;padding:15px}
+  .supplier-mark{width:92px;height:58px}
+  .rules{grid-template-columns:1fr;gap:8px}
+  .rule{font-size:13px}
+  .filters{grid-template-columns:1fr!important;gap:10px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .kpi{min-height:72px;padding:12px}
+  .kpi strong{font-size:23px}
+  .stepper{gap:6px;overflow-x:auto;padding-bottom:4px}
+  .step{flex:0 0 auto;font-size:12px}
+  .stepper .line{min-width:18px}
+  .notice{line-height:1.45}
+  .modal{padding:10px}
+  .modalbox{width:100%;max-height:calc(100dvh - 20px);padding:16px;border-radius:16px}
+  .login-page{padding:16px}
+  .login-card{padding:24px 20px;border-radius:18px}
+}
+
+/* Les tableaux métier deviennent des cartes lisibles sur téléphone. */
+@media screen and (max-width:720px){
+  .tablewrap:has(tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)){overflow:visible;border:0;background:transparent}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)){display:block;min-width:0;width:100%}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) thead{display:none}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) tbody{display:grid;gap:11px;width:100%}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) tr{display:block;width:100%;padding:5px 12px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 14px rgba(13,35,62,.05)}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td{display:grid;grid-template-columns:minmax(105px,38%) minmax(0,1fr);align-items:center;gap:9px;width:100%;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;text-align:right}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td:last-child{border-bottom:0}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td::before{font-size:10px;font-weight:800;line-height:1.2;letter-spacing:.05em;text-transform:uppercase;color:#68778b;text-align:left}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td>*{justify-self:end;max-width:100%}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td>b,
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td>small{justify-self:end}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td[colspan]{display:block;text-align:center;padding:18px}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td[colspan]::before{display:none}
+
+  #inventoryRows td:nth-child(1)::before{content:"Article"}
+  #inventoryRows td:nth-child(2)::before{content:"Catégorie"}
+  #inventoryRows td:nth-child(3)::before{content:"Cible"}
+  #inventoryRows td:nth-child(4)::before{content:"Stock présent"}
+  #inventoryRows td:nth-child(5)::before{content:"À commander"}
+
+  #summaryRows td:nth-child(1)::before{content:"Article"}
+  #summaryRows td:nth-child(2)::before{content:"Cible"}
+  #summaryRows td:nth-child(3)::before{content:"Présent"}
+  #summaryRows td:nth-child(4)::before{content:"Proposition"}
+  #summaryRows td:nth-child(5)::before{content:"Ajustement"}
+
+  #historyRows td:nth-child(1)::before{content:"N° bon"}
+  #historyRows td:nth-child(2)::before{content:"Fournisseur"}
+  #historyRows td:nth-child(3)::before{content:"Date"}
+  #historyRows td:nth-child(4)::before{content:"Statut"}
+  #historyRows td:nth-child(5)::before{content:"Auteur"}
+  #historyRows td:nth-child(6)::before{content:"Validé par"}
+  #historyRows td:nth-child(7)::before{content:"Action"}
+
+  #articleRows td:nth-child(1)::before{content:"Article"}
+  #articleRows td:nth-child(2)::before{content:"Fournisseur"}
+  #articleRows td:nth-child(3)::before{content:"Catégorie"}
+  #articleRows td:nth-child(4)::before{content:"Unité"}
+  #articleRows td:nth-child(5)::before{content:"Stock cible"}
+  #articleRows td:nth-child(6)::before{content:"Actif"}
+  #articleRows td:nth-child(7)::before{content:"Action"}
+
+  #userRows td:nth-child(1)::before{content:"Utilisateur"}
+  #userRows td:nth-child(2)::before{content:"Rôle"}
+  #userRows td:nth-child(3)::before{content:"Statut"}
+  #userRows td:nth-child(4)::before{content:"E-mail"}
+  #userRows td:nth-child(5)::before{content:"Dernière connexion"}
+  #userRows td:nth-child(6)::before{content:"Action"}
+
+  #articleRows input.input{width:100%!important;max-width:130px}
+}
+
+@media screen and (max-width:520px){
+  .main{padding-left:10px;padding-right:10px}
+  .topbar h1{font-size:21px}
+  .topbar .btn{padding:9px 11px;font-size:12px;min-height:40px}
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .stat{min-height:82px;padding:11px}
+  .stat .num{font-size:22px}
+  .stat a{font-size:11px}
+  .shortcut-grid,.supplier-grid,.architecture-note{grid-template-columns:1fr}
+  .shortcut-card{min-height:96px}
+  .card{padding:13px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flex.between{align-items:flex-start}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td{grid-template-columns:minmax(94px,35%) minmax(0,1fr);font-size:13px}
 }
 
 @media print{
