@@ -234,3 +234,63 @@
   html{font-size:initial}
   body{font-size:initial}
 }
+
+/* Ajustement validé pendant le test iPhone : navigation sans pictogrammes
+   et densité accrue, tout en conservant des zones tactiles utilisables. */
+@media screen and (max-width:950px){
+  html{scroll-padding-top:50px}
+  .sidebar{padding:5px 7px calc(5px + env(safe-area-inset-top))}
+  .sidebar .nav{gap:4px;padding-bottom:1px}
+  .sidebar .nav button{font-size:0!important;min-height:40px;padding:7px 10px;border-radius:8px}
+  .sidebar .nav button::after{font-size:12px;line-height:1.1}
+  .sidebar .nav button[data-page="dashboard"]::after{content:"Accueil"}
+  .sidebar .nav button[data-page="inventory"]::after{content:"Inventaires"}
+  .sidebar .nav button[data-page="history"]::after{content:"Historique"}
+  .sidebar .nav button[data-page="articles"]::after{content:"Articles"}
+  .sidebar .nav button[data-page="suggestions"]::after{content:"Suggestions"}
+  .sidebar .nav button[data-page="settings"]::after{content:"Paramètres"}
+  .sidebar .nav button[data-page="suppliers"]::after{content:"Fournisseurs"}
+  .sidebar .nav button[data-page="users"]::after{content:"Utilisateurs"}
+
+  .main{padding:9px 9px calc(22px + env(safe-area-inset-bottom))}
+  .topbar{gap:7px;margin-bottom:8px}
+  .topbar h1{font-size:20px}
+  #today{font-size:11px;margin-top:1px}
+
+  .grid4{gap:6px}
+  .stat{min-height:74px;padding:9px 10px;border-radius:10px}
+  .stat .num{font-size:21px;margin-top:3px}
+  .card{padding:11px;margin-top:8px;border-radius:11px}
+  .card>p{margin:4px 0 7px}
+  .shortcut-grid{gap:7px;margin-top:9px}
+  .shortcut-card{min-height:88px;padding:11px}
+  .shortcut-card strong{margin-bottom:4px}
+  .architecture-note{gap:6px;margin-top:9px}
+  .architecture-note>div{padding:8px}
+  .supplier-grid{gap:7px}
+  .supplier{padding:10px}
+  .supplier-mark{width:76px;height:45px;margin-bottom:5px}
+  .rules{gap:5px;margin-top:7px}
+  .filters{gap:7px;margin-bottom:8px}
+  .kpis{gap:6px;margin:8px 0}
+  .kpi{min-height:58px;padding:9px}
+  .kpi strong{font-size:20px}
+  .notice{padding:9px 10px;line-height:1.35}
+}
+
+@media screen and (max-width:520px){
+  .main{padding-left:7px;padding-right:7px}
+  .topbar h1{font-size:19px}
+  .grid4{gap:5px}
+  .stat{min-height:69px;padding:8px}
+  .stat .num{font-size:20px}
+  .shortcut-grid,.supplier-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .architecture-note{grid-template-columns:1fr}
+  .shortcut-card{min-height:82px;padding:9px}
+  .supplier{padding:8px}
+  .supplier-mark{width:68px;height:40px}
+  .card{padding:10px}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) tbody{gap:8px}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) tr{padding:3px 10px;border-radius:11px}
+  table:has(>tbody:is(#inventoryRows,#summaryRows,#historyRows,#articleRows,#userRows)) td{padding:8px 0;gap:7px}
+}
