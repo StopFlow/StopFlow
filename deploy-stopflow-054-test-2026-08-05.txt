@@ -1,0 +1,1 @@
+StopFlow 0.5.4 — déclenchement unique du déploiement de test après correction du rafraîchissement des fournisseurs par département.
