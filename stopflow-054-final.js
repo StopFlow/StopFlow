@@ -54,12 +54,26 @@
   document.head.appendChild(script);
 })();
 
-/* StopFlow 0.6.0 — accès à plusieurs départements. */
+/* StopFlow 0.6.0 — accès à plusieurs départements et corrections de navigation. */
 (function(){
-  if(document.querySelector('script[data-stopflow-060-multi-departments="0.6.0"]'))return;
+  const loadFix=()=>{
+    if(document.querySelector('script[data-stopflow-060-menu-auth-fix="0.6.0"]'))return;
+    const fix=document.createElement("script");
+    fix.src="stopflow-060-menu-auth-fix.js?v=0602";
+    fix.async=false;
+    fix.dataset.stopflow060MenuAuthFix="0.6.0";
+    document.head.appendChild(fix);
+  };
+  const existing=document.querySelector('script[data-stopflow-060-multi-departments="0.6.0"]');
+  if(existing){
+    if(window.stopflow060MultiDepartments)loadFix();
+    else existing.addEventListener("load",loadFix,{once:true});
+    return;
+  }
   const script=document.createElement("script");
   script.src="stopflow-060-multi-departments.js?v=0601";
   script.async=false;
   script.dataset.stopflow060MultiDepartments="0.6.0";
+  script.onload=loadFix;
   document.head.appendChild(script);
 })();
