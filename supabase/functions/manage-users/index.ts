@@ -78,6 +78,17 @@ Deno.serve(async(req:Request)=>{
       if(error)throw error;return res({generated:true,actionLink:data.properties?.action_link??null});
     }
 
+    if(action==="reset_password"){
+      const id=clean(payload.id,80),password=String(payload.password??"");
+      if(!id||password.length<10)return res({error:"Utilisateur manquant ou mot de passe temporaire trop court."},400);
+      const {data:target,error:targetError}=await admin.from("profiles").select("id,email").eq("id",id).single();
+      if(targetError||!target)return res({error:"Utilisateur introuvable."},404);
+      const {error}=await admin.auth.admin.updateUserById(id,{password});
+      if(error)throw error;
+      await admin.from("user_admin_events").insert({actor_user_id:actor.id,target_user_id:id,target_email:String(target.email??""),action:"reset_password",details:{method:"temporary_password"}});
+      return res({reset:true,email:target.email});
+    }
+
     if(action==="update"){
       const id=clean(payload.id,80),prenom=clean(payload.prenom,80),nom=clean(payload.nom,100),role=clean(payload.role,20).toLowerCase(),actif=payload.actif===true;
       if(!id||!prenom||!nom||!roles.has(role))return res({error:"Informations invalides."},400);
