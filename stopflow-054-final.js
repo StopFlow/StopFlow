@@ -77,3 +77,13 @@
   script.onload=loadFix;
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.6.0 — masquer les pages non autorisées dans le menu Bureau. */
+(function(){
+  if(document.querySelector('script[data-stopflow-060-permission-menu-fix="0.6.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-060-permission-menu-fix.js?v=0601";
+  script.async=false;
+  script.dataset.stopflow060PermissionMenuFix="0.6.0";
+  document.head.appendChild(script);
+})();
