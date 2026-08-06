@@ -4,8 +4,8 @@
   if(!S||window.stopflow060MenuAuthFix)return;
   window.stopflow060MenuAuthFix=true;
 
-  const OPERATIONAL=["salle","cuisine","nettoyage"];
-  const LABELS={salle:"Salle",cuisine:"Cuisine",nettoyage:"Entretien & hygiène",bureau:"Bureau"};
+  const OPERATIONAL=["cuisine","salle","nettoyage"];
+  const LABELS={salle:"Salle",cuisine:"Cuisine",nettoyage:"Entretien & hygiène",bureau:"Bureau",common:"Pour tous et toutes"};
   const isManager=()=>typeof S.manager==="function"&&S.manager();
   const allowed=()=>isManager()?new Set(OPERATIONAL):new Set((session?.departments||[session?.department||session?.departement]).filter(code=>OPERATIONAL.includes(code)));
 
@@ -60,6 +60,46 @@
     return button;
   }
 
+  function toggleGroup(container,toggle,panel,id,desktop){
+    const opening=toggle.getAttribute("aria-expanded")!=="true";
+    const toggleSelector=desktop?".sf53-group-toggle":".sf52-nav-group-toggle";
+    const panelSelector=desktop?".sf53-group-panel":".sf52-nav-panel";
+    container.querySelectorAll(toggleSelector).forEach(node=>node.setAttribute("aria-expanded","false"));
+    container.querySelectorAll(panelSelector).forEach(node=>node.classList.remove("open"));
+    toggle.setAttribute("aria-expanded",String(opening));
+    panel.classList.toggle("open",opening);
+    const key=desktop?"stopflow-053-desktop-open-group":"stopflow-052-open-group";
+    if(opening)localStorage.setItem(key,id);else localStorage.removeItem(key);
+  }
+
+  function findGroup(container,id,desktop){
+    if(desktop)return container.querySelector(`.sf53-group[data-group="${id}"]`);
+    return [...container.querySelectorAll(".sf52-nav-group")].find(group=>group.querySelector(".sf52-nav-group-toggle")?.dataset.group===id)||null;
+  }
+
+  function ensureGroup(container,id,desktop){
+    let group=findGroup(container,id,desktop);
+    if(group)return group;
+    group=document.createElement("section");
+    group.className=desktop?"sf53-group":"sf52-nav-group";
+    if(desktop)group.dataset.group=id;
+    const toggle=document.createElement("button");
+    toggle.type="button";
+    toggle.className=desktop?"sf53-group-toggle":"sf52-nav-group-toggle";
+    toggle.dataset.group=id;
+    toggle.setAttribute("aria-expanded","false");
+    toggle.innerHTML=desktop
+      ?`<span class="sf53-icon"></span><span class="sf53-label">${LABELS[id]}</span><span class="sf53-chevron">›</span>`
+      :`<span></span><span>${LABELS[id]}</span><span class="sf52-nav-chevron">›</span>`;
+    const panel=document.createElement("div");
+    panel.className=desktop?"sf53-group-panel":"sf52-nav-panel";
+    toggle.addEventListener("click",()=>toggleGroup(container,toggle,panel,id,desktop));
+    group.append(toggle,panel);
+    const common=findGroup(container,"common",desktop);
+    if(common&&id!=="common")container.insertBefore(group,common);else container.appendChild(group);
+    return group;
+  }
+
   function canonicalizeGroup(group,id,desktop){
     const panel=group.querySelector(desktop?".sf53-group-panel":".sf52-nav-panel");
     if(!panel)return;
@@ -72,27 +112,27 @@
     entries.forEach(([label,action,department])=>panel.appendChild(buildButton(label,action,department,desktop)));
   }
 
-  function refreshMenus(){
+  function refreshContainer(container,desktop){
+    if(!container)return;
     const access=allowed();
-    document.querySelectorAll("#sf52DrawerContent .sf52-nav-group").forEach(group=>{
-      const toggle=group.querySelector(".sf52-nav-group-toggle");
-      const id=toggle?.dataset.group;
+    const desired=isManager()?[...OPERATIONAL,"bureau","common"]:[...OPERATIONAL.filter(code=>access.has(code)),"common"];
+    desired.forEach(id=>ensureGroup(container,id,desktop));
+    const groupSelector=desktop?".sf53-group":".sf52-nav-group";
+    container.querySelectorAll(groupSelector).forEach(group=>{
+      const toggle=group.querySelector(desktop?".sf53-group-toggle":".sf52-nav-group-toggle");
+      const id=desktop?group.dataset.group:toggle?.dataset.group;
       if(!id)return;
-      const label=toggle.querySelector("span:nth-child(2)");
-      if(id==="common"&&label)label.textContent="Pour tous et toutes";
       const visible=id==="common"||(id==="bureau"&&isManager())||access.has(id);
       group.classList.toggle("hidden",!visible);
-      if(visible)canonicalizeGroup(group,id,false);
+      const label=toggle.querySelector(desktop?".sf53-label":"span:nth-child(2)");
+      if(label&&LABELS[id])label.textContent=LABELS[id];
+      if(visible)canonicalizeGroup(group,id,desktop);
     });
-    document.querySelectorAll("#sf53DesktopNav .sf53-group").forEach(group=>{
-      const id=group.dataset.group;
-      if(!id)return;
-      const label=group.querySelector(".sf53-group-toggle .sf53-label");
-      if(id==="common"&&label)label.textContent="Pour tous et toutes";
-      const visible=id==="common"||(id==="bureau"&&isManager())||access.has(id);
-      group.classList.toggle("hidden",!visible);
-      if(visible)canonicalizeGroup(group,id,true);
-    });
+  }
+
+  function refreshMenus(){
+    refreshContainer(document.getElementById("sf52DrawerContent"),false);
+    refreshContainer(document.getElementById("sf53DesktopNav"),true);
   }
   S.refreshMenus=refreshMenus;
 
@@ -103,14 +143,23 @@
     document.querySelectorAll(".sf52-nav-panel,.sf53-group-panel").forEach(panel=>panel.classList.remove("open"));
   }
 
-  let refreshTimer=null;
+  let refreshTimers=[];
   function scheduleRefresh(delays=[0,80,250,700]){
-    clearTimeout(refreshTimer);
-    delays.forEach(delay=>setTimeout(refreshMenus,delay));
+    refreshTimers.forEach(clearTimeout);
+    refreshTimers=delays.map(delay=>setTimeout(refreshMenus,delay));
   }
 
   function stabilizeInitialView(){
     [0,120,450,900].forEach(delay=>setTimeout(()=>{refreshMenus();collapseMenus()},delay));
+  }
+
+  const previousEnsureDepartment=S.ensureSessionDepartment;
+  if(typeof previousEnsureDepartment==="function"){
+    S.ensureSessionDepartment=async function(){
+      const result=await previousEnsureDepartment(...arguments);
+      scheduleRefresh([0,80,250]);
+      return result;
+    };
   }
 
   if(typeof showApp==="function"){
@@ -139,7 +188,7 @@
   }
 
   const observer=new MutationObserver(()=>{
-    const stale=Boolean(document.querySelector("#sf52DrawerContent .sf52-nav-panel:not([data-sf60-canonical]),#sf53DesktopNav .sf53-group-panel:not([data-sf60-canonical])"));
+    const stale=Boolean(document.querySelector("#sf52DrawerContent .sf52-nav-group:not(.hidden) .sf52-nav-panel:not([data-sf60-canonical]),#sf53DesktopNav .sf53-group:not(.hidden) .sf53-group-panel:not([data-sf60-canonical])"));
     if(stale)scheduleRefresh([0,60,180]);
   });
   observer.observe(document.body,{childList:true,subtree:true});
