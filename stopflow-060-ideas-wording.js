@@ -1,19 +1,22 @@
-/* StopFlow 0.6.0 — vocabulaire distinct pour les idées communes. */
+/* StopFlow 0.6.0 — vocabulaire distinct pour les idées communes, sans surveillance continue. */
 (function(){
   if(window.stopflow060IdeasWording)return;
   window.stopflow060IdeasWording=true;
+
+  const setText=(node,text)=>{
+    if(node&&node.textContent!==text)node.textContent=text;
+  };
 
   function setMenuLabel(){
     document.querySelectorAll('[data-sf54="page:suggestions"]').forEach(button=>{
       const desktopLabel=button.querySelector('.sf53-label');
       const mobileLabel=button.querySelector('span:nth-child(2)');
-      if(desktopLabel)desktopLabel.textContent="Partager une idée";
-      else if(mobileLabel)mobileLabel.textContent="Partager une idée";
-      else button.textContent="Partager une idée";
+      if(desktopLabel)setText(desktopLabel,"Partager une idée");
+      else if(mobileLabel)setText(mobileLabel,"Partager une idée");
+      else setText(button,"Partager une idée");
     });
     document.querySelectorAll('[data-page="suggestions"]').forEach(button=>{
-      if(button.closest('.mobilebar'))button.innerHTML="Idées";
-      else button.textContent="Partager une idée";
+      setText(button,button.closest('.mobilebar')?"Idées":"Partager une idée");
     });
   }
 
@@ -21,18 +24,16 @@
     const section=document.getElementById('suggestions');
     if(!section)return;
     const cards=section.querySelectorAll(':scope > .card');
-    const firstTitle=cards[0]?.querySelector('h2');
-    const intro=cards[0]?.querySelector('p.muted');
-    const submit=section.querySelector('#suggestionForm button[type="submit"]');
-    const historyTitle=cards[1]?.querySelector('h2');
-    if(firstTitle)firstTitle.textContent="Partager une idée";
-    if(intro)intro.textContent="Une idée, un problème ou une amélioration pour simplifier le travail au restaurant ou améliorer StopFlow.";
-    if(submit)submit.textContent="Partager l’idée";
-    if(historyTitle)historyTitle.textContent="Idées et améliorations partagées";
-    if(!section.classList.contains('hidden')){
-      const pageTitle=document.getElementById('pageTitle');
-      if(pageTitle)pageTitle.textContent="Idées et améliorations";
-    }
+    setText(cards[0]?.querySelector('h2'),"Partager une idée");
+    setText(cards[0]?.querySelector('p.muted'),"Une idée, un problème ou une amélioration pour simplifier le travail au restaurant ou améliorer StopFlow.");
+    setText(section.querySelector('#suggestionForm button[type="submit"]'),"Partager l’idée");
+    setText(cards[1]?.querySelector('h2'),"Idées et améliorations partagées");
+    if(!section.classList.contains('hidden'))setText(document.getElementById('pageTitle'),"Idées et améliorations");
+  }
+
+  function applyWording(){
+    setMenuLabel();
+    applyPageWording();
   }
 
   if(typeof renderSuggestions==='function'){
@@ -40,7 +41,8 @@
     renderSuggestions=function(){
       const result=previousRenderSuggestions(...arguments);
       const empty=document.querySelector('#suggestionList > p.muted');
-      if(empty&&empty.textContent.trim()==='Aucune suggestion enregistrée.')empty.textContent="Aucune idée partagée pour le moment.";
+      if(empty&&empty.textContent.trim()==='Aucune suggestion enregistrée.')setText(empty,"Aucune idée partagée pour le moment.");
+      applyPageWording();
       return result;
     };
   }
@@ -69,20 +71,19 @@
     const previousPage=page;
     page=function(id){
       const result=previousPage(...arguments);
-      if(id==='suggestions')setTimeout(applyPageWording,0);
-      setTimeout(setMenuLabel,0);
+      setTimeout(applyWording,0);
       return result;
     };
   }
 
-  const observer=new MutationObserver(()=>{
-    setMenuLabel();
-    applyPageWording();
-  });
-  observer.observe(document.body,{childList:true,subtree:true});
+  if(typeof showApp==='function'){
+    const previousShowApp=showApp;
+    showApp=function(){
+      const result=previousShowApp(...arguments);
+      [0,150,700,1500].forEach(delay=>setTimeout(applyWording,delay));
+      return result;
+    };
+  }
 
-  [0,100,350,900].forEach(delay=>setTimeout(()=>{
-    setMenuLabel();
-    applyPageWording();
-  },delay));
+  [0,100,350,900,1800].forEach(delay=>setTimeout(applyWording,delay));
 })();
