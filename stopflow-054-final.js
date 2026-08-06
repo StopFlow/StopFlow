@@ -87,3 +87,13 @@
   script.dataset.stopflow060PermissionMenuFix="0.6.0";
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.6.0 — distinguer les idées communes des suggestions Cuisine. */
+(function(){
+  if(document.querySelector('script[data-stopflow-060-ideas-wording="0.6.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-060-ideas-wording.js?v=0601";
+  script.async=false;
+  script.dataset.stopflow060IdeasWording="0.6.0";
+  document.head.appendChild(script);
+})();
