@@ -80,7 +80,7 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                           const menu=document.createElement("script");menu.src="stopflow-054-menu.js?v=0542";menu.async=false;menu.dataset.stopflowDepartmentMenu="0.5.4";
                           menu.onload=()=>{
                             if(document.querySelector('script[data-stopflow-department-final="0.5.4"]'))return;
-                            const finalChecks=document.createElement("script");finalChecks.src="stopflow-054-final.js?v=0544";finalChecks.async=false;finalChecks.dataset.stopflowDepartmentFinal="0.5.4";document.head.appendChild(finalChecks);
+                            const finalChecks=document.createElement("script");finalChecks.src="stopflow-054-final.js?v=0545";finalChecks.async=false;finalChecks.dataset.stopflowDepartmentFinal="0.5.4";document.head.appendChild(finalChecks);
                           };
                           document.head.appendChild(menu);
                         };
