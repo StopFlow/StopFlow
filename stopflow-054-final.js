@@ -97,3 +97,13 @@
   script.dataset.stopflow060IdeasWording="0.6.0";
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.6.0 — verrouiller les menus pendant leur construction initiale. */
+(function(){
+  if(document.querySelector('script[data-stopflow-060-menu-startup-lock="0.6.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-060-menu-startup-lock.js?v=0601";
+  script.async=false;
+  script.dataset.stopflow060MenuStartupLock="0.6.0";
+  document.head.appendChild(script);
+})();
