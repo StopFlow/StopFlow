@@ -97,3 +97,13 @@
   script.dataset.stopflow060IdeasWording="0.6.0";
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.6.0 — simplifier le menu Bureau sans retirer de fonctions. */
+(function(){
+  if(document.querySelector('script[data-stopflow-060-bureau-simplify="0.6.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-060-bureau-simplify.js?v=0601";
+  script.async=false;
+  script.dataset.stopflow060BureauSimplify="0.6.0";
+  document.head.appendChild(script);
+})();
