@@ -107,3 +107,13 @@
   script.dataset.stopflow060BureauSimplify="0.6.0";
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.6.0 — nettoyer le doublon du département principal dans les formulaires utilisateurs. */
+(function(){
+  if(document.querySelector('script[data-stopflow-060-user-form-cleanup="0.6.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-060-user-form-cleanup.js?v=0601";
+  script.async=false;
+  script.dataset.stopflow060UserFormCleanup="0.6.0";
+  document.head.appendChild(script);
+})();
