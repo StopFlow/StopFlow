@@ -118,12 +118,20 @@
   document.head.appendChild(script);
 })();
 
-/* StopFlow 0.7.0 — interface permissions par fonction des profils. */
+/* StopFlow 0.7.0 — interface permissions par fonction des profils, chargée après les correctifs 0.6.0. */
 (function(){
   if(document.querySelector('script[data-stopflow-070-profile-permissions="0.7.0"]'))return;
-  const script=document.createElement("script");
-  script.src="stopflow-070-profile-permissions.js?v=0701";
-  script.async=false;
-  script.dataset.stopflow070ProfilePermissions="0.7.0";
-  document.head.appendChild(script);
+  const load=()=>{
+    if(document.querySelector('script[data-stopflow-070-profile-permissions="0.7.0"]'))return;
+    const script=document.createElement("script");
+    script.src="stopflow-070-profile-permissions.js?v=0702";
+    script.async=false;
+    script.dataset.stopflow070ProfilePermissions="0.7.0";
+    document.head.appendChild(script);
+  };
+  let attempts=0;
+  const timer=setInterval(()=>{
+    if(window.stopflow060MultiDepartments&&window.stopflow060MenuAuthFix&&window.stopflow060UserFormCleanupPatched){clearInterval(timer);load();return}
+    if(++attempts>=40){clearInterval(timer);load()}
+  },75);
 })();
