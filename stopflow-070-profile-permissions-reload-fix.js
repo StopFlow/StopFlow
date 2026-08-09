@@ -54,3 +54,13 @@
   script.dataset.stopflow070CardNavigation="0.7.0";
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.0 — densité compacte du menu mobile. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-compact-menu="0.7.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-070-compact-menu.js?v=0701";
+  script.async=false;
+  script.dataset.stopflow070CompactMenu="0.7.0";
+  document.head.appendChild(script);
+})();
