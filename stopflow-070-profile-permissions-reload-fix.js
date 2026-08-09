@@ -87,7 +87,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-menu-final="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-menu-final.js?v=0702";
+    script.src="stopflow-070-menu-final.js?v=0703";
     script.async=false;
     script.dataset.stopflow070MenuFinal="0.7.0";
     document.head.appendChild(script);
