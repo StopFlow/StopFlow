@@ -143,3 +143,20 @@
     if(++attempts>=40){clearInterval(timer);load()}
   },75);
 })();
+
+/* StopFlow 0.7.0 — corriger la relecture des permissions enregistrées. */
+(function(){
+  const load=()=>{
+    if(document.querySelector('script[data-stopflow-070-profile-permissions-reload-fix="0.7.0"]'))return;
+    const script=document.createElement("script");
+    script.src="stopflow-070-profile-permissions-reload-fix.js?v=0701";
+    script.async=false;
+    script.dataset.stopflow070ProfilePermissionsReloadFix="0.7.0";
+    document.head.appendChild(script);
+  };
+  let attempts=0;
+  const timer=setInterval(()=>{
+    if(window.stopflow070ProfilePermissionsFix){clearInterval(timer);load();return}
+    if(++attempts>=60){clearInterval(timer);load()}
+  },75);
+})();
