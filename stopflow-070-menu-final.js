@@ -5,6 +5,7 @@
 
   const navigation=()=>window.stopflow070CardNavigation;
   let refreshQueued=false;
+  let lastPointerNavigation={id:"",at:0};
 
   function injectFinalMenuStyles(){
     if(document.getElementById("stopflow070MenuFinalStyles"))return;
@@ -12,6 +13,19 @@
     style.id="stopflow070MenuFinalStyles";
     style.textContent=`
       /* Menu 0.7.0 : texte uniquement. Les pictogrammes restent sur les cartes. */
+      #sf53DesktopNav.sf70-simple-nav,
+      #sf52Drawer,
+      #sf52DrawerContent.sf70-simple-mobile{
+        pointer-events:auto!important;
+      }
+      #sf53DesktopNav.sf70-simple-nav>.sf53-home,
+      #sf52DrawerContent.sf70-simple-mobile>.sf52-nav-home{
+        pointer-events:auto!important;
+        cursor:pointer!important;
+        touch-action:manipulation!important;
+        -webkit-user-select:none!important;
+        user-select:none!important;
+      }
       #sf53DesktopNav.sf70-simple-nav>.sf53-home{
         grid-template-columns:minmax(0,1fr)!important;
         padding-left:12px!important;
@@ -55,9 +69,7 @@
     });
   }
 
-  function closeDrawer(){
-    const close=document.getElementById("sf52DrawerClose");
-    if(close){close.click();return}
+  function closeDrawerDirect(){
     document.body.classList.remove("sf52-drawer-open");
     document.getElementById("sf52Drawer")?.setAttribute("aria-hidden","true");
     document.getElementById("sf52MenuButton")?.setAttribute("aria-expanded","false");
@@ -74,45 +86,64 @@
     const current=document.getElementById("sf52MenuButton");
     if(!current||current.dataset.sf70Owned==="1")return;
 
-    /*
-      Le bouton 0.5.2 possède un listener fermé dans son module qui appelle
-      rebuildDrawer() à chaque ouverture. Le cloner retire uniquement ces
-      anciens listeners ; le bouton conserve son apparence, son ID et ses
-      attributs d'accessibilité.
-    */
+    /* Le clone retire le listener 0.5.2 qui reconstruisait l'ancien menu à chaque ouverture. */
     const button=current.cloneNode(true);
     button.dataset.sf70Owned="1";
     button.setAttribute("aria-label","Ouvrir le menu");
     current.replaceWith(button);
     button.addEventListener("click",event=>{
       event.preventDefault();
+      event.stopPropagation();
       openDrawer();
     });
   }
 
+  function zoneButtonFromEvent(event,container){
+    const target=event.target;
+    const element=target?.nodeType===1?target:target?.parentElement;
+    const button=element?.closest?.("[data-sf70-zone]");
+    return button&&container.contains(button)?button:null;
+  }
+
+  function navigateFromButton(button,container){
+    const id=button?.dataset?.sf70Zone;
+    if(!id)return false;
+    const nav=navigation();
+    if(!nav?.active)return false;
+    if(id==="home")nav.openHome();
+    else nav.openZone(id);
+    if(container.id==="sf52DrawerContent")closeDrawerDirect();
+    return true;
+  }
+
   function ownNavigationClicks(container){
-    if(!container||container.dataset.sf70ClickOwner==="1")return;
-    container.dataset.sf70ClickOwner="1";
+    if(!container||container.dataset.sf70ClickOwner==="2")return;
+    container.dataset.sf70ClickOwner="2";
 
     /*
-      Délégation en phase de capture : les lignes peuvent être redessinées
-      autant de fois que nécessaire sans perdre leur comportement de clic.
+      Safari : on navigue dès pointerdown. Ainsi, même si un ancien rafraîchissement
+      remplace la ligne entre l'appui et le click, l'action est déjà exécutée.
     */
-    container.addEventListener("click",event=>{
-      const button=event.target.closest?.("button[data-sf70-zone]");
-      if(!button||!container.contains(button))return;
-      const id=button.dataset.sf70Zone;
-      if(!id)return;
-
+    container.addEventListener("pointerdown",event=>{
+      if(event.button!=null&&event.button!==0)return;
+      const button=zoneButtonFromEvent(event,container);
+      if(!button)return;
+      const id=button.dataset.sf70Zone||"";
       event.preventDefault();
       event.stopImmediatePropagation();
+      lastPointerNavigation={id,at:Date.now()};
+      navigateFromButton(button,container);
+    },true);
 
-      const nav=navigation();
-      if(!nav?.active)return;
-      if(id==="home")nav.openHome();
-      else nav.openZone(id);
-
-      if(container.id==="sf52DrawerContent")closeDrawer();
+    /* Fallback clavier / navigateurs sans pointerdown pertinent. */
+    container.addEventListener("click",event=>{
+      const button=zoneButtonFromEvent(event,container);
+      if(!button)return;
+      const id=button.dataset.sf70Zone||"";
+      const duplicate=lastPointerNavigation.id===id&&Date.now()-lastPointerNavigation.at<800;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if(!duplicate)navigateFromButton(button,container);
     },true);
   }
 
