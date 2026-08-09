@@ -104,7 +104,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-card-personalization="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-card-personalization.js?v=0701";
+    script.src="stopflow-070-card-personalization.js?v=0702";
     script.async=false;
     script.dataset.stopflow070CardPersonalization="0.7.0";
     document.head.appendChild(script);
