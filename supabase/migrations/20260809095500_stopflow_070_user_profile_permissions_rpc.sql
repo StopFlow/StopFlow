@@ -6,7 +6,8 @@ create or replace function public.admin_set_user_profile_permissions_070(
   p_nom text,
   p_role text,
   p_actif boolean,
-  p_permissions jsonb
+  p_permissions jsonb,
+  p_audit_action text default 'update'
 )
 returns jsonb
 language plpgsql
@@ -22,7 +23,7 @@ declare
   v_scopes text[]:=array[]::text[];
   v_legacy_primary text;
   v_count integer:=0;
-  v_action text:='update';
+  v_action text:=lower(btrim(coalesce(p_audit_action,'update')));
 begin
   if not private.is_admin() then
     raise exception 'Cette action est réservée à l’Administrateur.' using errcode='42501';
@@ -38,6 +39,7 @@ begin
   if jsonb_typeof(v_permissions)<>'array' then
     raise exception 'La liste des permissions est invalide.' using errcode='22023';
   end if;
+  if v_action not in ('create','invite','update') then v_action:='update'; end if;
 
   if v_email='contact@srlreunion.com' then
     v_role:='admin';
@@ -116,9 +118,10 @@ begin
 
   select count(*) into v_count from public.profile_permissions where profile_id=p_profile_id;
 
-  if v_before.actif=true and v_after.actif=false then v_action:='deactivate';
-  elsif v_before.actif=false and v_after.actif=true then v_action:='activate';
-  else v_action:='update';
+  if v_action='update' then
+    if v_before.actif=true and v_after.actif=false then v_action:='deactivate';
+    elsif v_before.actif=false and v_after.actif=true then v_action:='activate';
+    end if;
   end if;
 
   insert into public.user_admin_events(actor_user_id,target_user_id,target_email,action,details)
@@ -149,5 +152,5 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb) from public;
-grant execute on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb) to authenticated;
+revoke all on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) from public;
+grant execute on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) to authenticated;
