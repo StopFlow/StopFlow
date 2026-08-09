@@ -98,3 +98,20 @@
     if(++attempts>=40){clearInterval(timer);load()}
   },75);
 })();
+
+/* StopFlow 0.7.0 — ordre et visibilité personnels des cartes. */
+(function(){
+  const load=()=>{
+    if(document.querySelector('script[data-stopflow-070-card-personalization="0.7.0"]'))return;
+    const script=document.createElement("script");
+    script.src="stopflow-070-card-personalization.js?v=0701";
+    script.async=false;
+    script.dataset.stopflow070CardPersonalization="0.7.0";
+    document.head.appendChild(script);
+  };
+  let attempts=0;
+  const timer=setInterval(()=>{
+    if(window.stopflow070CardNavigation?.active){clearInterval(timer);load();return}
+    if(++attempts>=40){clearInterval(timer);load()}
+  },75);
+})();
