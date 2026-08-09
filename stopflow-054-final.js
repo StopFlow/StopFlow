@@ -127,6 +127,14 @@
     script.src="stopflow-070-profile-permissions.js?v=0702";
     script.async=false;
     script.dataset.stopflow070ProfilePermissions="0.7.0";
+    script.onload=()=>{
+      if(document.querySelector('script[data-stopflow-070-profile-permissions-fix="0.7.0"]'))return;
+      const fix=document.createElement("script");
+      fix.src="stopflow-070-profile-permissions-fix.js?v=0701";
+      fix.async=false;
+      fix.dataset.stopflow070ProfilePermissionsFix="0.7.0";
+      document.head.appendChild(fix);
+    };
     document.head.appendChild(script);
   };
   let attempts=0;
