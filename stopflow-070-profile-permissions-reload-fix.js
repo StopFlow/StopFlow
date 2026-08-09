@@ -82,12 +82,12 @@
   },75);
 })();
 
-/* StopFlow 0.7.0 — le bouton ☰ appartient définitivement à la navigation 0.7.0. */
+/* StopFlow 0.7.0 — le bouton ☰ et les clics du menu appartiennent définitivement à la navigation 0.7.0. */
 (function(){
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-menu-final="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-menu-final.js?v=0701";
+    script.src="stopflow-070-menu-final.js?v=0702";
     script.async=false;
     script.dataset.stopflow070MenuFinal="0.7.0";
     document.head.appendChild(script);
