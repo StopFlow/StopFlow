@@ -44,3 +44,13 @@
       .catch(error=>console.warn("StopFlow 0.7.0 — rechargement permissions impossible",error));
   }
 })();
+
+/* StopFlow 0.7.0 — navigation par grandes zones et cartes. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-card-navigation="0.7.0"]'))return;
+  const script=document.createElement("script");
+  script.src="stopflow-070-card-navigation.js?v=0701";
+  script.async=false;
+  script.dataset.stopflow070CardNavigation="0.7.0";
+  document.head.appendChild(script);
+})();
