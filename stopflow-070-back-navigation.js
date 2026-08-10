@@ -153,7 +153,11 @@
     if(!drawer||drawer.dataset.sf73DrawerFix==='1')return;
     drawer.dataset.sf73DrawerFix='1';
 
-    const closeImmediately=()=>forceDrawerClosedVisual();
+    const closeImmediately=event=>{
+      forceDrawerClosedVisual();
+      const needsStateSync=event?.type==='pointerdown'||(event?.type==='touchstart'&&!window.PointerEvent);
+      if(needsStateSync&&close)queueMicrotask(()=>close.click());
+    };
     close?.addEventListener('pointerdown',closeImmediately,{capture:true});
     close?.addEventListener('touchstart',closeImmediately,{capture:true,passive:true});
     close?.addEventListener('click',closeImmediately,{capture:true});
