@@ -4,7 +4,7 @@
 
   const MOBILE_QUERY='(max-width: 950px)';
   const VALID_CARD_ZONES=new Set(['home','cuisine','salle','nettoyage','general']);
-  const state={open:false,observer:null,scheduled:false,lastPage:null};
+  const state={open:false,observer:null,scheduled:false,lastPage:null,context:null};
 
   const isMobile=()=>window.matchMedia?.(MOBILE_QUERY).matches===true;
   const nav=()=>window.stopflow070CardNavigation;
@@ -12,6 +12,30 @@
   const visiblePage=()=>document.querySelector('#app .page:not(.hidden)');
   const currentZone=()=>nav()?.runtime?.currentZone||'home';
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+
+  function bindTap(node,handler){
+    if(!node||node.dataset.sf73TapBound==='1')return;
+    node.dataset.sf73TapBound='1';
+    let firedAt=0;
+    const fire=event=>{
+      const now=Date.now();
+      if((event.type==='click'||event.type==='touchend')&&now-firedAt<650){
+        event.preventDefault?.();
+        event.stopPropagation?.();
+        event.stopImmediatePropagation?.();
+        return;
+      }
+      if(event.type==='pointerup'&&event.button!=null&&event.button!==0)return;
+      firedAt=now;
+      event.preventDefault?.();
+      event.stopPropagation?.();
+      event.stopImmediatePropagation?.();
+      handler(event);
+    };
+    if(window.PointerEvent)node.addEventListener('pointerup',fire,true);
+    else node.addEventListener('touchend',fire,{capture:true,passive:false});
+    node.addEventListener('click',fire,true);
+  }
 
   function injectStyles(){
     if(document.getElementById('sf73MobileActionsStyles'))return;
@@ -23,31 +47,33 @@
       @media(max-width:950px){
         .sf70-personalize-toolbar{display:none!important}
         #sf73MobileActionFab{
-          position:fixed;
-          left:max(14px,calc(env(safe-area-inset-left) + 10px));
-          bottom:max(14px,calc(env(safe-area-inset-bottom) + 12px));
-          z-index:88;
+          position:fixed!important;
+          left:max(14px,calc(env(safe-area-inset-left) + 10px))!important;
+          bottom:max(14px,calc(env(safe-area-inset-bottom) + 12px))!important;
+          z-index:10020!important;
           width:48px;height:48px;border-radius:50%;border:1px solid rgba(22,69,142,.16);
           background:#2463eb;color:#fff;box-shadow:0 10px 28px rgba(19,54,104,.28);
           display:grid;place-items:center;padding:0;font-size:30px;font-weight:400;line-height:1;
-          cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+          cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto!important;
+          -webkit-user-select:none;user-select:none;
         }
         #sf73MobileActionFab:active{transform:scale(.96)}
         #sf73MobileActionFab[hidden]{display:none!important}
         #sf73MobileActionBackdrop{
-          position:fixed;inset:0;z-index:96;background:rgba(5,18,31,.42);display:block;
+          position:fixed!important;inset:0!important;z-index:10030!important;background:rgba(5,18,31,.42);display:block;
           opacity:0;pointer-events:none;transition:opacity .16s ease;
         }
-        #sf73MobileActionBackdrop.open{opacity:1;pointer-events:auto}
+        #sf73MobileActionBackdrop.open{opacity:1;pointer-events:auto!important}
         #sf73MobileActionSheet{
-          position:fixed;left:0;right:0;bottom:0;z-index:97;display:block;
+          position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:10031!important;display:block;
           background:#fff;border-radius:20px 20px 0 0;
           box-shadow:0 -18px 48px rgba(8,31,55,.22);
           padding:10px 14px calc(14px + env(safe-area-inset-bottom));
-          transform:translateY(105%);transition:transform .18s ease;
-          max-height:min(68vh,540px);overflow:auto;
+          transform:translate3d(0,105%,0);-webkit-transform:translate3d(0,105%,0);transition:transform .18s ease;
+          max-height:min(68vh,540px);overflow:auto;pointer-events:auto!important;
+          -webkit-overflow-scrolling:touch;
         }
-        #sf73MobileActionSheet.open{transform:translateY(0)}
+        #sf73MobileActionSheet.open{transform:translate3d(0,0,0);-webkit-transform:translate3d(0,0,0)}
         .sf73-mobile-sheet-grip{width:38px;height:4px;border-radius:99px;background:#d4dbe5;margin:2px auto 12px}
         .sf73-mobile-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
         .sf73-mobile-sheet-head h3{margin:0 0 3px;font-size:17px}
@@ -62,7 +88,8 @@
         .sf73-mobile-action span:last-child{color:#8a98aa;font-size:18px}
         .sf73-mobile-action.primary{border-color:#c9d9ff;background:#f4f7ff;color:#1d55bd}
         .sf73-mobile-action.danger{border-color:#f0d6d6;background:#fff8f8;color:#a33c3c}
-        body.sf73-mobile-actions-open{overflow:hidden!important}
+        body.sf73-mobile-actions-open{overflow:hidden!important;touch-action:none}
+        body.sf73-mobile-actions-open #sf73MobileActionFab{pointer-events:none!important}
       }
     `;
     document.head.appendChild(style);
@@ -78,21 +105,17 @@
       fab.setAttribute('aria-label','Actions de cette page');
       fab.setAttribute('aria-expanded','false');
       fab.textContent='+';
-      fab.addEventListener('click',event=>{
-        event.preventDefault();
-        event.stopPropagation();
-        openSheet();
-      });
       document.body.appendChild(fab);
     }
+    bindTap(fab,()=>openSheet());
 
     let backdrop=document.getElementById('sf73MobileActionBackdrop');
     if(!backdrop){
       backdrop=document.createElement('div');
       backdrop.id='sf73MobileActionBackdrop';
-      backdrop.addEventListener('click',closeSheet);
       document.body.appendChild(backdrop);
     }
+    bindTap(backdrop,()=>closeSheet());
 
     let sheet=document.getElementById('sf73MobileActionSheet');
     if(!sheet){
@@ -156,8 +179,9 @@
 
   function renderSheet(){
     const {sheet}=ensureUi();
-    const ctx=context();
+    const ctx=context()||state.context;
     if(!ctx){sheet.innerHTML='';return false}
+    state.context=ctx;
     sheet.innerHTML=`
       <div class="sf73-mobile-sheet-grip"></div>
       <div class="sf73-mobile-sheet-head">
@@ -167,14 +191,12 @@
       <div class="sf73-mobile-actions">
         ${ctx.actions.map(action=>`<button type="button" class="sf73-mobile-action${action.primary?' primary':''}${action.danger?' danger':''}" data-sf73-action="${esc(action.id)}"><span>${esc(action.label)}</span><span>›</span></button>`).join('')}
       </div>`;
-    sheet.querySelector('.sf73-mobile-sheet-close')?.addEventListener('click',closeSheet);
+    bindTap(sheet.querySelector('.sf73-mobile-sheet-close'),()=>closeSheet());
     sheet.querySelectorAll('[data-sf73-action]').forEach(button=>{
-      button.addEventListener('click',event=>{
-        event.preventDefault();
-        event.stopPropagation();
+      bindTap(button,()=>{
         const action=ctx.actions.find(item=>item.id===button.dataset.sf73Action);
         closeSheet();
-        setTimeout(()=>action?.run?.(),20);
+        setTimeout(()=>action?.run?.(),30);
       });
     });
     return true;
@@ -188,6 +210,10 @@
     fab.setAttribute('aria-expanded','true');
     backdrop.classList.add('open');
     sheet.classList.add('open');
+    backdrop.style.opacity='1';
+    backdrop.style.pointerEvents='auto';
+    sheet.style.transform='translate3d(0,0,0)';
+    sheet.style.webkitTransform='translate3d(0,0,0)';
     document.body.classList.add('sf73-mobile-actions-open');
   }
 
@@ -197,6 +223,10 @@
     fab.setAttribute('aria-expanded','false');
     backdrop.classList.remove('open');
     sheet.classList.remove('open');
+    backdrop.style.removeProperty('opacity');
+    backdrop.style.removeProperty('pointer-events');
+    sheet.style.removeProperty('transform');
+    sheet.style.removeProperty('-webkit-transform');
     document.body.classList.remove('sf73-mobile-actions-open');
   }
 
@@ -204,10 +234,11 @@
     const {fab}=ensureUi();
     const pageNode=visiblePage();
     const ctx=isMobile()&&!document.getElementById('app')?.classList.contains('hidden')?context():null;
+    state.context=ctx;
     fab.hidden=!ctx;
     state.lastPage=pageNode?.id||null;
     if(!ctx&&state.open)closeSheet();
-    if(state.open)renderSheet();
+    if(state.open&&ctx)renderSheet();
   }
 
   function scheduleRefresh(){
