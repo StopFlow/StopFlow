@@ -91,3 +91,23 @@
   },100);
   [0,250,700,1600].forEach(delay=>setTimeout(install,delay));
 })();
+
+/* StopFlow 0.7.0 — charge Températures V3 seulement après le socle cartes/personnalisation. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-temperature-v3="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-temperature-v3.js?v=0703';
+  script.async=false;
+  script.dataset.stopflow070TemperatureV3='0.7.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.0 — label explicite des previews. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-preview-label="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-preview-label.js?v=0702';
+  script.async=false;
+  script.dataset.stopflow070PreviewLabel='0.7.0';
+  document.head.appendChild(script);
+})();
