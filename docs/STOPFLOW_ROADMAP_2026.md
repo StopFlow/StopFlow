@@ -42,6 +42,23 @@ Peut comprendre :
 - sécurité, RLS, intégrité des données et performances ;
 - petits correctifs de présentation sans refonte générale.
 
+#### Retours terrain prioritaires enregistrés
+
+**Navigation mobile**
+- fiabiliser la croix de fermeture du menu latéral ;
+- fluidifier le geste de fermeture du menu par glissement ;
+- afficher une flèche retour directement dans l'en-tête mobile dès qu'une fiche ou une sous-page est ouverte ;
+- conserver le bouton menu accessible sans obliger l'utilisateur à l'ouvrir pour faire apparaître le retour.
+
+**Salle → Inventaire**
+- corriger le bouton « Démarrer inventaire » afin qu'il ouvre réellement la page d'inventaire attendue ;
+- supprimer ou masquer les étapes/cartes intermédiaires « Inventaire salle » et « Inventaire & fournisseurs » lorsqu'elles n'apportent aucune action utile ;
+- à l'ouverture de « Inventaire » dans la zone Salle, afficher directement la liste des fournisseurs disponibles ;
+- parcours cible : **Salle → Inventaire → choix du fournisseur → Démarrer inventaire → fiche d'inventaire** ;
+- la zone Salle doit rester dédiée à l'exécution terrain : consulter les fournisseurs disponibles, choisir un fournisseur et réaliser l'inventaire ;
+- les actions de création et d'administration (fournisseurs, articles, catalogue et paramétrages associés) doivent être regroupées dans la zone **Général**, selon les permissions de l'utilisateur ;
+- éviter toute duplication entre l'espace opérationnel Salle et les fonctions de gestion de Général.
+
 Ne comprend pas :
 - nouvelle architecture majeure ;
 - redesign complet ;
@@ -66,7 +83,8 @@ Comprend :
 - zones tactiles et hiérarchie de l'information optimisées ;
 - gestion cohérente du clavier virtuel, des champs numériques et du scroll ;
 - widgets enrichis lorsque leur taille permet d'afficher de vraies informations utiles ;
-- conservation et optimisation de l'expérience desktop.
+- conservation et optimisation de l'expérience desktop ;
+- consolidation du principe « zone métier = exécution, Général = création/administration » afin de simplifier les parcours et supprimer les doublons d'interface.
 
 #### Banc de test mobile inclus dans 0.8.0
 - mode responsive des outils développeur comme référence principale ;
