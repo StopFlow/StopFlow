@@ -125,7 +125,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-mobile-card-touch="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-mobile-card-touch.js?v=0701';
+  script.src='stopflow-070-mobile-card-touch.js?v=0702';
   script.async=false;
   script.dataset.stopflow070MobileCardTouch='0.7.0';
   document.head.appendChild(script);
