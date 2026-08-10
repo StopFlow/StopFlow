@@ -101,6 +101,16 @@
   document.head.appendChild(script);
 })();
 
+/* StopFlow 0.7.0 — fermeture tactile fiable de la modale équipements Températures V3. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-temperature-v3-modal-fix="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-temperature-v3-modal-fix.js?v=0701';
+  script.async=false;
+  script.dataset.stopflow070TemperatureV3ModalFix='0.7.0';
+  document.head.appendChild(script);
+})();
+
 /* StopFlow 0.7.0 — amélioration visuelle du relevé Températures V3. */
 (function(){
   if(document.querySelector('script[data-stopflow-070-temperature-v3-visibility="0.7.0"]'))return;
@@ -125,7 +135,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-mobile-card-touch="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-mobile-card-touch.js?v=0703';
+  script.src='stopflow-070-mobile-card-touch.js?v=0704';
   script.async=false;
   script.dataset.stopflow070MobileCardTouch='0.7.0';
   document.head.appendChild(script);
