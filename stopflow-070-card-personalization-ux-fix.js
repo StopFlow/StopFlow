@@ -106,9 +106,19 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-temperature-v3-visibility="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-temperature-v3-visibility.js?v=0701';
+  script.src='stopflow-070-temperature-v3-visibility.js?v=0702';
   script.async=false;
   script.dataset.stopflow070TemperatureV3Visibility='0.7.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.0 — pavé numérique dédié aux températures sur smartphone. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-temperature-v3-mobile-keypad="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-temperature-v3-mobile-keypad.js?v=0701';
+  script.async=false;
+  script.dataset.stopflow070TemperatureV3MobileKeypad='0.7.0';
   document.head.appendChild(script);
 })();
 
