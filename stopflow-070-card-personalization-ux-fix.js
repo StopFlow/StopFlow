@@ -141,6 +141,16 @@
   document.head.appendChild(script);
 })();
 
+/* StopFlow 0.7.0 — harmonise les interactions tactiles des sous-pages avec l'Accueil. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-mobile-subpage-touch-fix="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-mobile-subpage-touch-fix.js?v=0701';
+  script.async=false;
+  script.dataset.stopflow070MobileSubpageTouchFix='0.7.0';
+  document.head.appendChild(script);
+})();
+
 /* StopFlow 0.7.0 — navigation retour cohérente sur toutes les pages. */
 (function(){
   if(document.querySelector('script[data-stopflow-070-back-navigation="0.7.0"]'))return;
