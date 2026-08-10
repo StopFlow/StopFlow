@@ -180,3 +180,13 @@
   script.dataset.stopflow073SalleInventory='0.7.3';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.3 — bouton + et actions contextuelles sur mobile. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-mobile-actions="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-mobile-actions.js?v=0731';
+  script.async=false;
+  script.dataset.stopflow073MobileActions='0.7.3';
+  document.head.appendChild(script);
+})();
