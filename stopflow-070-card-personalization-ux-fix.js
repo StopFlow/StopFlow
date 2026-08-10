@@ -185,7 +185,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-073-mobile-actions="0.7.3"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-073-mobile-actions.js?v=0732';
+  script.src='stopflow-073-mobile-actions.js?v=0733';
   script.async=false;
   script.dataset.stopflow073MobileActions='0.7.3';
   document.head.appendChild(script);
