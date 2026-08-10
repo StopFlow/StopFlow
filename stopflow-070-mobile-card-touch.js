@@ -1,10 +1,12 @@
-/* StopFlow 0.7.0 — propriétaire tactile mobile des cartes 0.7.0, avec distinction tap / scroll renforcée. */
+/* StopFlow 0.7.0 — propriétaire tactile mobile des cartes 0.7.0, distinction tap / scroll conservatrice. */
 (function(){
   if(window.stopflow070MobileCardTouch?.active)return;
 
-  const MOVE_THRESHOLD=8;
-  const SCROLL_THRESHOLD=2;
-  const state={gesture:null,suppressCard:null,suppressUntil:0};
+  const MOVE_THRESHOLD=5;
+  const TOUCH_MOVE_THRESHOLD=4;
+  const SCROLL_THRESHOLD=1;
+  const RECENT_SCROLL_GUARD=220;
+  const state={gesture:null,suppressCard:null,suppressUntil:0,recentScrollAt:0};
   window.stopflow070MobileCardTouch={active:true,state};
 
   const isMobile=()=>window.matchMedia?.('(max-width: 950px)').matches===true;
@@ -35,7 +37,12 @@
 
   function rememberSyntheticClick(card){
     state.suppressCard=card;
-    state.suppressUntil=Date.now()+1000;
+    state.suppressUntil=Date.now()+1100;
+  }
+
+  function cancelGestureForScroll(){
+    state.recentScrollAt=Date.now();
+    if(state.gesture)state.gesture.moved=true;
   }
 
   document.addEventListener('pointerdown',event=>{
@@ -61,8 +68,18 @@
     const dx=event.clientX-gesture.startX;
     const dy=event.clientY-gesture.startY;
     if(Math.hypot(dx,dy)>MOVE_THRESHOLD)gesture.moved=true;
-    if(Math.abs(window.scrollY-gesture.startScrollY)>SCROLL_THRESHOLD||Math.abs(window.scrollX-gesture.startScrollX)>SCROLL_THRESHOLD)gesture.moved=true;
+    if(Math.abs(window.scrollY-gesture.startScrollY)>SCROLL_THRESHOLD||Math.abs(window.scrollX-gesture.startScrollX)>SCROLL_THRESHOLD)cancelGestureForScroll();
   },true);
+
+  /* Sur iPhone, touchmove reste un garde-fou supplémentaire lorsque Safari compresse les PointerEvents pendant le scroll. */
+  document.addEventListener('touchmove',event=>{
+    const gesture=state.gesture;
+    if(!gesture||!event.touches?.length)return;
+    const touch=event.touches[0];
+    const dx=touch.clientX-gesture.startX;
+    const dy=touch.clientY-gesture.startY;
+    if(Math.hypot(dx,dy)>TOUCH_MOVE_THRESHOLD)gesture.moved=true;
+  },{capture:true,passive:true});
 
   document.addEventListener('pointerup',event=>{
     const gesture=state.gesture;
@@ -73,8 +90,9 @@
     const endDy=event.clientY-gesture.startY;
     const fingerMoved=Math.hypot(endDx,endDy)>MOVE_THRESHOLD;
     const pageMoved=Math.abs(window.scrollY-gesture.startScrollY)>SCROLL_THRESHOLD||Math.abs(window.scrollX-gesture.startScrollX)>SCROLL_THRESHOLD;
+    const recentScroll=Date.now()-state.recentScrollAt<RECENT_SCROLL_GUARD;
     const sameCard=gesture.card===cardFromEvent(event)||gesture.card.contains(event.target);
-    const isTap=!gesture.moved&&!fingerMoved&&!pageMoved&&sameCard&&Date.now()-gesture.startedAt<1200;
+    const isTap=!gesture.moved&&!fingerMoved&&!pageMoved&&!recentScroll&&sameCard&&Date.now()-gesture.startedAt<1000;
 
     rememberSyntheticClick(gesture.card);
     if(isTap)activate(gesture.card,event);
@@ -87,22 +105,15 @@
     state.gesture=null;
   },true);
 
-  document.addEventListener('scroll',()=>{
-    if(state.gesture)state.gesture.moved=true;
-  },true);
+  document.addEventListener('scroll',cancelGestureForScroll,true);
 
+  /* Sur le mobile 0.7.0, seul pointerup peut ouvrir une carte. Le click Safari est toujours absorbé. */
   document.addEventListener('click',event=>{
     if(!isMobile())return;
     const card=cardFromEvent(event);
     if(!card||card.closest('.sf70-personalizing'))return;
-
-    if(state.suppressCard===card&&Date.now()<state.suppressUntil){
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      return;
-    }
-
-    activate(card,event);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
   },true);
 })();
