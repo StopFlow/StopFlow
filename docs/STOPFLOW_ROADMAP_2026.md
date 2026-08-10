@@ -46,18 +46,6 @@ Comprend :
 - réinitialisation fiable à la disposition par défaut ;
 - aucune incidence sur les permissions.
 
-### 0.7.3 — Personnalisation visuelle et widgets
-Objectif : enrichir les cartes une fois la grille stabilisée.
-
-Comprend progressivement :
-- couleurs personnelles ;
-- formes/styles de cartes ;
-- pictogrammes configurables lorsqu'ils apportent une valeur ;
-- options typographiques limitées et cohérentes ;
-- cartes agrandies affichant davantage d'informations utiles ;
-- exemples : Températures 2×1 ou 2×2 avec dernier relevé, nombre d'équipements et anomalies ;
-- réglages stockés par utilisateur et totalement séparés des permissions.
-
 ### 0.8.0 — Refonte mobile-first majeure
 Priorité produit : l'utilisation quotidienne de StopFlow sera principalement sur smartphone.
 
@@ -80,7 +68,7 @@ Comprend :
 - gestion du clavier virtuel, champs numériques et scroll ;
 - conservation de la bonne expérience desktop existante.
 
-### Banc de test mobile sur PC — inclus dans 0.8.0
+#### Banc de test mobile sur PC — inclus dans 0.8.0
 Objectif : éviter d'utiliser le smartphone réel après chaque petite modification.
 
 Comprend :
@@ -101,6 +89,18 @@ Comprend :
 - vérification des parcours quotidiens ;
 - corrections finales ;
 - création d'une candidate stable avant toute publication en production.
+
+### 0.8.2 — Personnalisation visuelle et widgets enrichis
+Objectif : ajouter les options esthétiques et les widgets seulement après stabilisation de l'expérience mobile.
+
+Comprend progressivement :
+- couleurs personnelles ;
+- formes/styles de cartes ;
+- pictogrammes configurables lorsqu'ils apportent une valeur ;
+- options typographiques limitées et cohérentes ;
+- cartes agrandies affichant davantage d'informations utiles ;
+- exemples : Températures 2×1 ou 2×2 avec dernier relevé, nombre d'équipements et anomalies ;
+- réglages stockés par utilisateur et totalement séparés des permissions.
 
 ## Règle d'architecture
 Les permissions déterminent CE QUE l'utilisateur est autorisé à faire. Les préférences, la taille d'écran et l'interface déterminent COMMENT ces fonctions sont affichées. Aucun réglage visuel, mobile ou de tableau de bord ne doit pouvoir accorder un droit métier.
