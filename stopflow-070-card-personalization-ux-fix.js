@@ -63,7 +63,6 @@
 
     state.editingZone=null;
 
-    /* Le renderer 0.7.0 recrée les cartes dans leur ordre canonique d'origine. */
     if(typeof nav?.refresh==="function")nav.refresh();
     else if(zone==="home"&&typeof nav?.openHome==="function")nav.openHome();
     else if(typeof nav?.openZone==="function")nav.openZone(zone);
@@ -119,6 +118,16 @@
   script.src='stopflow-070-temperature-v3-mobile-keypad.js?v=0701';
   script.async=false;
   script.dataset.stopflow070TemperatureV3MobileKeypad='0.7.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.0 — propriétaire tactile mobile de toutes les cartes 0.7.0. */
+(function(){
+  if(document.querySelector('script[data-stopflow-070-mobile-card-touch="0.7.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-070-mobile-card-touch.js?v=0701';
+  script.async=false;
+  script.dataset.stopflow070MobileCardTouch='0.7.0';
   document.head.appendChild(script);
 })();
 
