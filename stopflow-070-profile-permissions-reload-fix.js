@@ -137,8 +137,12 @@
 (function(){
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-temperature-refactor="0.7.0"]'))return;
+    /* Le module Températures n'a pas besoin d'un MutationObserver sur la page des cartes.
+       On neutralise explicitement cette ancienne surveillance avant son initialisation. */
+    const zonePage=document.getElementById('sf70ZonePage');
+    if(zonePage)zonePage.dataset.sf70TemperatureObserver='1';
     const script=document.createElement("script");
-    script.src="stopflow-070-temperature-refactor.js?v=0701";
+    script.src="stopflow-070-temperature-refactor.js?v=0702";
     script.async=false;
     script.dataset.stopflow070TemperatureRefactor="0.7.0";
     document.head.appendChild(script);
