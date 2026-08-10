@@ -1,0 +1,2 @@
+StopFlow 0.7.2
+Publication production du libellé de version visible dans la zone utilisateur, sur mobile et desktop.
