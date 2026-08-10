@@ -5,70 +5,102 @@ StopFlow reste une seule application, une seule base de données et un seul syst
 
 ## Version de production actuelle
 - Production stable : StopFlow 0.5.4.
-- Les travaux 0.6.0 et 0.7.0 restent en développement/preview tant qu'ils ne sont pas explicitement validés et publiés.
+- Les travaux 0.6.0 et 0.7.x restent en développement/preview tant qu'ils ne sont pas explicitement validés et publiés.
 
-## Ordre de travail recommandé
+## Chronologie retenue
 
-### 0.7.0 — Fondation fonctionnelle et navigation
-Objectif : stabiliser la structure métier avant la grande refonte mobile.
+### 0.7.0 — Stabilisation de la nouvelle architecture
+Objectif : terminer et valider les fondations fonctionnelles déjà engagées.
 
-Blocs déjà réalisés ou en cours :
+Comprend :
 - permissions fines par fonction ;
 - navigation par grandes zones et cartes ;
 - menu compact et réactif ;
 - personnalisation simple de l'ordre/visibilité des cartes ;
-- refonte Températures avec relevé complet et registre des équipements frigorifiques.
+- refonte Températures avec relevé complet et registre des équipements frigorifiques ;
+- correction des régressions de navigation liées à ces nouveaux modules ;
+- validation fonctionnelle du module Températures.
 
-À terminer dans 0.7.0 :
-- validation fonctionnelle de la refonte Températures ;
-- grille personnalisable 3 × 4 ;
+La 0.7.0 doit être stable avant d'ajouter de nouveaux chantiers importants.
+
+### 0.7.1 — Droits fonctionnels complets des cartes
+Objectif : terminer la migration des anciennes pages vers les permissions exactes 0.7.
+
+Comprend :
+- remplacement ciblé des anciens contrôles par rôle (Responsable/Employé) par les permissions fonctionnelles ;
+- aucun élargissement global de isResponsible() ;
+- test d'un Employé recevant une permission de gestion précise sans recevoir les autres ;
+- cohérence entre carte visible, action réellement accessible et sécurité Supabase ;
+- tests Employé / Responsable / Admin.
+
+### 0.7.2 — Grille personnalisable 3 × 4
+Objectif : transformer l'ordre simple des cartes en véritable tableau de bord personnalisable.
+
+Comprend :
+- grille logique de 12 emplacements ;
+- emplacements visibles en mode Personnaliser ;
+- déplacement tactile/souris clair et intuitif ;
 - tailles de cartes 1×1, 2×1 et 2×2 ;
-- adaptation des anciennes pages qui utilisent encore des contrôles de rôle au lieu des permissions exactes ;
-- tests fonctionnels des profils Employé / Responsable / Admin ;
-- validation générale 0.7.0.
+- sauvegarde par utilisateur ;
+- cartes masquées/réaffichables ;
+- réinitialisation fiable à la disposition par défaut ;
+- aucune incidence sur les permissions.
 
-### 0.7.x — Personnalisation avancée du tableau de bord
-Objectif : enrichir le tableau de bord sans modifier la sécurité.
+### 0.7.3 — Personnalisation visuelle et widgets
+Objectif : enrichir les cartes une fois la grille stabilisée.
 
-Prévu :
+Comprend progressivement :
 - couleurs personnelles ;
 - formes/styles de cartes ;
 - pictogrammes configurables lorsqu'ils apportent une valeur ;
-- tailles enrichies ;
-- widgets affichant davantage d'informations quand une carte est agrandie ;
+- options typographiques limitées et cohérentes ;
+- cartes agrandies affichant davantage d'informations utiles ;
+- exemples : Températures 2×1 ou 2×2 avec dernier relevé, nombre d'équipements et anomalies ;
 - réglages stockés par utilisateur et totalement séparés des permissions.
 
 ### 0.8.0 — Refonte mobile-first majeure
 Priorité produit : l'utilisation quotidienne de StopFlow sera principalement sur smartphone.
 
-Objectif : conserver UNE application et UNE base de code, mais proposer deux expériences adaptées :
+Objectif : conserver UNE application, UNE base de code et UNE base de données, mais proposer deux expériences réellement adaptées :
 - desktop optimisé PC ;
 - mobile spécifiquement pensé smartphone.
 
-La détection doit être principalement basée sur la largeur et les capacités de l'écran (responsive/adaptive design), avec composants et dispositions adaptés selon le contexte, plutôt qu'une simple réduction visuelle du desktop.
+La détection doit être principalement basée sur la largeur du viewport, les media queries et les capacités d'interaction disponibles, plutôt que sur le nom de l'appareil. Une même fonction peut donc avoir une disposition desktop et une disposition mobile différentes sans dupliquer la logique métier.
 
-Travail prévu :
-- audit de chaque écran sur smartphone ;
+Comprend :
+- audit écran par écran sur smartphone ;
 - navigation mobile dédiée ;
-- tailles de zones tactiles adaptées ;
+- hiérarchie de l'information adaptée au petit écran ;
+- tailles de boutons et zones tactiles adaptées ;
 - formulaires mobile-first ;
-- listes et tableaux transformés en présentations adaptées au petit écran ;
-- ordre de l'information différent si nécessaire entre desktop et mobile ;
+- listes et tableaux transformés en cartes/listes adaptées au smartphone lorsque nécessaire ;
+- ordre de l'information différent entre desktop et mobile si cela améliore l'usage ;
 - réduction du nombre d'actions visibles simultanément ;
 - panneaux, modales et écrans plein écran adaptés au tactile ;
-- gestion correcte du clavier virtuel et des champs numériques ;
-- conservation d'une bonne expérience desktop existante.
+- gestion du clavier virtuel, champs numériques et scroll ;
+- conservation de la bonne expérience desktop existante.
 
 ### Banc de test mobile sur PC — inclus dans 0.8.0
 Objectif : éviter d'utiliser le smartphone réel après chaque petite modification.
 
-Prévu :
-- utilisation systématique du mode responsive des outils développeur du navigateur ;
+Comprend :
+- mode responsive des outils développeur du navigateur comme référence principale ;
 - tailles de référence smartphone enregistrées ;
-- contrôle portrait/paysage ;
-- tests des zones tactiles et formulaires ;
-- possibilité d'ajouter dans StopFlow Dev un mode de prévisualisation mobile encadré sur PC si cela améliore le workflow ;
+- portrait/paysage ;
+- tests de navigation, boutons, zones tactiles, formulaires, listes, menus et clavier ;
+- possibilité d'ajouter à StopFlow Dev un sélecteur de prévisualisation mobile encadré sur PC si cela améliore le workflow ;
 - smartphone réel réservé aux validations importantes et finales.
 
+### 0.8.1 — Validation mobile/desktop et candidate de publication
+Objectif : tester la nouvelle expérience sur plusieurs tailles d'écran avant publication.
+
+Comprend :
+- tests réels sur smartphone ;
+- contrôle desktop ;
+- contrôle des permissions et données ;
+- vérification des parcours quotidiens ;
+- corrections finales ;
+- création d'une candidate stable avant toute publication en production.
+
 ## Règle d'architecture
-Les permissions déterminent CE QUE l'utilisateur est autorisé à faire. Les préférences et l'interface déterminent COMMENT ces fonctions sont affichées. Aucun réglage visuel, mobile ou de tableau de bord ne doit pouvoir accorder un droit métier.
+Les permissions déterminent CE QUE l'utilisateur est autorisé à faire. Les préférences, la taille d'écran et l'interface déterminent COMMENT ces fonctions sont affichées. Aucun réglage visuel, mobile ou de tableau de bord ne doit pouvoir accorder un droit métier.
