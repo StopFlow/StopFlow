@@ -1,0 +1,2 @@
+StopFlow 0.7.3 preview
+Navigation mobile : fermeture fiable du tiroir, glissement plus fluide et retour permanent dans l'en-tête.
