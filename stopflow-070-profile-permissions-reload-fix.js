@@ -115,3 +115,20 @@
     if(++attempts>=40){clearInterval(timer);load()}
   },75);
 })();
+
+/* StopFlow 0.7.0 — correction UX de la personnalisation : reset réel + carte déplacée grisée. */
+(function(){
+  const load=()=>{
+    if(document.querySelector('script[data-stopflow-070-card-personalization-ux-fix="0.7.0"]'))return;
+    const script=document.createElement("script");
+    script.src="stopflow-070-card-personalization-ux-fix.js?v=0701";
+    script.async=false;
+    script.dataset.stopflow070CardPersonalizationUxFix="0.7.0";
+    document.head.appendChild(script);
+  };
+  let attempts=0;
+  const timer=setInterval(()=>{
+    if(window.stopflow070CardPersonalization?.active){clearInterval(timer);load();return}
+    if(++attempts>=40){clearInterval(timer);load()}
+  },75);
+})();
