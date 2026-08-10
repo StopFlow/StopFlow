@@ -138,7 +138,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-temperature-v2="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-temperature-refactor-v2.js?v=0701";
+    script.src="stopflow-070-temperature-refactor-v2.js?v=0702";
     script.async=false;
     script.dataset.stopflow070TemperatureV2="0.7.0";
     document.head.appendChild(script);
