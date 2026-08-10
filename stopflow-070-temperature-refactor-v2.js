@@ -6,7 +6,7 @@
 
   const nav=()=>window.stopflow070CardNavigation;
   const TYPE_LABELS={fridge:'Frigo',freezer:'Congélateur',cold_room:'Chambre froide',display:'Vitrine réfrigérée',other:'Autre'};
-  const state={equipment:[],rounds:[],readings:[],view:'readings',loadingPromise:null,currentEditedUserId:null,modalObserver:null};
+  const state={equipment:[],rounds:[],readings:[],view:'readings',loadingPromise:null,loadError:'',currentEditedUserId:null,modalObserver:null};
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const canReadings=()=>Boolean(nav()?.hasPermission?.('temperatures.readings.use','cuisine'));
   const canManage=()=>Boolean(nav()?.hasPermission?.('temperatures.equipment.manage','cuisine'));
@@ -40,6 +40,7 @@
       .sf70-temp-equipment-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sf70-temp-equipment-actions button{min-height:36px}
       .sf70-temp-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:9.5px;font-weight:850;background:#eaf8f1;color:#167247}.sf70-temp-badge.off{background:#eef1f5;color:#687586}.sf70-temp-badge.alert{background:#fff0f0;color:#a12d2d}
       .sf70-temp-empty{padding:17px;border:1px dashed #cdd8e5;border-radius:11px;background:#fbfcfe;color:var(--muted)}
+      .sf70-temp-load-error{margin-bottom:12px;padding:11px 13px;border:1px solid #efc6c6;border-radius:10px;background:#fff7f7;color:#8b3030;font-size:11.5px}
       .sf70-temperature-permission-group{padding:4px 4px 7px;border-bottom:1px solid #e8edf4}.sf70-temperature-permission-group:last-child{border-bottom:0}.sf70-temperature-permission-title{padding:8px 0 4px;font-size:13px;font-weight:850;color:var(--text)}
       .sf70-temperature-permission-group .sf70-switch-row{border:0!important;margin-left:18px!important;padding:7px 4px!important;min-height:40px!important}
       @media(max-width:720px){.sf70-temp-reading-row{grid-template-columns:1fr}.sf70-temp-equipment-row{grid-template-columns:1fr}.sf70-temp-equipment-actions{justify-content:flex-start}.sf70-temp-tab{flex:1}}
@@ -66,19 +67,14 @@
   async function loadTemperatureData(){
     if(state.loadingPromise)return state.loadingPromise;
     state.loadingPromise=(async()=>{
-      const equipmentQuery=supabaseClient.from('temperature_equipment').select('*').order('active',{ascending:false}).order('name');
-      if(canReadings()){
-        const [equipment,rounds,readings]=await Promise.all([
-          equipmentQuery,
-          supabaseClient.from('temperature_rounds').select('*').order('completed_at',{ascending:false}).limit(20),
-          supabaseClient.from('temperature_readings').select('*').order('recorded_at',{ascending:false}).limit(160)
-        ]);
-        if(equipment.error||rounds.error||readings.error)throw equipment.error||rounds.error||readings.error;
-        state.equipment=equipment.data||[];state.rounds=rounds.data||[];state.readings=readings.data||[];
-      }else{
-        const equipment=await equipmentQuery;if(equipment.error)throw equipment.error;
-        state.equipment=equipment.data||[];state.rounds=[];state.readings=[];
-      }
+      const {data,error}=await supabaseClient.rpc('load_temperature_dashboard_070');
+      if(error)throw error;
+      const payload=data&&typeof data==='object'?data:{};
+      state.equipment=Array.isArray(payload.equipment)?payload.equipment:[];
+      state.rounds=Array.isArray(payload.rounds)?payload.rounds:[];
+      state.readings=Array.isArray(payload.readings)?payload.readings:[];
+      state.loadError='';
+      return payload;
     })().finally(()=>{state.loadingPromise=null});
     return state.loadingPromise;
   }
@@ -112,6 +108,8 @@
       document.getElementById('sf70TemperatureBody').innerHTML='<div class="sf70-temp-empty">Aucun droit Températures n’est attribué à ce profil.</div>';return;
     }
     if(state.view==='equipment'&&canManage())renderEquipment();else renderReadings();
+    const body=document.getElementById('sf70TemperatureBody');
+    if(body&&state.loadError)body.insertAdjacentHTML('afterbegin',`<div class="sf70-temp-load-error">Chargement des données impossible pour le moment. L’écran reste utilisable. ${esc(state.loadError)}</div>`);
     setTitle();
   }
 
@@ -183,14 +181,15 @@
     if(typeof page==='function')page('sf54Temperatures');
     setTitle();
     renderShell();
-    try{await loadTemperatureData();renderShell()}catch(error){console.warn('StopFlow 0.7.0 — chargement températures',error);const body=document.getElementById('sf70TemperatureBody');if(body)body.innerHTML='<div class="sf70-temp-empty">Impossible de charger les températures.</div>'}
+    try{await loadTemperatureData();if(document.querySelector('#app .page:not(.hidden)')?.id==='sf54Temperatures')renderShell()}catch(error){console.warn('StopFlow 0.7.0 — chargement températures',error);state.loadError=error?.message||'Erreur Supabase';if(document.querySelector('#app .page:not(.hidden)')?.id==='sf54Temperatures')renderShell()}
   }
 
   function patchCore(){
-    if(window.stopflow070TemperatureV2CorePatched)return;window.stopflow070TemperatureV2CorePatched=true;
+    if(S.action?.sf70TemperatureV2Owner)return;
     const previousAction=S.action;
-    S.action=function(action,department){if(action==='temperatures')return openTemperatures();return previousAction.apply(this,arguments)};
-    /* Important : Températures V2 ne remplace plus S.render(). La page garde la propriété de son propre rendu. */
+    const wrapped=function(action,department){if(action==='temperatures')return openTemperatures();return previousAction.apply(this,arguments)};
+    wrapped.sf70TemperatureV2Owner=true;
+    S.action=wrapped;
   }
 
   function switchMarkup(key,label,checked){return `<label class="sf70-switch-row sf70-child"><span class="sf70-switch"><input type="checkbox" data-sf70-permission="${key}" data-sf70-scope="cuisine" ${checked?'checked':''}><span class="sf70-track"></span><span class="sf70-thumb"></span></span><span class="sf70-switch-label">${label}</span></label>`}
@@ -210,6 +209,6 @@
     const box=document.getElementById('modalBox');if(box){state.modalObserver=new MutationObserver(()=>queueMicrotask(patchTemperaturePermissionRows));state.modalObserver.observe(box,{childList:true,subtree:true})}
   }
   function decorateCard(){document.querySelectorAll('[data-sf70-card="temperatures.use"]').forEach(card=>{const description=card.querySelector('.sf70-card-description');if(description)description.textContent='Relevés et équipements frigorifiques'})}
-  function init(){injectStyles();patchCore();installProfilePermissionPatch();decorateCard();[100,350,900,1800].forEach(delay=>setTimeout(()=>{patchTemperaturePermissionRows();decorateCard()},delay))}
+  function init(){injectStyles();patchCore();installProfilePermissionPatch();decorateCard();[100,350,900,1800].forEach(delay=>setTimeout(()=>{patchCore();patchTemperaturePermissionRows();decorateCard()},delay))}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
