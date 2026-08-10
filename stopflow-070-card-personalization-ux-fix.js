@@ -155,18 +155,28 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-back-navigation="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-back-navigation.js?v=0701';
+  script.src='stopflow-070-back-navigation.js?v=0730';
   script.async=false;
   script.dataset.stopflow070BackNavigation='0.7.0';
   document.head.appendChild(script);
 })();
 
-/* StopFlow 0.7.0 — label explicite des previews. */
+/* StopFlow 0.7.0 — label explicite des previews et version visible. */
 (function(){
   if(document.querySelector('script[data-stopflow-070-preview-label="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-preview-label.js?v=0702';
+  script.src='stopflow-070-preview-label.js?v=0730';
   script.async=false;
   script.dataset.stopflow070PreviewLabel='0.7.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.3 — parcours Inventaire Salle direct. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-salle-inventory="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-salle-inventory.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073SalleInventory='0.7.3';
   document.head.appendChild(script);
 })();
