@@ -190,3 +190,13 @@
   script.dataset.stopflow073MobileActions='0.7.3';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.3 — UX mobile fournisseurs, en-tête simplifié et rafraîchissement Inventaire Salle. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-supplier-mobile-ux="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-supplier-mobile-ux.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073SupplierMobileUx='0.7.3';
+  document.head.appendChild(script);
+})();
