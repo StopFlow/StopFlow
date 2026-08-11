@@ -112,7 +112,7 @@
       .sf73-supplier-card{margin:0!important;padding:18px!important;display:flex;flex-direction:column;align-items:stretch;text-align:left;min-height:160px}
       .sf73-supplier-card h3{margin:0 0 6px;font-size:17px}
       .sf73-supplier-card .muted{flex:1;margin:0 0 14px!important}
-      .sf73-supplier-card .btn{width:100%}
+      .sf73-supplier-card .btn{width:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       .sf73-inventory-empty{padding:20px;border:1px dashed var(--line);border-radius:14px;background:#fff;color:var(--muted)}
       .sf73-inventory-native-back{display:inline-flex;align-items:center;border:0;background:transparent;color:var(--blue);font-weight:800;padding:4px 0 10px;margin:0 0 2px;cursor:pointer;touch-action:manipulation}
       @media(max-width:950px){
@@ -164,7 +164,11 @@
   }
 
   function startSupplier(supplier){
-    if(!supplier||!allowed()||typeof newInventory!=='function')return;
+    if(!supplier||!allowed())return;
+    if(typeof newInventory!=='function'){
+      console.warn('StopFlow 0.7.3 — moteur newInventory indisponible');
+      return;
+    }
     const S=window.SF54;
     if(S?.state)S.state.department=ZONE;
     try{if(window.current)current.department=ZONE}catch{}
@@ -176,6 +180,32 @@
     ensureInventoryBack();
     setTimeout(()=>window.stopflow070BackNavigation?.refresh?.(),0);
     setTimeout(()=>window.stopflow070BackNavigation?.refresh?.(),120);
+  }
+
+  function bindStartButton(button,list){
+    if(!button||button.dataset.sf73StartTap==='1')return;
+    button.dataset.sf73StartTap='1';
+    let firedAt=0;
+    const run=event=>{
+      if(event.type==='pointerup'&&event.button!=null&&event.button!==0)return;
+      const now=Date.now();
+      if(event.type==='click'&&now-firedAt<650){
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        return;
+      }
+      firedAt=now;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const key=button.dataset.sf73StartSupplier||'';
+      const supplier=list.find(item=>String(item.id||item.code||item.name||'')===key);
+      startSupplier(supplier);
+    };
+    if(window.PointerEvent)button.addEventListener('pointerup',run,true);
+    else button.addEventListener('touchend',run,{capture:true,passive:false});
+    button.addEventListener('click',run,true);
   }
 
   function render(){
@@ -208,13 +238,7 @@
         </div>`;
       }).join('')}</div>`:'<div class="sf73-inventory-empty">Aucun fournisseur actif n’est attribué à la Salle.</div>'}`;
 
-    pageNode.querySelectorAll('[data-sf73-start-supplier]').forEach(button=>{
-      button.addEventListener('click',()=>{
-        const key=button.dataset.sf73StartSupplier||'';
-        const supplier=list.find(item=>String(item.id||item.code||item.name||'')===key);
-        startSupplier(supplier);
-      });
-    });
+    pageNode.querySelectorAll('[data-sf73-start-supplier]').forEach(button=>bindStartButton(button,list));
   }
 
   function open(){
