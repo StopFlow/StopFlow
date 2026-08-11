@@ -7,28 +7,95 @@
   const SCOPE_LABEL='Salle';
   let observer=null;
   let scheduled=false;
+  let scopeLoading=false;
+  let scopeLoaded=false;
+  const supplierDepartments=new Map();
 
   const nav=()=>window.stopflow070CardNavigation;
-  const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+  const esc=value=>String(value??'').replace(/[&<>'\"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'\"':"&quot;"}[char]));
 
   function allowed(){
     const navigation=nav();
     return Boolean(navigation?.hasPermission?.('inventory.use',ZONE));
   }
 
+  function catalogSuppliers(){
+    try{
+      if(typeof ensureLocalSuppliers==='function')return ensureLocalSuppliers();
+    }catch{}
+    try{
+      if(typeof db!=='undefined'&&Array.isArray(db.suppliers))return db.suppliers;
+    }catch{}
+    return [];
+  }
+
+  function catalogArticles(){
+    try{
+      if(typeof db!=='undefined'&&Array.isArray(db.articles))return db.articles;
+    }catch{}
+    return [];
+  }
+
+  function supplierDepartment(item){
+    const direct=String(item?.department||'').trim().toLowerCase();
+    if(direct)return direct;
+    const id=String(item?.id||'');
+    if(id&&supplierDepartments.has(id))return supplierDepartments.get(id);
+    try{
+      if(typeof isCloudMode==='function'&&!isCloudMode())return ZONE;
+    }catch{}
+    return '';
+  }
+
   function suppliers(){
-    return (window.db?.suppliers||[])
-      .filter(item=>item?.active!==false&&String(item.department||'salle').toLowerCase()===ZONE)
+    return catalogSuppliers()
+      .filter(item=>item?.active!==false&&supplierDepartment(item)===ZONE)
       .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'fr'));
   }
 
   function articleCount(supplier){
-    return (window.db?.articles||[]).filter(article=>{
+    return catalogArticles().filter(article=>{
       if(article?.active!==true)return false;
-      const department=String(article.department||ZONE).toLowerCase();
-      const sameSupplier=String(article.supplierId||'')===String(supplier.id||'')||String(article.supplier||'').toLowerCase()===String(supplier.name||'').toLowerCase();
-      return department===ZONE&&sameSupplier;
+      return String(article.supplierId||'')===String(supplier.id||'')||String(article.supplier||'').toLowerCase()===String(supplier.name||'').toLowerCase();
     }).length;
+  }
+
+  async function refreshScopedCatalog(){
+    if(scopeLoading)return;
+    scopeLoading=true;
+    render();
+    try{
+      if(typeof loadSharedCatalog==='function')await loadSharedCatalog();
+      supplierDepartments.clear();
+
+      let cloud=false;
+      try{cloud=typeof isCloudMode==='function'&&isCloudMode()}catch{}
+      if(cloud&&typeof supabaseClient!=='undefined'&&supabaseClient){
+        const {data,error}=await supabaseClient
+          .from('suppliers')
+          .select('id,department')
+          .eq('active',true);
+        if(error)throw error;
+        (data||[]).forEach(item=>{
+          const id=String(item?.id||'');
+          const department=String(item?.department||'').trim().toLowerCase();
+          if(id&&department)supplierDepartments.set(id,department);
+        });
+      }else{
+        catalogSuppliers().forEach(item=>{
+          const id=String(item?.id||'');
+          const department=String(item?.department||ZONE).trim().toLowerCase();
+          if(id&&department)supplierDepartments.set(id,department);
+        });
+      }
+      scopeLoaded=true;
+    }catch(error){
+      scopeLoaded=true;
+      console.warn('StopFlow 0.7.3 — chargement du périmètre fournisseurs Salle',error);
+    }finally{
+      scopeLoading=false;
+      if(document.querySelector(`#${PAGE_ID}:not(.hidden)`))render();
+    }
   }
 
   function ensureStyles(){
@@ -115,6 +182,17 @@
     ensureStyles();
     const pageNode=ensurePage();
     if(!pageNode)return;
+
+    if(scopeLoading&&!scopeLoaded){
+      pageNode.innerHTML=`
+        <div class="sf73-inventory-head">
+          <div><h2>Inventaire — ${SCOPE_LABEL}</h2><p class="muted">Chargement des fournisseurs de la Salle…</p></div>
+          <span class="sf73-inventory-count">…</span>
+        </div>
+        <div class="sf73-inventory-empty">Chargement du catalogue…</div>`;
+      return;
+    }
+
     const list=suppliers();
     pageNode.innerHTML=`
       <div class="sf73-inventory-head">
@@ -148,14 +226,16 @@
     }
     const S=window.SF54;
     if(S?.state)S.state.department=ZONE;
+    ensurePage();
+    scopeLoaded=false;
+    scopeLoading=true;
     render();
     setTitle();
     if(typeof page==='function')page(PAGE_ID);
     setTimeout(setTitle,0);
     setTimeout(()=>window.stopflow070BackNavigation?.refresh?.(),40);
-    Promise.resolve(S?.loadDepartments?.()).then(()=>{
-      if(document.querySelector(`#${PAGE_ID}:not(.hidden)`))render();
-    }).catch(error=>console.warn('StopFlow 0.7.3 — fournisseurs Salle',error));
+    scopeLoading=false;
+    refreshScopedCatalog();
   }
 
   function patchInventoryCard(){
@@ -187,7 +267,7 @@
     observer.observe(app,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
   }
 
-  window.stopflow073SalleInventoryFlow={active:true,open,render,startSupplier};
+  window.stopflow073SalleInventoryFlow={active:true,open,render,startSupplier,refresh:refreshScopedCatalog};
 
   let attempts=0;
   const timer=setInterval(()=>{
