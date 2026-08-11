@@ -1,15 +1,20 @@
-/* StopFlow 0.7.3 — inventaire mobile terrain : comptage rapide, aucun swipe horizontal. */
+/* StopFlow 0.7.3 — inventaire mobile terrain : comptage rapide et parcours tactile unifié. */
 (function(){
   if(window.stopflow073InventoryMobileUx?.active)return;
 
   const MOBILE_QUERY='(max-width: 950px)';
   const MOVE_THRESHOLD=7;
-  const state={observer:null,scheduled:false,gesture:null,suppressAction:null,suppressUntil:0};
+  const FLOW_SELECTOR='[data-minus],[data-plus],#setAllZero,#showSummary,#saveDraft,[data-back-inventory],[data-adj-minus],[data-adj-plus],#sendPending,#validateOrder';
+  const state={observer:null,scheduled:false,gesture:null,suppressAction:null,suppressUntil:0,syntheticAction:null};
   const isMobile=()=>window.matchMedia?.(MOBILE_QUERY).matches===true;
   const inventoryPage=()=>document.getElementById('inventory');
-  const inventoryVisible=()=>{
-    const page=inventoryPage();
-    return Boolean(page&&!page.classList.contains('hidden'));
+  const summaryPage=()=>document.getElementById('summary');
+  const pageVisible=node=>Boolean(node&&!node.classList.contains('hidden'));
+  const inventoryVisible=()=>pageVisible(inventoryPage());
+  const summaryVisible=()=>pageVisible(summaryPage());
+  const inventoryFlowVisible=()=>{
+    if(inventoryVisible()||summaryVisible())return true;
+    return pageVisible(document.getElementById('sf73SalleInventory'));
   };
 
   function injectStyles(){
@@ -18,6 +23,10 @@
     style.id='sf73InventoryMobileUxStyles';
     style.textContent=`
       @media(max-width:950px){
+        /* Sur le parcours inventaire, jamais de mot tronqué à côté de la flèche. */
+        body.sf73-inventory-flow-visible.sf73-mobile-back-active #sf52MobileHeader{grid-template-columns:42px!important}
+        body.sf73-inventory-flow-visible.sf73-mobile-back-active #sf52MobileTitle{display:none!important}
+
         #inventory{max-width:100%!important;overflow-x:hidden!important}
         #inventory .tablewrap{overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important}
         #inventory table{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;border-collapse:separate!important}
@@ -32,7 +41,13 @@
         #inventory .line{min-width:12px!important}
         #inventory #inventoryHeading{font-size:21px!important;margin:7px 0 3px!important}
         #inventory #articleSearch{font-size:16px!important;min-height:46px!important}
-        #inventory #setAllZero{min-height:44px!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
+        #inventory #setAllZero,
+        #inventory #showSummary,
+        #inventory #saveDraft,
+        #summary #sendPending,
+        #summary #validateOrder,
+        #summary [data-back-inventory]{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
+        #inventory #setAllZero{min-height:44px!important}
 
         #inventory #inventoryRows tr{
           display:grid!important;
@@ -72,6 +87,10 @@
     document.head.appendChild(style);
   }
 
+  function syncFlowState(){
+    document.body.classList.toggle('sf73-inventory-flow-visible',isMobile()&&inventoryFlowVisible());
+  }
+
   function syncMobileTitle(){
     if(!isMobile()||!inventoryVisible())return;
     const mobileTitle=document.getElementById('sf52MobileTitle');
@@ -81,48 +100,99 @@
   }
 
   function enhanceRows(){
-    if(!isMobile()||!inventoryVisible())return;
-    document.querySelectorAll('#inventoryRows [data-minus]').forEach(button=>button.setAttribute('aria-label','Diminuer le stock'));
-    document.querySelectorAll('#inventoryRows [data-plus]').forEach(button=>button.setAttribute('aria-label','Augmenter le stock'));
-    document.querySelectorAll('#inventoryRows [data-stock]').forEach(input=>input.setAttribute('aria-label','Stock présent'));
-    const zero=document.getElementById('setAllZero');
-    if(zero)zero.setAttribute('aria-label','Mettre tous les stocks à zéro');
+    if(!isMobile())return;
+    if(inventoryVisible()){
+      document.querySelectorAll('#inventoryRows [data-minus]').forEach(button=>button.setAttribute('aria-label','Diminuer le stock'));
+      document.querySelectorAll('#inventoryRows [data-plus]').forEach(button=>button.setAttribute('aria-label','Augmenter le stock'));
+      document.querySelectorAll('#inventoryRows [data-stock]').forEach(input=>input.setAttribute('aria-label','Stock présent'));
+      const zero=document.getElementById('setAllZero');
+      if(zero)zero.setAttribute('aria-label','Mettre tous les stocks à zéro');
+    }
+    if(summaryVisible()){
+      document.querySelectorAll('#summaryRows [data-adj-minus]').forEach(button=>button.setAttribute('aria-label','Diminuer la quantité à commander'));
+      document.querySelectorAll('#summaryRows [data-adj-plus]').forEach(button=>button.setAttribute('aria-label','Augmenter la quantité à commander'));
+    }
   }
 
-  function inventoryAction(target){
-    const control=target?.closest?.('[data-minus],[data-plus],#setAllZero')||null;
+  function flowAction(target){
+    const control=target?.closest?.(FLOW_SELECTOR)||null;
     if(!control)return null;
-    const page=inventoryPage();
-    return page?.contains(control)?control:null;
+    const inventory=inventoryPage();
+    const summary=summaryPage();
+    if(inventory?.contains(control)||summary?.contains(control))return control;
+    return null;
   }
 
-  function applyInventoryAction(control){
-    if(!control||!inventoryVisible())return;
+  function applyDirectAction(control){
+    if(!control)return false;
     try{
-      if(control.id==='setAllZero'){
-        if(typeof activeArticles!=='function'||typeof renderInventory!=='function')return;
+      if(control.id==='setAllZero'&&inventoryVisible()){
+        if(typeof activeArticles!=='function'||typeof renderInventory!=='function')return true;
         activeArticles().forEach(article=>{current.stocks[article.id]=0});
         renderInventory();
         scheduleRefresh();
-        return;
+        return true;
       }
 
-      const id=control.dataset.plus||control.dataset.minus;
-      if(!id||typeof renderInventory!=='function')return;
-      const value=Number(current.stocks[id]??0);
-      if(control.dataset.plus!==undefined)current.stocks[id]=value+1;
-      else current.stocks[id]=Math.max(0,value-1);
-      renderInventory();
-      scheduleRefresh();
+      if((control.dataset.plus!==undefined||control.dataset.minus!==undefined)&&inventoryVisible()){
+        const id=control.dataset.plus||control.dataset.minus;
+        if(!id||typeof renderInventory!=='function')return true;
+        const value=Number(current.stocks[id]??0);
+        if(control.dataset.plus!==undefined)current.stocks[id]=value+1;
+        else current.stocks[id]=Math.max(0,value-1);
+        renderInventory();
+        scheduleRefresh();
+        return true;
+      }
+
+      if((control.dataset.adjPlus!==undefined||control.dataset.adjMinus!==undefined)&&summaryVisible()){
+        const id=control.dataset.adjPlus||control.dataset.adjMinus;
+        let base=0;
+        try{
+          const article=typeof activeArticles==='function'?activeArticles().find(item=>String(item.id)===String(id)):null;
+          base=article&&typeof calc==='function'?Number(calc(article)||0):0;
+        }catch{}
+        const value=Number(current.adjustments[id]??base);
+        if(control.dataset.adjPlus!==undefined)current.adjustments[id]=value+1;
+        else current.adjustments[id]=Math.max(0,value-1);
+        if(typeof renderSummary==='function')renderSummary();
+        scheduleRefresh();
+        return true;
+      }
     }catch(error){
-      console.warn('StopFlow 0.7.3 — commande inventaire mobile',error);
+      console.warn('StopFlow 0.7.3 — commande directe inventaire mobile',error);
+      return true;
     }
+    return false;
+  }
+
+  function runExistingAction(control){
+    if(!control)return;
+    try{
+      if(typeof control.onclick==='function'){
+        control.onclick.call(control,new MouseEvent('click',{bubbles:false,cancelable:true,view:window}));
+      }else{
+        state.syntheticAction=control;
+        control.click();
+        state.syntheticAction=null;
+      }
+    }catch(error){
+      state.syntheticAction=null;
+      console.warn('StopFlow 0.7.3 — action parcours inventaire mobile',error);
+    }
+    setTimeout(scheduleRefresh,0);
+    setTimeout(()=>window.stopflow070BackNavigation?.refresh?.(),30);
+  }
+
+  function activate(control){
+    if(applyDirectAction(control))return;
+    runExistingAction(control);
   }
 
   function installMobileControls(){
     document.addEventListener('pointerdown',event=>{
-      if(!isMobile()||!inventoryVisible()||(event.button!=null&&event.button!==0))return;
-      const control=inventoryAction(event.target);
+      if(!isMobile()||(event.button!=null&&event.button!==0))return;
+      const control=flowAction(event.target);
       if(!control)return;
       state.gesture={
         control,
@@ -151,7 +221,7 @@
       const gesture=state.gesture;
       if(!gesture||gesture.pointerId!==event.pointerId)return;
       state.gesture=null;
-      const control=inventoryAction(event.target);
+      const control=flowAction(event.target);
       const sameControl=control===gesture.control||gesture.control.contains(event.target);
       const tap=!gesture.moved&&sameControl&&Math.hypot(event.clientX-gesture.startX,event.clientY-gesture.startY)<=MOVE_THRESHOLD&&Date.now()-gesture.startedAt<1000;
       state.suppressAction=gesture.control;
@@ -160,7 +230,7 @@
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      applyInventoryAction(gesture.control);
+      activate(gesture.control);
     },true);
 
     document.addEventListener('pointercancel',event=>{
@@ -173,8 +243,9 @@
 
     document.addEventListener('click',event=>{
       if(!isMobile())return;
-      const control=event.target?.closest?.('[data-minus],[data-plus],#setAllZero')||null;
+      const control=flowAction(event.target);
       if(!control)return;
+      if(state.syntheticAction===control)return;
       if(state.suppressAction===control&&Date.now()<state.suppressUntil){
         event.preventDefault();
         event.stopPropagation();
@@ -183,7 +254,7 @@
     },true);
   }
 
-  function refresh(){injectStyles();syncMobileTitle();enhanceRows()}
+  function refresh(){injectStyles();syncFlowState();syncMobileTitle();enhanceRows()}
   function scheduleRefresh(){
     if(state.scheduled)return;
     state.scheduled=true;
