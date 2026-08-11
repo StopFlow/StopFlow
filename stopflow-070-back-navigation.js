@@ -1,4 +1,4 @@
-/* StopFlow 0.7.3 — navigation retour mobile immédiate + tiroir fluide et fiable. */
+/* StopFlow 0.7.3 — navigation retour mobile immédiate + en-tête iPhone simplifié + tiroir fluide. */
 (function(){
   if(window.stopflow070BackNavigation?.version==='0.7.3')return;
 
@@ -17,6 +17,16 @@
     return [...document.querySelectorAll('#app .page')].find(node=>!node.classList.contains('hidden'))||null;
   }
 
+  function visibleModalBack(){
+    const modal=document.getElementById('modal');
+    if(!modal||modal.classList.contains('hidden'))return null;
+    const style=getComputedStyle(modal);
+    if(style.display==='none'||style.visibility==='hidden')return null;
+    const close=modal.querySelector('#closeModal,[data-stopflow-modal-close],.sf70-tv3-modal-close');
+    if(!close||close.disabled)return null;
+    return {kind:'native',label:'Fermer',node:close,modal:true};
+  }
+
   function visibleNativeBack(pageNode){
     if(!pageNode)return null;
     return [...pageNode.querySelectorAll(':scope > .sf70-back-button, :scope > .sf70-tv3-back, :scope > [data-stopflow-back]')]
@@ -24,6 +34,8 @@
   }
 
   function targetFor(pageNode){
+    const modalTarget=visibleModalBack();
+    if(modalTarget)return modalTarget;
     if(!pageNode)return null;
     const id=pageNode.id||'';
     if(id==='sf70Home'||id==='dashboard')return null;
@@ -61,7 +73,11 @@
       .sf70-coherent-back:focus-visible{outline:3px solid #dce8ff;outline-offset:3px;border-radius:6px}
       #sf73MobileBack{display:none}
       @media(max-width:950px){
-        #sf52MobileHeader.sf73-has-back{grid-template-columns:42px 42px minmax(0,1fr) 42px}
+        /* iPhone : le menu global s'ouvre par swipe. On garde uniquement le titre et la flèche utile. */
+        #sf52MobileHeader{grid-template-columns:minmax(0,1fr)!important}
+        #sf52MobileHeader #sf52MenuButton,
+        #sf52MobileHeader #sf52HomeButton{display:none!important}
+        #sf52MobileHeader.sf73-has-back{grid-template-columns:42px minmax(0,1fr)!important}
         #sf52MobileHeader.sf73-has-back #sf73MobileBack{display:grid}
         #sf73MobileBack{font-size:24px!important;font-weight:800;line-height:1}
         body.sf73-mobile-back-active .sf70-coherent-back{display:none!important}
@@ -129,6 +145,7 @@
     header.classList.toggle('sf73-has-back',active);
     button.hidden=!active;
     button.setAttribute('aria-hidden',active?'false':'true');
+    button.setAttribute('aria-label',target?.modal?'Fermer':'Retour');
     document.body.classList.toggle('sf73-mobile-back-active',active);
   }
 
@@ -247,10 +264,9 @@
   }
 
   function installObserver(){
-    const app=document.getElementById('app');
-    if(!app||observer)return;
+    if(observer||!document.body)return;
     observer=new MutationObserver(scheduleApply);
-    observer.observe(app,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
+    observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
   }
 
   window.stopflow070BackNavigation={
