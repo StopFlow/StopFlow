@@ -1,1 +1,1 @@
-StopFlow 0.7.3 — déclenchement preview après corrections UX mobile fournisseurs et inventaire Salle.
+StopFlow 0.7.3 — relance preview du 11 août au matin après réinitialisation attendue de la limite Vercel.
