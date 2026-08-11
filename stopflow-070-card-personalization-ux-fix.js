@@ -200,3 +200,13 @@
   script.dataset.stopflow073SupplierMobileUx='0.7.3';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.3 — inventaire mobile terrain sans défilement horizontal. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-inventory-mobile-ux="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-inventory-mobile-ux.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073InventoryMobileUx='0.7.3';
+  document.head.appendChild(script);
+})();
