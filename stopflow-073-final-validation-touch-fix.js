@@ -14,6 +14,24 @@
     document.documentElement.classList.add('sf73-mobile-ready');
   }
 
+  function ensureReloadShield(){
+    let shield=document.getElementById('sf73ReloadShield');
+    if(shield)return shield;
+    shield=document.createElement('div');
+    shield.id='sf73ReloadShield';
+    shield.setAttribute('aria-hidden','true');
+    shield.style.cssText='display:none;position:fixed;inset:0;z-index:2147483647;background:#071d31;color:#fff;align-items:center;justify-content:center;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;';
+    shield.innerHTML='<div style="text-align:center;padding:24px"><div style="font-size:22px;font-weight:800;margin-bottom:8px">StopFlow</div><div style="font-size:13px;opacity:.75">Chargement…</div></div>';
+    document.body.appendChild(shield);
+    return shield;
+  }
+
+  function showReloadShield(){
+    if(!isMobile())return;
+    const shield=ensureReloadShield();
+    shield.style.display='flex';
+  }
+
   function controlFrom(target){
     if(!isMobile()||!summaryVisible())return null;
     const button=target?.closest?.('#sf73ValidationBack,#sf73ValidationConfirm')||null;
@@ -86,6 +104,9 @@
       }
       intercept(event,button);
     },true);
+
+    window.addEventListener('pagehide',showReloadShield,true);
+    window.addEventListener('beforeunload',showReloadShield,true);
   }
 
   window.stopflow073FinalValidationTouchFix={active:true,finalize,back:backToSummary,ready:markMobileReady};
