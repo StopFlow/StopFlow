@@ -8,6 +8,12 @@
   const summaryPage=()=>document.getElementById('summary');
   const summaryVisible=()=>Boolean(summaryPage()&&!summaryPage().classList.contains('hidden'));
 
+  function markMobileReady(){
+    const app=document.getElementById('app');
+    if(app)app.classList.add('sf73-mobile-ready');
+    document.documentElement.classList.add('sf73-mobile-ready');
+  }
+
   function controlFrom(target){
     if(!isMobile()||!summaryVisible())return null;
     const button=target?.closest?.('#sf73ValidationBack,#sf73ValidationConfirm')||null;
@@ -82,6 +88,7 @@
     },true);
   }
 
-  window.stopflow073FinalValidationTouchFix={active:true,finalize,back:backToSummary};
+  window.stopflow073FinalValidationTouchFix={active:true,finalize,back:backToSummary,ready:markMobileReady};
   install();
+  markMobileReady();
 })();
