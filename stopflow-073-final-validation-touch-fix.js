@@ -1,21 +1,30 @@
-/* StopFlow 0.7.3 — propriétaire tactile final de la validation mobile (Safari/iPhone). */
+/* StopFlow 0.7.3 — propriétaire tactile final Résumé/Validation sur iPhone. */
 (function(){
   if(window.stopflow073FinalValidationTouchFix?.active)return;
 
   const MOBILE_QUERY='(max-width: 950px)';
-  const MOVE_THRESHOLD=12;
-  const state={gesture:null,suppressClickUntil:0,running:false};
-
+  const state={lastHandledAt:0,running:false};
   const isMobile=()=>window.matchMedia?.(MOBILE_QUERY).matches===true;
-  const summaryVisible=()=>{
-    const page=document.getElementById('summary');
-    return Boolean(page&&!page.classList.contains('hidden'));
-  };
-  const validationButton=target=>{
+  const summaryPage=()=>document.getElementById('summary');
+  const summaryVisible=()=>Boolean(summaryPage()&&!summaryPage().classList.contains('hidden'));
+
+  function controlFrom(target){
     if(!isMobile()||!summaryVisible())return null;
-    const button=target?.closest?.('#sf73ValidationConfirm')||null;
-    return button&&document.getElementById('summary')?.contains(button)?button:null;
-  };
+    const button=target?.closest?.('#sf73ValidationBack,#sf73ValidationConfirm')||null;
+    return button&&summaryPage()?.contains(button)?button:null;
+  }
+
+  function markHandled(){state.lastHandledAt=Date.now()}
+
+  function backToSummary(){
+    const action=window.stopflow073InventoryMobileUx?.showSummary;
+    if(typeof action==='function'){
+      action();
+      window.scrollTo({top:0,behavior:'smooth'});
+      return;
+    }
+    console.warn('StopFlow 0.7.3 — retour au résumé indisponible');
+  }
 
   function finalize(){
     if(state.running)return;
@@ -28,62 +37,51 @@
     Promise.resolve(action()).finally(()=>{state.running=false});
   }
 
-  function install(){
-    window.addEventListener('pointerdown',event=>{
-      const button=validationButton(event.target);
-      if(!button||(event.button!=null&&event.button!==0))return;
-      state.gesture={button,id:event.pointerId,x:event.clientX,y:event.clientY,startedAt:Date.now(),moved:false};
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-    },true);
-
-    window.addEventListener('pointermove',event=>{
-      const gesture=state.gesture;
-      if(!gesture||gesture.id!==event.pointerId)return;
-      if(Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>MOVE_THRESHOLD)gesture.moved=true;
-    },true);
-
-    window.addEventListener('pointerup',event=>{
-      const gesture=state.gesture;
-      if(!gesture||gesture.id!==event.pointerId)return;
-      state.gesture=null;
-      const button=validationButton(event.target);
-      const tap=!gesture.moved&&button===gesture.button&&Date.now()-gesture.startedAt<1400;
-      if(!tap)return;
-      state.suppressClickUntil=Date.now()+1000;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      finalize();
-    },true);
-
-    window.addEventListener('pointercancel',event=>{
-      if(state.gesture?.id===event.pointerId)state.gesture=null;
-    },true);
-
-    window.addEventListener('click',event=>{
-      const button=validationButton(event.target);
-      if(!button)return;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      if(Date.now()<state.suppressClickUntil)return;
-      finalize();
-    },true);
-
-    if(!window.PointerEvent){
-      window.addEventListener('touchend',event=>{
-        const button=validationButton(event.target);
-        if(!button)return;
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        finalize();
-      },{capture:true,passive:false});
-    }
+  function activate(button){
+    if(!button)return;
+    markHandled();
+    if(button.id==='sf73ValidationBack')backToSummary();
+    else if(button.id==='sf73ValidationConfirm')finalize();
   }
 
-  window.stopflow073FinalValidationTouchFix={active:true,finalize};
+  function intercept(event,button){
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    activate(button);
+  }
+
+  function install(){
+    /* Safari iPhone : touchend reste propriétaire même lorsque PointerEvent existe. */
+    window.addEventListener('touchend',event=>{
+      const button=controlFrom(event.target);
+      if(!button)return;
+      intercept(event,button);
+    },{capture:true,passive:false});
+
+    /* Secours pour navigateurs tactiles basés sur Pointer Events. */
+    window.addEventListener('pointerup',event=>{
+      const button=controlFrom(event.target);
+      if(!button)return;
+      if(Date.now()-state.lastHandledAt<700){
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+        return;
+      }
+      intercept(event,button);
+    },true);
+
+    /* Secours clavier / clic Safari. */
+    window.addEventListener('click',event=>{
+      const button=controlFrom(event.target);
+      if(!button)return;
+      if(Date.now()-state.lastHandledAt<900){
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+        return;
+      }
+      intercept(event,button);
+    },true);
+  }
+
+  window.stopflow073FinalValidationTouchFix={active:true,finalize,back:backToSummary};
   install();
 })();
