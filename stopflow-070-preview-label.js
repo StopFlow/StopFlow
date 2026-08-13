@@ -106,3 +106,13 @@
 
   [0,100,300,800,1600,3000,5000].forEach(delay=>setTimeout(apply,delay));
 })();
+
+/* StopFlow 0.7.3 — correctif Safari/iPhone pour l’action finale de validation. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-final-validation-touch-fix="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-final-validation-touch-fix.js?v=0731';
+  script.async=false;
+  script.dataset.stopflow073FinalValidationTouchFix='0.7.3';
+  document.head.appendChild(script);
+})();
