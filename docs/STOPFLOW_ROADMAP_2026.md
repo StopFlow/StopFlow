@@ -68,6 +68,9 @@ Comprend :
 - widgets enrichis lorsque leur taille permet d'afficher de vraies informations utiles ;
 - conservation et optimisation de l'expérience desktop.
 
+#### Retours UX à reprendre en priorité
+- Historique des bons de commande : rendre chaque bon identifiable immédiatement dans la liste avec un intitulé métier lisible basé sur le fournisseur, par exemple « Commande — Colruyt », en complément du numéro/date/statut. L'objectif est de retrouver un bon au premier coup d'œil sans devoir l'ouvrir.
+
 #### Banc de test mobile inclus dans 0.8.0
 - mode responsive des outils développeur comme référence principale ;
 - tailles smartphone enregistrées ;
