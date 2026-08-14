@@ -1,9 +1,9 @@
-/* StopFlow 0.7.3 — identification fiable de la version publiée ou preview. */
+/* StopFlow 0.8.0 — identification fiable de la version publiée ou preview. */
 (function(){
   if(window.stopflow073VersionLabel)return;
   window.stopflow073VersionLabel=true;
 
-  const VERSION='0.7.3';
+  const VERSION='0.8.0';
   const productionHosts=new Set(['stopflow-app.vercel.app']);
   const isProduction=()=>productionHosts.has(location.hostname);
   const loginLabel=()=>isProduction()?`Version ${VERSION}`:`Version ${VERSION} — Preview de développement`;
@@ -154,5 +154,15 @@
   script.src='stopflow-073-mobile-navigation-layout.js?v=0731';
   script.async=false;
   script.dataset.stopflow073MobileNavigationLayout='0.7.3';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — première amélioration UX : Accueil compact et direct. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-home-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-home-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080HomeUx='0.8.0';
   document.head.appendChild(script);
 })();
