@@ -1,0 +1,3 @@
+StopFlow 0.7.3 — publication production du 14 août 2026
+Validation finale iPhone effectuée.
+Parcours inventaire, PDF séparé, historique, navigation Retour et responsive mobile validés.
