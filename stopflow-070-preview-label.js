@@ -136,3 +136,13 @@
   script.dataset.stopflow073HistoryUx='0.7.3';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.3 — ouvre uniquement le PDF généré dans un onglet séparé. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-pdf-blank-open="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-pdf-blank-open.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073PdfBlankOpen='0.7.3';
+  document.head.appendChild(script);
+})();
