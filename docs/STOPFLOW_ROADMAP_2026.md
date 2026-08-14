@@ -3,125 +3,112 @@
 ## Principe général
 StopFlow reste une seule application, une seule base de données et un seul système de permissions. Les adaptations desktop et mobile peuvent avoir des présentations différentes sans dupliquer les données ni la logique métier.
 
-La stratégie de publication change à partir de la 0.7.0 : les versions majeures intermédiaires peuvent être mises en production lorsqu'elles sont suffisamment stables pour un usage réel. Elles servent ensuite à faire remonter des besoins pratiques avant l'étape suivante. Une branche stable est conservée à chaque publication importante pour permettre un rollback rapide.
+## Décision produit — gel du périmètre jusqu’à la 1.0
+À partir de la 0.7.3, le périmètre fonctionnel est gelé jusqu’à la version 1.0.0.
 
-## Version de production
-- StopFlow 0.7.0 devient la version de production terrain.
-- La 0.7.0 est destinée à être utilisée réellement afin d'identifier les irritants, besoins et suggestions pratiques.
-- Les corrections 0.7.x restent limitées aux bugs, à la sécurité, aux droits incohérents et aux ajustements nécessaires au fonctionnement quotidien.
-- Les gros changements d'expérience ou d'architecture sont réservés à la 0.8.0.
-- La version 1.0.0 restera la première version finale considérée comme complète et officiellement prête pour l'utilisation quotidienne par le personnel.
+Objectif : arrêter d’ajouter de nouveaux gros modules, terminer correctement ce qui existe déjà, améliorer l’expérience utilisateur, fiabiliser l’application et atteindre une version finale réellement utilisable au quotidien.
 
-## Chronologie retenue
+Jusqu’à la 1.0 :
+- priorité aux fonctions déjà présentes dans StopFlow ;
+- correction des bugs et incohérences ;
+- amélioration tactile et responsive ;
+- amélioration de la lisibilité et de la navigation ;
+- amélioration des parcours métier existants ;
+- sécurité, permissions, intégrité des données et performances ;
+- tests réels smartphone et desktop ;
+- nettoyage progressif des anciennes couches techniques.
 
-### 0.7.0 — Production terrain
-Objectif : disposer immédiatement d'une version moderne et réellement utilisable de StopFlow, tout en poursuivant le développement à partir des retours du terrain.
+Sont explicitement reportés après la 1.0 :
+- prise de photos d’articles ;
+- scan de codes-barres ;
+- catalogue achats comparatif multi-fournisseurs ;
+- historique et comparaison avancée des prix ;
+- nouveaux gros modules métier non déjà présents dans l’application ;
+- automatisation complète de l’envoi des bons de commande par e-mail ;
+- nouveau module complet de réception / contrôle de livraison.
 
-Comprend :
-- permissions fines par fonction et socle RLS Supabase ;
-- navigation par grandes zones et cartes ;
-- menu compact ;
-- personnalisation simple de l'ordre et de la visibilité des cartes ;
-- navigation retour cohérente ;
-- Températures V3 avec registre dynamique des équipements frigorifiques ;
-- relevé complet, historique et conservation des données ;
-- pavé numérique mobile pour les températures ;
-- comportement tactile smartphone avec distinction tap / scroll ;
-- validation desktop et smartphone du parcours Températures ;
-- sauvegarde et rollback vers la précédente version stable.
+Ces idées restent conservées comme backlog futur, mais elles ne doivent plus ralentir l’aboutissement de la 1.0.
 
-Pendant l'utilisation de la 0.7.0, les remarques pratiques doivent être conservées pour orienter la 0.8.0 plutôt que multiplier les petits chantiers non essentiels.
+## Situation actuelle — 0.7.3 en développement
+Objectif : terminer une version terrain fiable à partir de ce qui existe déjà.
 
-### 0.7.x — Maintenance de la version terrain
-Objectif : maintenir la 0.7.0 fiable pendant son utilisation réelle sans ouvrir une nouvelle refonte.
+Comprend notamment :
+- permissions fines et socle Supabase/RLS ;
+- navigation par zones et cartes ;
+- Températures V3 ;
+- Checklists et fonctions terrain existantes ;
+- parcours Inventaire fournisseur mobile ;
+- Résumé et Validation adaptés au smartphone ;
+- génération du PDF du bon de commande ;
+- historique des bons ;
+- intitulés métier lisibles dans l’Historique, par exemple « Commande — Colruyt » ;
+- standard tactile iPhone commun ;
+- standard responsive commun selon la taille réelle de l’écran ;
+- fenêtres, tableaux et modales adaptés au viewport mobile ;
+- retours et navigation cohérents ;
+- corrections indispensables au fonctionnement quotidien.
 
-Peut comprendre :
-- correction de bugs réellement rencontrés ;
-- correction ciblée d'anciens contrôles par rôle lorsqu'ils contredisent les permissions 0.7 ;
-- ajustements tactiles ou ergonomiques indispensables ;
-- sécurité, RLS, intégrité des données et performances ;
-- petits correctifs de présentation sans refonte générale.
+Avant publication 0.7.3 :
+- audit technique final de la branche de développement ;
+- contrôle desktop ;
+- contrôle smartphone réel ;
+- vérification Inventaire → Résumé → Validation → PDF → Historique ;
+- vérification navigation et boutons principaux ;
+- vérification des autres écrans existants sans refonte fonctionnelle ;
+- sauvegarde et validation explicite avant production.
 
-#### Retours terrain prioritaires enregistrés
-
-**Navigation mobile**
-- fiabiliser la croix de fermeture du menu latéral ;
-- fluidifier le geste de fermeture du menu par glissement ;
-- afficher une flèche retour directement dans l'en-tête mobile dès qu'une fiche ou une sous-page est ouverte ;
-- conserver le bouton menu accessible sans obliger l'utilisateur à l'ouvrir pour faire apparaître le retour.
-
-**Salle → Inventaire**
-- corriger le bouton « Démarrer inventaire » afin qu'il ouvre réellement la page d'inventaire attendue ;
-- supprimer ou masquer les étapes/cartes intermédiaires « Inventaire salle » et « Inventaire & fournisseurs » lorsqu'elles n'apportent aucune action utile ;
-- à l'ouverture de « Inventaire » dans la zone Salle, afficher directement la liste des fournisseurs disponibles ;
-- parcours cible : **Salle → Inventaire → choix du fournisseur → Démarrer inventaire → fiche d'inventaire** ;
-- la zone Salle doit rester dédiée à l'exécution terrain : consulter les fournisseurs disponibles, choisir un fournisseur et réaliser l'inventaire ;
-- les actions de création et d'administration (fournisseurs, articles, catalogue et paramétrages associés) doivent être regroupées dans la zone **Général**, selon les permissions de l'utilisateur ;
-- éviter toute duplication entre l'espace opérationnel Salle et les fonctions de gestion de Général.
-
-Ne comprend pas :
-- nouvelle architecture majeure ;
-- redesign complet ;
-- accumulation de fonctions secondaires avant la 0.8.0.
-
-### 0.8.0 — Grande évolution d'usage et mobile-first
-Priorité produit : transformer les retours de l'utilisation réelle de la 0.7.0 en une expérience StopFlow plus simple, plus rapide et réellement pensée pour le smartphone, tout en conservant une excellente expérience PC.
-
-Objectif : conserver UNE application, UNE base de code et UNE base de données, mais proposer des expériences adaptées à chaque taille d'écran.
+## 0.8.0 — Expérience utilisateur des fonctions existantes
+Objectif : améliorer fortement le confort d’utilisation sans ouvrir de nouveau gros périmètre métier.
 
 Comprend :
-- audit des retours pratiques recueillis pendant l'utilisation de la 0.7.0 ;
-- nettoyage final des anciens contrôles par rôle au profit des permissions fonctionnelles ;
-- cohérence complète entre carte visible, fonction accessible et sécurité Supabase ;
-- grille personnalisable de 12 emplacements ;
-- cartes 1×1, 2×1 et 2×2 ;
-- déplacement tactile/souris et sauvegarde par utilisateur ;
-- cartes masquées/réaffichables et réinitialisation fiable ;
-- refonte mobile-first écran par écran ;
-- navigation mobile adaptée ;
-- formulaires, listes, tableaux, modales et panneaux adaptés au smartphone ;
-- zones tactiles et hiérarchie de l'information optimisées ;
-- gestion cohérente du clavier virtuel, des champs numériques et du scroll ;
-- widgets enrichis lorsque leur taille permet d'afficher de vraies informations utiles ;
-- conservation et optimisation de l'expérience desktop ;
-- consolidation du principe « zone métier = exécution, Général = création/administration » afin de simplifier les parcours et supprimer les doublons d'interface.
+- refonte mobile-first des écrans déjà existants ;
+- navigation plus naturelle sur smartphone ;
+- formulaires, listes, tableaux, modales et panneaux mieux adaptés ;
+- hiérarchie de l’information plus claire ;
+- clavier virtuel, champs numériques et scroll mieux gérés ;
+- amélioration de l’Accueil et des cartes existantes ;
+- grille personnalisable et préférences utilisateur si elles améliorent réellement l’usage ;
+- amélioration de l’Historique ;
+- amélioration de la page Suggestions déjà présente ;
+- amélioration des écrans Articles et Fournisseurs existants ;
+- amélioration des parcours Checklists et Températures existants ;
+- évaluation du bouton `+` existant sans construire un nouveau module autour de lui ;
+- conservation et optimisation de l’expérience desktop.
 
-#### Banc de test mobile inclus dans 0.8.0
-- mode responsive des outils développeur comme référence principale ;
-- tailles smartphone enregistrées ;
-- portrait et paysage ;
-- tests navigation, boutons, formulaires, listes, menus et clavier ;
-- smartphone réel réservé aux validations importantes et finales.
+Règle : la 0.8.0 améliore ce qui existe. Elle n’ouvre pas le catalogue comparatif, la photo, le scan code-barres ou un nouveau moteur d’achat.
 
-### 0.8.x — Validation et corrections terrain
-Objectif : utiliser la nouvelle expérience 0.8 en production, corriger les irritants découverts et éviter d'engager de gros nouveaux chantiers avant la 0.9.0.
+## 0.8.x — Validation terrain et corrections
+Objectif : utiliser réellement l’application et corriger point par point ce qui gêne avant la phase de durcissement.
 
-Comprend :
-- tests réels smartphone et PC ;
-- retours d'utilisation quotidienne ;
-- correction de navigation, formulaires et tactile ;
-- contrôle des permissions et des données ;
-- stabilisation des widgets et de la personnalisation.
+Méthode :
+- tests smartphone et desktop ;
+- noter l’écran précis, l’action, le résultat attendu et le résultat observé ;
+- distinguer bug bloquant, gêne UX et idée future ;
+- corriger les problèmes bloquants avant tout ajout secondaire ;
+- vérifier Inventaires, Historique, Articles, Fournisseurs, Suggestions, Checklists, Températures, Gestion et profils utilisateurs ;
+- stabiliser les permissions, les données, le tactile et le responsive.
 
-### 0.9.0 — Durcissement et préversion finale
-Objectif : arrêter les gros changements de produit et rendre StopFlow fiable de bout en bout avant la 1.0.0.
+## 0.9.0 — Durcissement et préversion finale
+Objectif : arrêter les changements produit et rendre StopFlow fiable de bout en bout avant la 1.0.0.
 
 Comprend :
-- audit complet des parcours métier ;
-- suppression progressive des anciens correctifs et compatibilités devenus inutiles ;
-- nettoyage technique des couches 0.5/0.6 qui ne sont plus nécessaires ;
-- vérification des erreurs, états vides, chargements et messages utilisateur ;
-- contrôle des performances desktop et mobile ;
-- contrôle complet des RLS Supabase, permissions et historiques ;
-- vérification des sauvegardes et de la procédure de rollback ;
+- audit complet des parcours métier existants ;
+- suppression progressive des anciens correctifs devenus inutiles ;
+- nettoyage technique des couches 0.5/0.6 ;
+- réduction des conflits entre anciennes couches tactiles ;
+- vérification erreurs, états vides, chargements et messages utilisateur ;
+- contrôle des performances desktop/mobile ;
+- contrôle complet RLS Supabase, permissions et historiques ;
+- audit ciblé des fonctions SECURITY DEFINER et de leurs droits ;
+- vérification des sauvegardes et du rollback ;
 - tests par plusieurs profils ;
-- validation des parcours principaux : inventaires, commandes, checklists, températures, gestion et historique ;
-- bêta terrain plus large avant ouverture au personnel.
+- validation des parcours principaux déjà présents ;
+- bêta terrain avant ouverture plus large au personnel.
 
-La 0.9.x doit principalement corriger et fiabiliser. Aucun nouveau gros chantier fonctionnel sauf nécessité critique.
+La 0.9.x doit principalement corriger et fiabiliser. Aucun nouveau gros chantier fonctionnel.
 
-### 1.0.0 — Version finale pour le personnel
-Objectif : première version officielle de StopFlow considérée comme complète, stable et prête pour l'exploitation quotidienne par le personnel.
+## 1.0.0 — Version finale pour le personnel
+Objectif : première version officielle de StopFlow considérée comme complète, stable et prête pour l’exploitation quotidienne par le personnel.
 
 Comprend :
 - validation finale smartphone et desktop ;
@@ -131,20 +118,35 @@ Comprend :
 - sauvegarde complète avant publication ;
 - branche/tag stable 1.0.0 ;
 - procédure de rollback documentée ;
-- documentation d'utilisation et d'administration ;
+- documentation d’utilisation et d’administration ;
 - publication finale après validation explicite.
 
-À partir de 1.0.0, les évolutions suivantes pourront être organisées en 1.1, 1.2, etc., sans remettre en cause le socle stable de la version finale.
+## Backlog après 1.0
+Les idées suivantes sont conservées pour de futures versions 1.1, 1.2, etc., mais ne font plus partie du chemin critique vers la 1.0 :
+- photos d’articles depuis le smartphone ;
+- scan de codes-barres / EAN ;
+- recherche avancée de produits ;
+- catalogue achats intelligent ;
+- produit comparable relié à plusieurs offres fournisseurs ;
+- prix par fournisseur et historique des prix ;
+- comparaison €/kg, €/L, €/pièce ;
+- ajout rapide d’un prix en magasin ;
+- envoi automatisé des bons de commande par e-mail ;
+- journal détaillé des envois ;
+- réception et contrôle détaillé des commandes ;
+- autres idées issues de l’usage réel.
 
 ## Règle de publication
-Pour chaque grande étape 0.7, 0.8, 0.9 et 1.0 :
+Pour chaque grande étape :
 1. développement sur la branche de développement ;
-2. sauvegarde de l'état précédent ;
+2. sauvegarde de l’état précédent ;
 3. validation fonctionnelle desktop et smartphone ;
 4. validation explicite avant production ;
-5. création d'une branche stable de la version publiée ;
+5. création d’une branche stable de la version publiée ;
 6. utilisation réelle et collecte des retours ;
 7. rollback possible vers la précédente branche stable en cas de problème important.
 
-## Règle d'architecture
-Les permissions déterminent CE QUE l'utilisateur est autorisé à faire. Les préférences, la taille d'écran et l'interface déterminent COMMENT ces fonctions sont affichées. Aucun réglage visuel, mobile ou de tableau de bord ne doit pouvoir accorder un droit métier.
+## Règle d’architecture
+Les permissions déterminent CE QUE l’utilisateur est autorisé à faire. Les préférences, la taille d’écran et l’interface déterminent COMMENT ces fonctions sont affichées. Aucun réglage visuel, mobile ou de tableau de bord ne doit pouvoir accorder un droit métier.
+
+Les évolutions jusqu’à la 1.0 doivent réutiliser les données et la logique métier communes et éviter toute nouvelle duplication fonctionnelle.

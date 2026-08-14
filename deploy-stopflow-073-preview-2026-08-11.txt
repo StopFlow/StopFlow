@@ -1,0 +1,1 @@
+StopFlow 0.7.3 — relance preview après correction visuelle de la flèche Retour mobile, 14 août 2026.

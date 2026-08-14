@@ -1,4 +1,0 @@
-StopFlow 0.7.3 — navigation mobile
-- fermeture fiable du menu latéral
-- glissement de fermeture plus fluide
-- flèche retour permanente dans l'en-tête mobile des fiches et sous-pages

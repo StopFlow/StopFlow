@@ -106,3 +106,53 @@
 
   [0,100,300,800,1600,3000,5000].forEach(delay=>setTimeout(apply,delay));
 })();
+
+/* StopFlow 0.7.3 — standard tactile iPhone consolidé. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-final-validation-touch-fix="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-final-validation-touch-fix.js?v=0732';
+  script.async=false;
+  script.dataset.stopflow073FinalValidationTouchFix='0.7.3';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.3 — standard global responsive + tactile selon le viewport réel. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-mobile-responsive-standard="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-mobile-responsive-standard.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073MobileResponsiveStandard='0.7.3';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.3 — intitulés métier lisibles dans l’Historique des bons. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-history-ux="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-history-ux.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073HistoryUx='0.7.3';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.3 — ouvre le PDF séparément et simplifie l’écran final. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-pdf-blank-open="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-pdf-blank-open.js?v=0731';
+  script.async=false;
+  script.dataset.stopflow073PdfBlankOpen='0.7.3';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.7.3 — standard de placement mobile : Retour en haut, + en bas. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-mobile-navigation-layout="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-mobile-navigation-layout.js?v=0731';
+  script.async=false;
+  script.dataset.stopflow073MobileNavigationLayout='0.7.3';
+  document.head.appendChild(script);
+})();
