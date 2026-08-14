@@ -151,7 +151,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-073-mobile-navigation-layout="0.7.3"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-073-mobile-navigation-layout.js?v=0730';
+  script.src='stopflow-073-mobile-navigation-layout.js?v=0731';
   script.async=false;
   script.dataset.stopflow073MobileNavigationLayout='0.7.3';
   document.head.appendChild(script);
