@@ -99,3 +99,13 @@
   refresh();
   [100,300,800,1600].forEach(delay=>setTimeout(refresh,delay));
 })();
+
+/* StopFlow 0.8.0 — organise l’espace Général par type d’usage. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-general-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-general-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080GeneralUx='0.8.0';
+  document.head.appendChild(script);
+})();
