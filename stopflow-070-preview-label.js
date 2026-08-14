@@ -136,3 +136,13 @@
   script.dataset.stopflow073HistoryUx='0.7.3';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.7.3 — le PDF final s’ouvre séparément et le retour Safari restaure l’écran final. */
+(function(){
+  if(document.querySelector('script[data-stopflow-073-pdf-navigation-fix="0.7.3"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-073-pdf-navigation-fix.js?v=0730';
+  script.async=false;
+  script.dataset.stopflow073PdfNavigationFix='0.7.3';
+  document.head.appendChild(script);
+})();
