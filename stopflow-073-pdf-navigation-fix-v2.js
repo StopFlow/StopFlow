@@ -3,7 +3,7 @@
   if(window.stopflow073PdfNavigationFixV2?.active)return;
 
   const MOBILE_QUERY='(max-width: 950px)';
-  const state={lastHandledAt:0};
+  const state={lastHandledAt:0,scheduled:false};
   const isMobile=()=>window.matchMedia?.(MOBILE_QUERY).matches===true;
 
   function buttonFrom(target){
@@ -12,7 +12,7 @@
 
   function clearReloadShield(){
     const shield=document.getElementById('sf73ReloadShield');
-    if(shield)shield.style.display='none';
+    if(shield&&shield.style.display!=='none')shield.style.display='none';
     document.documentElement.classList.add('sf73-mobile-ready');
     document.getElementById('app')?.classList.add('sf73-mobile-ready');
   }
@@ -50,9 +50,11 @@
       box.style.cssText='grid-column:1/-1;padding:10px 12px;border-radius:10px;font-size:13px;line-height:1.4;';
       actions.appendChild(box);
     }
-    box.style.background=type==='error'?'#fff1f1':'#eef5ff';
-    box.style.color=type==='error'?'#a72b2b':'#294f78';
-    box.textContent=message;
+    const background=type==='error'?'#fff1f1':'#eef5ff';
+    const color=type==='error'?'#a72b2b':'#294f78';
+    if(box.style.background!==background)box.style.background=background;
+    if(box.style.color!==color)box.style.color=color;
+    if(box.textContent!==message)box.textContent=message;
   }
 
   function openPdfSeparate(){
@@ -108,14 +110,22 @@
 
   function enhanceCompletion(){
     const button=document.querySelector('#sf73InventoryComplete #sf73DonePdf');
-    if(button){
-      button.textContent='Ouvrir le PDF';
-      button.setAttribute('aria-label','Ouvrir le PDF dans un nouvel onglet');
-      button.title='Ouvre le PDF séparément de StopFlow';
-    }
+    if(!button)return;
+    if(button.textContent!=='Ouvrir le PDF')button.textContent='Ouvrir le PDF';
+    if(button.getAttribute('aria-label')!=='Ouvrir le PDF dans un nouvel onglet')button.setAttribute('aria-label','Ouvrir le PDF dans un nouvel onglet');
+    if(button.title!=='Ouvre le PDF séparément de StopFlow')button.title='Ouvre le PDF séparément de StopFlow';
   }
 
-  /* Capture fenêtre : ce propriétaire passe avant les gestionnaires tactiles hérités du bouton. */
+  function scheduleEnhance(){
+    if(state.scheduled)return;
+    state.scheduled=true;
+    requestAnimationFrame(()=>{
+      state.scheduled=false;
+      enhanceCompletion();
+    });
+  }
+
+  /* Capture fenêtre : ce propriétaire passe avant les gestionnaires tactiles hérités du bouton PDF uniquement. */
   window.addEventListener('touchend',intercept,{capture:true,passive:false});
   window.addEventListener('pointerup',intercept,true);
   window.addEventListener('click',intercept,true);
@@ -129,7 +139,8 @@
     if(document.visibilityState==='visible')clearReloadShield();
   },true);
 
-  const observer=new MutationObserver(enhanceCompletion);
+  /* Observer sans écriture en boucle : enhanceCompletion ne modifie le DOM que si nécessaire. */
+  const observer=new MutationObserver(scheduleEnhance);
   if(document.body)observer.observe(document.body,{subtree:true,childList:true});
 
   window.stopflow073PdfNavigationFixV2={
@@ -137,10 +148,10 @@
     version:'0.7.3',
     open:openPdfSeparate,
     clearReloadShield,
-    refresh:enhanceCompletion
+    refresh:scheduleEnhance
   };
 
   clearReloadShield();
-  enhanceCompletion();
-  [100,300,800,1600,3000].forEach(delay=>setTimeout(()=>{clearReloadShield();enhanceCompletion()},delay));
+  scheduleEnhance();
+  [100,300,800,1600,3000].forEach(delay=>setTimeout(()=>{clearReloadShield();scheduleEnhance()},delay));
 })();
