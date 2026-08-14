@@ -28,23 +28,26 @@
           min-height:40px!important;
           margin:0!important;
           padding:0!important;
-          border:0!important;
+          border:1px solid rgba(12,42,72,.14)!important;
           border-radius:10px!important;
-          background:transparent!important;
-          color:#fff!important;
+          background:rgba(255,255,255,.96)!important;
+          color:#0b2a48!important;
           display:none!important;
           place-items:center!important;
           font-size:25px!important;
           font-weight:850!important;
           line-height:1!important;
-          box-shadow:none!important;
+          box-shadow:0 4px 14px rgba(7,29,49,.14)!important;
           touch-action:manipulation!important;
           -webkit-tap-highlight-color:transparent!important;
         }
         body.sf73-mobile-back-active #sf73MobileBack.sf73-top-back:not([hidden]){
           display:grid!important;
         }
-        #sf73MobileBack.sf73-top-back:active{background:rgba(255,255,255,.12)!important}
+        #sf73MobileBack.sf73-top-back:active{
+          background:#eef4fb!important;
+          transform:scale(.97)!important;
+        }
 
         /* Le titre garde sa place au centre et ne vient jamais se coller à la flèche. */
         #sf52MobileHeader.sf73-has-back{
