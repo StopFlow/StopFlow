@@ -176,3 +176,23 @@
   script.dataset.stopflow080ZoneUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — organisation de l’écran Général par usage. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-general-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-general-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080GeneralUx='0.8.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — page Partager une idée plus claire sur smartphone. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-suggestions-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-suggestions-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080SuggestionsUx='0.8.0';
+  document.head.appendChild(script);
+})();
