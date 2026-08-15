@@ -109,3 +109,13 @@
   script.dataset.stopflow080GeneralUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — planning Cuisine : Suggestions mensuelles + Lunchs hebdomadaires. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-kitchen-planning="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-kitchen-planning.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080KitchenPlanning='0.8.0';
+  document.head.appendChild(script);
+})();
