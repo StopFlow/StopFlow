@@ -196,3 +196,13 @@
   script.dataset.stopflow080SuggestionsUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — ergonomie mobile des écrans Articles / Fournisseurs. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-catalog-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-catalog-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080CatalogUx='0.8.0';
+  document.head.appendChild(script);
+})();
