@@ -114,7 +114,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-080-kitchen-planning="0.8.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-080-kitchen-planning.js?v=0800';
+  script.src='stopflow-080-kitchen-planning.js?v=0801';
   script.async=false;
   script.dataset.stopflow080KitchenPlanning='0.8.0';
   document.head.appendChild(script);
