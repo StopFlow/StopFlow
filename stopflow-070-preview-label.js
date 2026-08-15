@@ -226,3 +226,13 @@
   script.dataset.stopflow080UsersUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — ergonomie Historique + Paramètres. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-history-settings-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-history-settings-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080HistorySettingsUx='0.8.0';
+  document.head.appendChild(script);
+})();
