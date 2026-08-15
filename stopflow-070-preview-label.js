@@ -206,3 +206,13 @@
   script.dataset.stopflow080CatalogUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — ergonomie terrain Checklists + Températures. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-terrain-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-terrain-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080TerrainUx='0.8.0';
+  document.head.appendChild(script);
+})();
