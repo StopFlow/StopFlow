@@ -129,3 +129,13 @@
   script.dataset.stopflow080MonthlySuggestionsFlow='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — focus iPhone ciblé pour l'encart Suggestions du mois. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-monthly-suggestions-focus-fix="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-monthly-suggestions-focus-fix.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080MonthlySuggestionsFocusFix='0.8.0';
+  document.head.appendChild(script);
+})();
