@@ -4,7 +4,7 @@
 
   const S=window.SF54;
   if(!S)return;
-  const state={lunchFilter:'all',scheduled:false,observers:[]};
+  const state={lunchFilter:'all',scheduled:false,suppress:false,observers:[]};
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[char]));
   const sessionNow=()=>{try{return typeof session!=='undefined'?session:null}catch{return null}};
   const canReview=()=>Boolean(S.manager?.());
@@ -207,7 +207,7 @@
       filters.className='sf80-lunch-review-filters';
       filters.innerHTML=`<button type="button" class="sf80-lunch-review-filter" data-lunch-status="all">Toutes <span class="sf80-lunch-review-count" data-count="all">0</span></button><button type="button" class="sf80-lunch-review-filter" data-lunch-status="pending">À valider <span class="sf80-lunch-review-count" data-count="pending">0</span><span class="sf80-lunch-pending-dot" data-pending-dot>0</span></button><button type="button" class="sf80-lunch-review-filter" data-lunch-status="approved">Validés <span class="sf80-lunch-review-count" data-count="approved">0</span></button><button type="button" class="sf80-lunch-review-filter" data-lunch-status="rejected">Refusés <span class="sf80-lunch-review-count" data-count="rejected">0</span></button>`;
       context.insertAdjacentElement('afterend',filters);
-      filters.querySelectorAll('[data-lunch-status]').forEach(button=>bindButton(button,()=>{state.lunchFilter=button.dataset.lunchStatus||'all';enhanceLunchs()}));
+      filters.querySelectorAll('[data-lunch-status]').forEach(button=>bindButton(button,()=>{state.lunchFilter=button.dataset.lunchStatus||'all';schedule()}));
     }
     return {holder,history,context,filters};
   }
@@ -282,14 +282,20 @@
   }
 
   function enhance(){
-    injectStyles();
-    ensureNoteModal();
-    enhanceSuggestions();
-    enhanceLunchs();
+    if(state.suppress)return;
+    state.suppress=true;
+    try{
+      injectStyles();
+      ensureNoteModal();
+      enhanceSuggestions();
+      enhanceLunchs();
+    }finally{
+      setTimeout(()=>{state.suppress=false},0);
+    }
   }
 
   function schedule(){
-    if(state.scheduled)return;
+    if(state.suppress||state.scheduled)return;
     state.scheduled=true;
     requestAnimationFrame(()=>{state.scheduled=false;enhance()});
   }
