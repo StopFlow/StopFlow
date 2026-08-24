@@ -2,7 +2,7 @@
 (function(){
   if(window.stopflow080LunchFinalUx?.active)return;
 
-  const state={scheduled:false,pageObserver:null,editorObserver:null};
+  const state={scheduled:false,pageObserver:null,editorObserver:null,viewportBound:false};
   const page=()=>document.getElementById('sf54Lunchs');
   const list=()=>document.getElementById('sf80LunchList');
   const editor=()=>document.getElementById('sf80KitchenEditor');
@@ -20,6 +20,9 @@
       #sf54Lunchs .sf80-lunch-fixed>div:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:#cbd7e8}
       #sf54Lunchs .sf80-lunch-main{box-shadow:0 6px 18px rgba(13,35,62,.045)}
       #sf54Lunchs .sf80-lunch-main h3{font-size:16px}
+      #sf54Lunchs .sf80-lunch-main-title{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+      #sf54Lunchs .sf80-lunch-main-title h3{margin:0!important}
+      #sf54Lunchs .sf80-lunch-fish-rule{font-size:11px;font-style:italic;font-weight:500;line-height:1.3;color:var(--muted)}
       #sf54Lunchs .sf80-lunch-main-value{min-height:54px;line-height:1.45}
       #sf54Lunchs .sf80-lunch-last-result{display:none;margin:12px 0 2px;padding:12px 13px;border:1px solid #cfe0ff;border-radius:12px;background:#f3f7ff;color:#284c7d;line-height:1.4}
       #sf54Lunchs .sf80-lunch-last-result.show{display:block}
@@ -39,7 +42,19 @@
         #sf54Lunchs .sf80-lunch-fixed>div{padding:10px 9px 10px 12px!important}
         #sf54Lunchs .sf80-lunch-fixed span{font-size:12px!important}
         #sf54Lunchs .sf80-lunch-history-menu{grid-template-columns:1fr!important}
-        #sf80KitchenEditor.sf80-lunch-editor-active .modalbox{margin:0!important;max-height:70dvh!important;border-radius:18px 18px 0 0!important;padding:16px!important}
+        #sf80KitchenEditor.sf80-lunch-editor-active .modalbox{
+          position:fixed!important;
+          left:max(8px,env(safe-area-inset-left))!important;
+          right:max(8px,env(safe-area-inset-right))!important;
+          bottom:calc(var(--sf80-vv-bottom,0px) + 8px)!important;
+          width:auto!important;
+          max-width:none!important;
+          max-height:calc(var(--sf80-vv-height,100dvh) - 16px)!important;
+          margin:0!important;
+          border-radius:18px!important;
+          padding:16px!important;
+          overflow:auto!important;
+        }
         #sf80KitchenEditor.sf80-lunch-editor-active #sf80KitchenEditorTextarea{min-height:150px!important;font-size:16px!important}
       }
     `;
@@ -56,6 +71,22 @@
       else if(/^desserts?\s*:/i.test(value))rows.desserts=value.replace(/^desserts?\s*:\s*/i,'');
     });
     return rows;
+  }
+
+  function ensureFishRule(){
+    const card=document.getElementById('sf80LunchMain1Value')?.closest('.sf80-lunch-main');
+    if(!card||card.dataset.sf80FishRule==='1')return;
+    const title=card.querySelector('h3');
+    if(!title)return;
+    const row=document.createElement('div');
+    row.className='sf80-lunch-main-title';
+    title.insertAdjacentElement('beforebegin',row);
+    row.appendChild(title);
+    const note=document.createElement('span');
+    note.className='sf80-lunch-fish-rule';
+    note.textContent='Si le plat contient du poisson, le noter en Plat 1.';
+    row.appendChild(note);
+    card.dataset.sf80FishRule='1';
   }
 
   function enhanceHistoryItem(item){
@@ -110,6 +141,31 @@
     if(!result.classList.contains('show'))result.classList.add('show');
   }
 
+  function updateViewportMetrics(){
+    const layer=editor();
+    if(!layer)return;
+    const viewport=window.visualViewport;
+    const height=Math.max(240,Math.round(viewport?.height||window.innerHeight||document.documentElement.clientHeight||600));
+    const offsetTop=Math.max(0,Math.round(viewport?.offsetTop||0));
+    const layoutHeight=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0,height);
+    const bottom=Math.max(0,Math.round(layoutHeight-height-offsetTop));
+    layer.style.setProperty('--sf80-vv-height',`${height}px`);
+    layer.style.setProperty('--sf80-vv-bottom',`${bottom}px`);
+  }
+
+  function bindViewport(){
+    if(state.viewportBound)return;
+    state.viewportBound=true;
+    const refreshViewport=()=>requestAnimationFrame(()=>{
+      updateViewportMetrics();
+      enhanceEditor();
+    });
+    window.visualViewport?.addEventListener('resize',refreshViewport,{passive:true});
+    window.visualViewport?.addEventListener('scroll',refreshViewport,{passive:true});
+    window.addEventListener('resize',refreshViewport,{passive:true});
+    window.addEventListener('orientationchange',refreshViewport,{passive:true});
+  }
+
   function enhanceEditor(){
     const layer=editor();
     if(!layer)return;
@@ -117,6 +173,7 @@
     const active=/^Plat\s*[12]$/i.test(title)||/^Rechercher dans les lunchs$/i.test(title);
     const shouldBeActive=active&&!layer.classList.contains('hidden');
     if(layer.classList.contains('sf80-lunch-editor-active')!==shouldBeActive)layer.classList.toggle('sf80-lunch-editor-active',shouldBeActive);
+    updateViewportMetrics();
     if(!active)return;
     const textarea=layer.querySelector('#sf80KitchenEditorTextarea');
     if(textarea){
@@ -139,6 +196,7 @@
     injectStyles();
     const node=page();
     if(!node||node.classList.contains('hidden'))return;
+    ensureFishRule();
     list()?.querySelectorAll(':scope > .sf80-planning-item').forEach(enhanceHistoryItem);
     updateLastResult();
     enhanceEditor();
@@ -163,9 +221,15 @@
     }
   }
 
-  function refresh(){installObservers();schedule()}
+  function refresh(){
+    bindViewport();
+    installObservers();
+    updateViewportMetrics();
+    schedule();
+  }
 
   window.stopflow080LunchFinalUx={active:true,version:'0.8.0',refresh};
   injectStyles();
+  bindViewport();
   [0,100,350,900,1800].forEach(delay=>setTimeout(refresh,delay));
 })();
