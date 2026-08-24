@@ -139,3 +139,13 @@
   script.dataset.stopflow080MonthlySuggestionsFocusFix='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — historique mensuel et filtres de validation des Suggestions. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-monthly-suggestions-history-filters="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-monthly-suggestions-history-filters.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080MonthlySuggestionsHistoryFilters='0.8.0';
+  document.head.appendChild(script);
+})();
