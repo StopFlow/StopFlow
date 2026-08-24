@@ -7,6 +7,8 @@
   const list=()=>document.getElementById('sf80LunchList');
   const editor=()=>document.getElementById('sf80KitchenEditor');
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[char]));
+  const setHtml=(node,html)=>{if(node&&node.innerHTML!==html)node.innerHTML=html};
+  const setText=(node,text)=>{if(node&&node.textContent!==text)node.textContent=text};
 
   function injectStyles(){
     if(document.getElementById('stopflow080LunchFinalUxStyles'))return;
@@ -90,17 +92,22 @@
     const result=ensureLastResult();
     if(!result)return;
     const term=searchTerm();
-    if(!term){result.classList.remove('show');result.innerHTML='';return;}
-    const first=[...(list()?.querySelectorAll(':scope > .sf80-planning-item')||[])].find(item=>!item.hidden);
-    if(!first){
-      result.innerHTML=`<strong>Aucune occurrence de « ${esc(term)} »</strong>Aucun lunch enregistré ne correspond à cette recherche.`;
-      result.classList.add('show');
+    if(!term){
+      if(result.classList.contains('show'))result.classList.remove('show');
+      setHtml(result,'');
       return;
     }
-    const title=String(first.querySelector('h3')?.textContent||'Lunch').trim();
-    const period=String(first.querySelector('.sf80-planning-period')?.textContent||'').trim();
-    result.innerHTML=`<strong>Dernière occurrence de « ${esc(term)} »</strong>${esc(title)}${period?` · ${esc(period)}`:''}`;
-    result.classList.add('show');
+    const first=[...(list()?.querySelectorAll(':scope > .sf80-planning-item')||[])].find(item=>!item.hidden);
+    let html='';
+    if(!first){
+      html=`<strong>Aucune occurrence de « ${esc(term)} »</strong>Aucun lunch enregistré ne correspond à cette recherche.`;
+    }else{
+      const title=String(first.querySelector('h3')?.textContent||'Lunch').trim();
+      const period=String(first.querySelector('.sf80-planning-period')?.textContent||'').trim();
+      html=`<strong>Dernière occurrence de « ${esc(term)} »</strong>${esc(title)}${period?` · ${esc(period)}`:''}`;
+    }
+    setHtml(result,html);
+    if(!result.classList.contains('show'))result.classList.add('show');
   }
 
   function enhanceEditor(){
@@ -108,13 +115,15 @@
     if(!layer)return;
     const title=String(layer.querySelector('#sf80KitchenEditorTitle')?.textContent||'').trim();
     const active=/^Plat\s*[12]$/i.test(title)||/^Rechercher dans les lunchs$/i.test(title);
-    layer.classList.toggle('sf80-lunch-editor-active',active&&!layer.classList.contains('hidden'));
+    const shouldBeActive=active&&!layer.classList.contains('hidden');
+    if(layer.classList.contains('sf80-lunch-editor-active')!==shouldBeActive)layer.classList.toggle('sf80-lunch-editor-active',shouldBeActive);
     if(!active)return;
     const textarea=layer.querySelector('#sf80KitchenEditorTextarea');
     if(textarea){
-      textarea.placeholder=/^Rechercher/i.test(title)?'Ex. porc, poulet, saumon…':`Écrivez ${title.toLowerCase()}…`;
-      textarea.setAttribute('inputmode','text');
-      textarea.setAttribute('enterkeyhint','done');
+      const placeholder=/^Rechercher/i.test(title)?'Ex. porc, poulet, saumon…':`Écrivez ${title.toLowerCase()}…`;
+      if(textarea.placeholder!==placeholder)textarea.placeholder=placeholder;
+      if(textarea.getAttribute('inputmode')!=='text')textarea.setAttribute('inputmode','text');
+      if(textarea.getAttribute('enterkeyhint')!=='done')textarea.setAttribute('enterkeyhint','done');
     }
     let helper=layer.querySelector('.sf80-lunch-editor-helper');
     if(!helper){
@@ -122,7 +131,8 @@
       helper.className='sf80-lunch-editor-helper';
       textarea?.insertAdjacentElement('beforebegin',helper);
     }
-    helper.textContent=/^Rechercher/i.test(title)?'Tapez un ingrédient ou un mot du plat pour retrouver la dernière semaine correspondante.':'Le texte saisi sera visible dans le planning de la semaine puis dans l’historique.';
+    const helperText=/^Rechercher/i.test(title)?'Tapez un ingrédient ou un mot du plat pour retrouver la dernière semaine correspondante.':'Le texte saisi sera visible dans le planning de la semaine puis dans l’historique.';
+    setText(helper,helperText);
   }
 
   function enhancePage(){
