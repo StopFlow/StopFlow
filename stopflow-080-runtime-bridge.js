@@ -34,3 +34,23 @@
   script.dataset.stopflow080TemperatureEquipmentUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — cases à cocher des checklists fiables sur tactile et souris. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-checklist-input-fix="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-checklist-input-fix.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080ChecklistInputFix='0.8.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — éditeur d'article vertical et pratique sur smartphone. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-article-editor-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-article-editor-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080ArticleEditorUx='0.8.0';
+  document.head.appendChild(script);
+})();
