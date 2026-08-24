@@ -75,13 +75,42 @@
   function bindMain(main){
     if(!main||main.dataset.sf80ChecklistMain==='1')return;
     main.dataset.sf80ChecklistMain='1';
+    let gesture=null;
+    let suppressUntil=0;
+
+    main.addEventListener('pointerdown',event=>{
+      if(!isMobile()||event.target.closest?.('input,button,textarea,select,a')||(event.button!=null&&event.button!==0))return;
+      const input=main.querySelector('input[type="checkbox"][data-run-check]');
+      if(!input||input.disabled)return;
+      gesture={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false};
+    });
+    main.addEventListener('pointermove',event=>{
+      if(!gesture||gesture.id!==event.pointerId)return;
+      if(Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)>10)gesture.moved=true;
+    });
+    main.addEventListener('pointerup',event=>{
+      if(!isMobile()||!gesture||gesture.id!==event.pointerId)return;
+      const input=main.querySelector('input[type="checkbox"][data-run-check]');
+      const tap=!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<=10;
+      gesture=null;
+      if(!tap||!input||input.disabled)return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressUntil=Date.now()+700;
+      input.checked=!input.checked;
+      dispatchChange(input);
+    });
+    main.addEventListener('pointercancel',()=>{gesture=null});
     main.addEventListener('click',event=>{
       const input=main.querySelector('input[type="checkbox"][data-run-check]');
       if(!input||input.disabled||event.target===input)return;
-      if(isMobile())return;
+      if(isMobile()){
+        if(Date.now()<suppressUntil){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}
+        return;
+      }
       event.preventDefault();
       input.click();
-    });
+    },true);
   }
 
   function enhance(){
