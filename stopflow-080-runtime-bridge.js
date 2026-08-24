@@ -4,3 +4,33 @@
     if(typeof supabaseClient!=='undefined'&&!window.supabaseClient)window.supabaseClient=supabaseClient;
   }catch{}
 })();
+
+/* StopFlow 0.8.0 — masque les écrans intermédiaires au démarrage. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-startup-smooth="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-startup-smooth.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080StartupSmooth='0.8.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — ordre partagé des articles pour les inventaires. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-article-ordering="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-article-ordering.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080ArticleOrdering='0.8.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — fenêtre de création des équipements frigorifiques. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-temperature-equipment-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-temperature-equipment-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080TemperatureEquipmentUx='0.8.0';
+  document.head.appendChild(script);
+})();
