@@ -160,11 +160,21 @@
   document.head.appendChild(script);
 })();
 
+/* StopFlow 0.8.0 — pont runtime avant les extensions qui écrivent dans Supabase. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-runtime-bridge="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-runtime-bridge.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080RuntimeBridge='0.8.0';
+  document.head.appendChild(script);
+})();
+
 /* StopFlow 0.8.0 — catégories partagées lors de l'encodage des articles. */
 (function(){
   if(document.querySelector('script[data-stopflow-080-article-categories="0.8.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-080-article-categories.js?v=0800';
+  script.src='stopflow-080-article-categories.js?v=0801';
   script.async=false;
   script.dataset.stopflow080ArticleCategories='0.8.0';
   document.head.appendChild(script);
@@ -174,7 +184,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-080-proposal-review-flow="0.8.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-080-proposal-review-flow.js?v=0800';
+  script.src='stopflow-080-proposal-review-flow.js?v=0801';
   script.async=false;
   script.dataset.stopflow080ProposalReviewFlow='0.8.0';
   document.head.appendChild(script);
