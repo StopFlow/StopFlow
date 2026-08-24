@@ -58,13 +58,10 @@
     if(state.loading)return;
     state.loading=true;
     try{
-      const fromArticles=Array.isArray(window.db?.articles)?window.db.articles.map(item=>String(item.category||'').trim()).filter(Boolean):[];
       if(cloud()){
-        const {data,error}=await supabaseClient.from('article_categories').select('id,name,active,sort_order,created_by,created_at').order('sort_order').order('name');
+        const {data,error}=await window.supabaseClient.from('article_categories').select('id,name,active,sort_order,created_by,created_at').order('sort_order').order('name');
         if(error)throw error;
-        state.categories=[...(data||[]),...fromArticles.map((name,index)=>({name,active:true,sort_order:500+index}))];
-      }else{
-        state.categories=[...state.categories,...fromArticles.map((name,index)=>({name,active:true,sort_order:500+index}))];
+        state.categories=data||[];
       }
     }catch(error){
       console.warn('StopFlow 0.8.0 — catégories articles',error);
@@ -75,9 +72,10 @@
   }
 
   function options(selected=''){
+    const value=String(selected||'').trim();
     const names=sorted();
-    const hasSelected=selected&&names.some(item=>item.name.toLocaleLowerCase('fr')===selected.toLocaleLowerCase('fr'));
-    return `${selected&&!hasSelected?`<option value="${esc(selected)}" selected>${esc(selected)}</option>`:''}${names.map(item=>`<option value="${esc(item.name)}" ${item.name===selected?'selected':''}>${esc(item.name)}</option>`).join('')}`;
+    const hasSelected=value&&names.some(item=>item.name.toLocaleLowerCase('fr')===value.toLocaleLowerCase('fr'));
+    return `<option value="" ${value?'':'selected'}>Choisir une catégorie</option>${value&&!hasSelected?`<option value="${esc(value)}" selected>${esc(value)}</option>`:''}${names.map(item=>`<option value="${esc(item.name)}" ${item.name===value?'selected':''}>${esc(item.name)}</option>`).join('')}`;
   }
 
   function replaceCategoryInput(input){
@@ -131,6 +129,10 @@
     return modal;
   }
 
+  function currentSessionId(){
+    try{return typeof session!=='undefined'?session?.id||null:null}catch{return null}
+  }
+
   function openCategoryModal(target){
     const modal=ensureModal();
     const input=modal.querySelector('#sf80ArticleCategoryName');
@@ -138,23 +140,21 @@
     input.value='';
     modal.classList.remove('hidden');
     save.dataset.targetId=target?.id||'';
-    save.onclick=null;
     bindButton(save,async()=>{
       const name=String(input.value||'').trim();
       if(!name)return alert('Indiquez le nom de la catégorie.');
       save.disabled=true;save.textContent='Ajout…';
       try{
-        let category={name,active:true,sort_order:Math.max(50,...sorted().map(item=>Number(item.sort_order||0)))+10};
-        if(cloud()){
-          const {data,error}=await supabaseClient.from('article_categories').insert({name,active:true,sort_order:category.sort_order,created_by:window.session?.id||null}).select('id,name,active,sort_order').single();
-          if(error){
-            if(String(error.message||'').toLowerCase().includes('duplicate')){
-              const existing=sorted().find(item=>item.name.toLocaleLowerCase('fr')===name.toLocaleLowerCase('fr'));
-              if(existing)category=existing; else throw error;
-            }else throw error;
-          }else category=data;
+        let category=sorted().find(item=>item.name.toLocaleLowerCase('fr')===name.toLocaleLowerCase('fr'))||null;
+        if(!category){
+          category={name,active:true,sort_order:Math.max(50,...sorted().map(item=>Number(item.sort_order||0)))+10};
+          if(cloud()){
+            const {data,error}=await window.supabaseClient.from('article_categories').insert({name,active:true,sort_order:category.sort_order,created_by:currentSessionId()}).select('id,name,active,sort_order').single();
+            if(error)throw error;
+            category=data;
+          }
+          state.categories.push(category);
         }
-        state.categories.push(category);
         modal.classList.add('hidden');
         const current=document.getElementById(save.dataset.targetId||'mCat');
         if(current){current.innerHTML=options(category.name);current.value=category.name;}
