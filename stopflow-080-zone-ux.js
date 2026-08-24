@@ -149,3 +149,13 @@
   script.dataset.stopflow080MonthlySuggestionsHistoryFilters='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — finalisation UX des Lunchs hebdomadaires. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-lunch-final-ux="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-lunch-final-ux.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080LunchFinalUx='0.8.0';
+  document.head.appendChild(script);
+})();
