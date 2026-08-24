@@ -159,3 +159,23 @@
   script.dataset.stopflow080LunchFinalUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — catégories partagées lors de l'encodage des articles. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-article-categories="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-article-categories.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080ArticleCategories='0.8.0';
+  document.head.appendChild(script);
+})();
+
+/* StopFlow 0.8.0 — validation, refus motivé et réponse au proposant. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-proposal-review-flow="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-proposal-review-flow.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080ProposalReviewFlow='0.8.0';
+  document.head.appendChild(script);
+})();
