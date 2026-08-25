@@ -35,6 +35,57 @@
   document.head.appendChild(script);
 })();
 
+/* StopFlow 0.8.0 — activation synchrone du clavier iPhone dans l’éditeur d’équipement. */
+(function(){
+  if(window.stopflow080EquipmentKeyboardBridge?.active)return;
+  const isMobile=()=>window.matchMedia?.('(max-width: 950px)').matches===true;
+
+  function fieldFromTarget(target){
+    if(!target?.closest)return null;
+    const direct=target.closest('#sf80TemperatureEquipmentEditor input');
+    if(direct)return direct;
+    const field=target.closest('#sf80TemperatureEquipmentEditor .field');
+    return field?.querySelector?.('input')||null;
+  }
+
+  function focusField(field){
+    if(!field||field.disabled||field.readOnly)return false;
+    field.style.pointerEvents='auto';
+    field.style.touchAction='auto';
+    field.style.webkitUserSelect='text';
+    field.style.userSelect='text';
+    try{
+      field.focus({preventScroll:true});
+      if(typeof field.setSelectionRange==='function'){
+        const end=String(field.value||'').length;
+        field.setSelectionRange(end,end);
+      }
+    }catch{
+      try{field.focus()}catch{}
+    }
+    return document.activeElement===field;
+  }
+
+  document.addEventListener('touchend',event=>{
+    if(!isMobile())return;
+    const field=fieldFromTarget(event.target);
+    if(!field||document.activeElement===field)return;
+    /* Le focus doit rester synchrone dans le geste utilisateur pour ouvrir le clavier Safari. */
+    event.preventDefault();
+    event.stopPropagation();
+    focusField(field);
+  },{capture:true,passive:false});
+
+  document.addEventListener('click',event=>{
+    if(!isMobile())return;
+    const field=fieldFromTarget(event.target);
+    if(!field||document.activeElement===field)return;
+    focusField(field);
+  },true);
+
+  window.stopflow080EquipmentKeyboardBridge={active:true,version:'0.8.0',focus:focusField};
+})();
+
 /* StopFlow 0.8.0 — cases à cocher des checklists fiables sur tactile et souris. */
 (function(){
   if(document.querySelector('script[data-stopflow-080-checklist-input-fix="0.8.0"]'))return;
