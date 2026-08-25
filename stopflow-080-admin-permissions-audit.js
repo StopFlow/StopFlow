@@ -4,7 +4,14 @@
 
   const SCOPES=['cuisine','salle','nettoyage'];
   const LABELS={cuisine:'Cuisine',salle:'Salle',nettoyage:'Entretien & hygiène'};
-  const state={scheduled:false,proposalBusy:false,checklistSuggestionsLoading:false,observers:[]};
+  const state={
+    scheduled:false,
+    proposalBusy:false,
+    observers:[],
+    checklistSuggestionsLoading:false,
+    checklistSuggestionsSignature:'',
+    checklistRun:{itemId:'',loading:false,data:null}
+  };
   const S=window.SF54;
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -19,12 +26,19 @@
   function bindTap(button,handler){
     if(!button||button.dataset.sf80AuditBound==='1')return;
     button.dataset.sf80AuditBound='1';
-    if(typeof window.stopflow073MobileTap?.bind==='function')window.stopflow073MobileTap.bind(button,handler);
-    else button.addEventListener('click',handler);
-    button.addEventListener('click',event=>{
-      if(window.matchMedia?.('(max-width:950px)').matches)return;
-      handler(event);
-    });
+    if(typeof window.stopflow073MobileTap?.bind==='function'){
+      window.stopflow073MobileTap.bind(button,handler);
+      button.addEventListener('click',event=>{
+        if(window.matchMedia?.('(max-width:950px)').matches)return;
+        handler(event);
+      });
+      return;
+    }
+    button.addEventListener('click',handler);
+  }
+
+  function setText(node,value){
+    if(node&&node.textContent!==String(value))node.textContent=String(value);
   }
 
   function injectStyles(){
@@ -46,13 +60,17 @@
       #settings .sf80-audit-local-card .sf80-audit-hidden-cloud{display:none!important}
       #checklistRunnerActions .sf80-audit-checklist-review{display:inline-flex}
       #checklistManagerPanel .sf80-audit-manager-note{margin:10px 0;padding:9px 11px;border:1px solid #dbe6f4;border-radius:10px;background:#f7faff;color:#4a6684;font-size:11px;line-height:1.4}
+      #checklists .sf80-audit-no-run{display:none!important}
       @media(max-width:720px){
         .sf80-audit-review-actions{display:grid;grid-template-columns:1fr 1fr}
         #sf80AuditReviewModal{padding:10px!important;align-items:flex-start!important;padding-top:max(14px,env(safe-area-inset-top))!important}
         #sf80AuditReviewModal .modalbox{margin:0!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important;border-radius:16px!important}
         .sf80-audit-modal-actions{grid-template-columns:1fr}
         #modalBox:has(.sf70-permissions-holder) #createUserButton,
-        #modalBox:has(.sf70-permissions-holder) #saveUserButton{position:sticky!important;bottom:0!important;z-index:5!important;width:100%!important;margin-top:14px!important;box-shadow:0 -8px 18px rgba(255,255,255,.95)}
+        #modalBox:has(.sf70-permissions-holder) #saveUserButton{
+          position:sticky!important;bottom:0!important;z-index:5!important;width:100%!important;
+          margin-top:14px!important;box-shadow:0 -8px 18px rgba(255,255,255,.95)
+        }
       }
     `;
     document.head.appendChild(style);
@@ -64,7 +82,15 @@
     modal=document.createElement('div');
     modal.id='sf80AuditReviewModal';
     modal.className='modal hidden';
-    modal.innerHTML=`<div class="modalbox"><h2 id="sf80AuditReviewTitle">Refuser la proposition</h2><p class="muted" id="sf80AuditReviewHint">Ajoutez une remarque pour le proposant si nécessaire.</p><textarea id="sf80AuditReviewNote" class="input" placeholder="Remarque pour le proposant…"></textarea><div class="sf80-audit-modal-actions"><button type="button" class="btn ghost" id="sf80AuditReviewCancel">Annuler</button><button type="button" class="btn danger" id="sf80AuditReviewConfirm">Refuser</button></div></div>`;
+    modal.innerHTML=`<div class="modalbox">
+      <h2>Refuser la proposition</h2>
+      <p class="muted" id="sf80AuditReviewHint">Ajoutez une remarque pour le proposant si nécessaire.</p>
+      <textarea id="sf80AuditReviewNote" class="input" placeholder="Remarque pour le proposant…"></textarea>
+      <div class="sf80-audit-modal-actions">
+        <button type="button" class="btn ghost" id="sf80AuditReviewCancel">Annuler</button>
+        <button type="button" class="btn danger" id="sf80AuditReviewConfirm">Refuser</button>
+      </div>
+    </div>`;
     document.body.appendChild(modal);
     bindTap(modal.querySelector('#sf80AuditReviewCancel'),()=>modal.classList.add('hidden'));
     bindTap(modal.querySelector('#sf80AuditReviewConfirm'),async()=>{
@@ -79,19 +105,65 @@
   }
 
   function canReviewKind(kind){
-    return kind==='suggestion'?has('monthly_suggestions.manage','cuisine'):kind==='lunch'?has('lunchs.manage','cuisine'):false;
+    return kind==='suggestion'
+      ?has('monthly_suggestions.manage','cuisine')
+      :kind==='lunch'&&has('lunchs.manage','cuisine');
   }
 
   function proposalContent(){return Array.isArray(S?.state?.content)?S.state.content:[]}
-  function proposalById(id){return proposalContent().find(item=>String(item.id)===String(id))||null}
   function proposalStatus(item){return item?.review_status==='approved'?'approved':item?.review_status==='rejected'?'rejected':'pending'}
+
+  function proposalForCard(card,kind){
+    const cached=card.dataset.sf80ProposalId;
+    if(cached){
+      const found=proposalContent().find(item=>String(item.id)===String(cached));
+      if(found)return found;
+    }
+    if(kind==='suggestion'){
+      const direct=card.querySelector('[data-sf80-ms-approve],[data-sf80-ms-reject]');
+      const id=direct?.dataset.sf80MsApprove||direct?.dataset.sf80MsReject;
+      if(id){
+        const found=proposalContent().find(item=>String(item.id)===String(id));
+        if(found){card.dataset.sf80ProposalId=found.id;return found}
+      }
+      const title=String(card.querySelector('h3')?.textContent||'').trim();
+      const body=String(card.querySelector('.sf80-ms-content')?.textContent||'').trim();
+      const found=proposalContent().find(item=>
+        item.content_type==='monthly_suggestion'&&
+        String(item.title||'').trim()===title&&String(item.content||'').trim()===body
+      );
+      if(found)card.dataset.sf80ProposalId=found.id;
+      return found||null;
+    }
+    const archive=card.querySelector('[data-sf80-lunch-archive]');
+    const id=archive?.dataset.sf80LunchArchive;
+    if(id){
+      const found=proposalContent().find(item=>String(item.id)===String(id));
+      if(found){card.dataset.sf80ProposalId=found.id;return found}
+    }
+    const title=String(card.querySelector('h3')?.textContent||'').trim();
+    const candidates=proposalContent().filter(item=>item.content_type==='weekly_lunch'&&String(item.title||'').trim()===title);
+    let found=candidates[0]||null;
+    if(candidates.length>1){
+      const text=normalize(card.textContent);
+      found=candidates.find(item=>String(item.content||'').split(/\n+/)
+        .filter(line=>/^plat\s*[12]\s*:/i.test(line))
+        .every(line=>text.includes(normalize(line.replace(/^plat\s*[12]\s*:\s*/i,'')))))||found;
+    }
+    if(found)card.dataset.sf80ProposalId=found.id;
+    return found;
+  }
 
   async function decideProposal(id,status,kind,note=''){
     if(state.proposalBusy||!id||!canReviewKind(kind))return;
-    const item=proposalById(id);if(!item)return;
+    const item=proposalContent().find(row=>String(row.id)===String(id));
+    if(!item)return;
     state.proposalBusy=true;
     const s=sessionNow(),now=new Date().toISOString();
-    const patch={review_status:status,review_note:String(note||'').trim(),reviewed_by:s?.id||null,reviewed_by_name:currentName(),reviewed_at:now,updated_at:now};
+    const patch={
+      review_status:status,review_note:String(note||'').trim(),
+      reviewed_by:s?.id||null,reviewed_by_name:currentName(),reviewed_at:now,updated_at:now
+    };
     try{
       if(cloud()){
         const {data,error}=await window.supabaseClient.from('department_content').update(patch).eq('id',id).select('*').single();
@@ -105,62 +177,51 @@
       window.stopflow080KitchenPlanning?.renderLunchList?.();
       window.stopflow080ProposalReviewFlow?.refresh?.();
       window.stopflow080MonthlySuggestionsHistoryFilters?.refresh?.();
-      setTimeout(refresh,80);
+      setTimeout(schedule,80);
     }catch(error){
-      console.warn('StopFlow 0.8.0 — permission review',error);
+      console.warn('StopFlow 0.8.0 — décision proposition',error);
       alert(error?.message||'Impossible d’enregistrer cette décision.');
     }finally{state.proposalBusy=false}
   }
 
-  function openReject(id,kind,label){
-    if(!canReviewKind(kind))return;
+  function openReject(item,kind){
+    if(!item||!canReviewKind(kind))return;
     const modal=ensureReviewModal();
-    modal.dataset.itemId=String(id||'');modal.dataset.kind=kind;
-    modal.querySelector('#sf80AuditReviewHint').textContent=`${label||'Cette proposition'} sera refusée. Vous pouvez expliquer la décision au proposant.`;
+    modal.dataset.itemId=String(item.id||'');
+    modal.dataset.kind=kind;
+    setText(modal.querySelector('#sf80AuditReviewHint'),`${item.title||'Cette proposition'} sera refusée. Vous pouvez expliquer la décision au proposant.`);
     const textarea=modal.querySelector('#sf80AuditReviewNote');textarea.value='';
     modal.classList.remove('hidden');
     try{textarea.focus({preventScroll:true})}catch{}
   }
 
-  function proposalIdFromCard(card,kind){
-    if(card.dataset.sf80ProposalId)return card.dataset.sf80ProposalId;
-    if(kind==='suggestion'){
-      const node=card.querySelector('[data-sf80-ms-approve],[data-sf80-ms-reject]');
-      return node?.dataset.sf80MsApprove||node?.dataset.sf80MsReject||'';
-    }
-    return card.querySelector('[data-sf80-lunch-archive]')?.dataset.sf80LunchArchive||'';
-  }
-
-  function addProposalActions(card,kind){
-    card.querySelector('.sf80-audit-review-actions')?.remove();
-    const id=proposalIdFromCard(card,kind),item=proposalById(id);
-    if(!item||proposalStatus(item)!=='pending'||!canReviewKind(kind))return;
-    const actions=document.createElement('div');
+  function syncProposalActions(card,kind){
+    const item=proposalForCard(card,kind);
+    const shouldShow=Boolean(item&&proposalStatus(item)==='pending'&&canReviewKind(kind));
+    let actions=card.querySelector('.sf80-audit-review-actions');
+    if(!shouldShow){actions?.remove();return}
+    if(actions&&actions.dataset.itemId===String(item.id)&&actions.dataset.kind===kind)return;
+    actions?.remove();
+    actions=document.createElement('div');
     actions.className='sf80-audit-review-actions';
+    actions.dataset.itemId=String(item.id);actions.dataset.kind=kind;
     actions.innerHTML='<button type="button" class="btn small secondary" data-sf80-audit-approve>Valider</button><button type="button" class="btn small danger" data-sf80-audit-reject>Refuser</button>';
     const holder=kind==='suggestion'?(card.querySelector('.sf80-ms-actions')||card):(card.querySelector('.sf80-planning-tools')||card);
     holder.appendChild(actions);
     bindTap(actions.querySelector('[data-sf80-audit-approve]'),()=>decideProposal(item.id,'approved',kind,''));
-    bindTap(actions.querySelector('[data-sf80-audit-reject]'),()=>openReject(item.id,kind,item.title||'Cette proposition'));
+    bindTap(actions.querySelector('[data-sf80-audit-reject]'),()=>openReject(item,kind));
   }
 
   function alignProposals(){
     const suggestions=document.getElementById('sf54CuisineSuggestions');
-    if(suggestions){
-      suggestions.dataset.sf80CanReview=canReviewKind('suggestion')?'1':'0';
-      suggestions.querySelectorAll('.sf80-ms-item').forEach(card=>addProposalActions(card,'suggestion'));
-      const notice=suggestions.querySelector('.sf80-ms-pending-notice');
-      if(notice&&!canReviewKind('suggestion'))notice.classList.remove('show');
-    }
+    suggestions?.querySelectorAll('.sf80-ms-item').forEach(card=>syncProposalActions(card,'suggestion'));
     const lunch=document.getElementById('sf54Lunchs');
-    if(lunch){
-      lunch.dataset.sf80CanReview=canReviewKind('lunch')?'1':'0';
-      lunch.querySelectorAll('.sf80-planning-item').forEach(card=>addProposalActions(card,'lunch'));
-      const dot=lunch.querySelector('.sf80-lunch-pending-dot');
-      if(dot){
-        if(!canReviewKind('lunch'))dot.classList.remove('show');
-        else if(Number(dot.textContent||0)>0)dot.classList.add('show');
-      }
+    lunch?.querySelectorAll('.sf80-planning-item').forEach(card=>syncProposalActions(card,'lunch'));
+
+    const lunchDot=lunch?.querySelector('.sf80-lunch-pending-dot');
+    if(lunchDot){
+      if(!canReviewKind('lunch'))lunchDot.classList.remove('show');
+      else if(Number(lunchDot.textContent||0)>0)lunchDot.classList.add('show');
     }
   }
 
@@ -179,40 +240,129 @@
     return '';
   }
 
-  function currentChecklistScope(){return departmentFromText(document.getElementById('checklistRunMeta')?.textContent||'')}
+  function fallbackChecklistRun(){
+    const meta=String(document.getElementById('checklistRunMeta')?.textContent||'');
+    const ownName=normalize(currentName());
+    return {
+      performed_by:null,
+      department:departmentFromText(meta),
+      status:normalize(meta).includes('a controler')?'a_controler':'',
+      fallbackOwn:Boolean(ownName&&normalize(meta).includes(`commence par ${ownName}`))
+    };
+  }
+
+  async function resolveChecklistRun(){
+    const runner=document.getElementById('checklistRunner');
+    if(!runner||runner.classList.contains('hidden')||!cloud())return;
+    const itemId=runner.querySelector('[data-run-check]')?.dataset.runCheck||'';
+    if(!itemId)return;
+    if(state.checklistRun.itemId!==itemId){
+      state.checklistRun={itemId,loading:false,data:null};
+    }
+    if(state.checklistRun.data||state.checklistRun.loading)return;
+    state.checklistRun.loading=true;
+    try{
+      const {data:item,error:itemError}=await window.supabaseClient.from('checklist_run_items').select('run_id').eq('id',itemId).single();
+      if(itemError)throw itemError;
+      const {data:run,error:runError}=await window.supabaseClient.from('checklist_runs').select('id,performed_by,department,status').eq('id',item.run_id).single();
+      if(runError)throw runError;
+      if(state.checklistRun.itemId===itemId)state.checklistRun.data=run;
+    }catch(error){
+      console.warn('StopFlow 0.8.0 — résolution checklist',error);
+    }finally{
+      if(state.checklistRun.itemId===itemId)state.checklistRun.loading=false;
+      schedule();
+    }
+  }
 
   async function checklistValidate(status){
-    const scope=currentChecklistScope();
+    const run=state.checklistRun.data||fallbackChecklistRun();
+    const scope=run.department;
     if(!scope||!has('checklists.review',scope))return alert('Vous n’avez pas le droit de contrôler cette checklist.');
-    const first=document.querySelector('#checklistRunItems [data-run-check]');
-    const itemId=first?.dataset.runCheck;
-    if(!itemId||!cloud())return alert('Checklist introuvable.');
-    const {data:item,error:itemError}=await window.supabaseClient.from('checklist_run_items').select('run_id').eq('id',itemId).single();
-    if(itemError||!item?.run_id)return alert(itemError?.message||'Checklist introuvable.');
+    let runId=run.id||null;
+    if(!runId){
+      const itemId=document.querySelector('#checklistRunItems [data-run-check]')?.dataset.runCheck;
+      if(!itemId||!cloud())return alert('Checklist introuvable.');
+      const {data:item,error}=await window.supabaseClient.from('checklist_run_items').select('run_id').eq('id',itemId).single();
+      if(error||!item?.run_id)return alert(error?.message||'Checklist introuvable.');
+      runId=item.run_id;
+    }
     const note=prompt(status==='validee'?'Note de validation facultative :':'Quel suivi est nécessaire ?');
     if(note===null||(status!=='validee'&&!String(note).trim()))return;
     const now=new Date().toISOString();
-    const {error}=await window.supabaseClient.from('checklist_runs').update({status,validated_by:sessionNow()?.id||null,validated_by_name:currentName(),validated_at:now,validator_note:String(note||'').trim(),updated_at:now}).eq('id',item.run_id);
+    const {error}=await window.supabaseClient.from('checklist_runs').update({
+      status,validated_by:sessionNow()?.id||null,validated_by_name:currentName(),
+      validated_at:now,validator_note:String(note||'').trim(),updated_at:now
+    }).eq('id',runId);
     if(error)return alert(error.message);
+    state.checklistRun={itemId:'',loading:false,data:null};
     document.getElementById('backToChecklists')?.click();
     setTimeout(()=>document.getElementById('refreshChecklists')?.click(),80);
   }
 
-  function addChecklistTask(templateId,templateName){
-    if(!templateId)return;
-    const card=[...document.querySelectorAll('.checklist-template')].find(node=>node.querySelector(`[data-start-template="${CSS.escape(String(templateId))}"]`));
-    const scope=departmentFromText(card?.querySelector('.checklist-pill.department')?.textContent||'');
-    if(!scope||!has('checklists.templates.manage',scope))return alert('Vous n’avez pas le droit de modifier ce modèle.');
+  function syncChecklistRunner(){
+    const runner=document.getElementById('checklistRunner');
+    if(!runner||runner.classList.contains('hidden'))return;
+    resolveChecklistRun();
+
+    const fallback=fallbackChecklistRun();
+    const run=state.checklistRun.data||fallback;
+    const scope=run.department||fallback.department;
+    const own=run.performed_by
+      ?String(run.performed_by)===String(sessionNow()?.id||'')
+      :Boolean(fallback.fallbackOwn);
+    const status=run.status||fallback.status;
+
+    if(!own){
+      runner.querySelectorAll('[data-run-check],[data-run-anomaly],[data-run-note]').forEach(control=>control.disabled=true);
+    }
+
+    const actions=document.getElementById('checklistRunnerActions');
+    if(!actions)return;
+    [...actions.querySelectorAll('button:not(.sf80-audit-checklist-review)')].forEach(button=>{
+      const text=normalize(button.textContent);
+      if(text.includes('valider la checklist')||text.includes('demander un suivi'))button.hidden=true;
+      if(text.includes('terminer et envoyer'))button.hidden=!own;
+    });
+
+    const shouldReview=Boolean(scope&&status==='a_controler'&&has('checklists.review',scope));
+    let validate=actions.querySelector('[data-sf80-audit-checklist="validate"]');
+    let follow=actions.querySelector('[data-sf80-audit-checklist="follow"]');
+    if(!shouldReview){validate?.remove();follow?.remove();return}
+    if(!validate){
+      validate=document.createElement('button');validate.type='button';validate.className='btn primary sf80-audit-checklist-review';
+      validate.dataset.sf80AuditChecklist='validate';validate.textContent='Valider la checklist';actions.appendChild(validate);
+      bindTap(validate,()=>checklistValidate('validee'));
+    }
+    if(!follow){
+      follow=document.createElement('button');follow.type='button';follow.className='btn danger sf80-audit-checklist-review';
+      follow.dataset.sf80AuditChecklist='follow';follow.textContent='Demander un suivi';actions.appendChild(follow);
+      bindTap(follow,()=>checklistValidate('suivi_necessaire'));
+    }
+  }
+
+  function addChecklistTask(templateId,templateName,scope){
+    if(!templateId||!scope||!has('checklists.templates.manage',scope))return alert('Vous n’avez pas le droit de modifier ce modèle.');
     const modal=document.getElementById('modal'),box=document.getElementById('modalBox');if(!modal||!box)return;
-    box.innerHTML=`<div class="flex between"><div><h2>Ajouter une tâche</h2><p class="muted">${esc(templateName||'Checklist')}</p></div><button type="button" class="btn ghost" id="sf80AuditTaskClose">Fermer</button></div><div class="field" style="margin-top:12px"><label>Section</label><input class="input" id="sf80AuditTaskSection" value="Ajouts validés"></div><div class="field" style="margin-top:10px"><label>Tâche *</label><textarea class="input" id="sf80AuditTaskLabel" style="min-height:110px"></textarea></div><label class="input" style="margin-top:10px"><input type="checkbox" id="sf80AuditTaskRequired" checked> Tâche obligatoire</label><button type="button" class="btn primary" id="sf80AuditTaskSave" style="margin-top:14px;width:100%">Ajouter au modèle</button>`;
+    box.innerHTML=`<div class="flex between"><div><h2>Ajouter une tâche</h2><p class="muted">${esc(templateName||'Checklist')}</p></div><button type="button" class="btn ghost" id="sf80AuditTaskClose">Fermer</button></div>
+      <div class="field" style="margin-top:12px"><label>Section</label><input class="input" id="sf80AuditTaskSection" value="Ajouts validés"></div>
+      <div class="field" style="margin-top:10px"><label>Tâche *</label><textarea class="input" id="sf80AuditTaskLabel" style="min-height:110px"></textarea></div>
+      <label class="input" style="margin-top:10px"><input type="checkbox" id="sf80AuditTaskRequired" checked> Tâche obligatoire</label>
+      <button type="button" class="btn primary" id="sf80AuditTaskSave" style="margin-top:14px;width:100%">Ajouter au modèle</button>`;
     modal.classList.remove('hidden');
     bindTap(box.querySelector('#sf80AuditTaskClose'),()=>modal.classList.add('hidden'));
     bindTap(box.querySelector('#sf80AuditTaskSave'),async()=>{
-      const label=String(box.querySelector('#sf80AuditTaskLabel')?.value||'').trim();if(!label)return alert('La tâche est obligatoire.');
+      const label=String(box.querySelector('#sf80AuditTaskLabel')?.value||'').trim();
+      if(!label)return alert('La tâche est obligatoire.');
       const {data,error}=await window.supabaseClient.from('checklist_template_items').select('item_order').eq('template_id',templateId).order('item_order',{ascending:false}).limit(1);
       if(error)return alert(error.message);
-      const next=(Number(data?.[0]?.item_order||0)+1);
-      const {error:insertError}=await window.supabaseClient.from('checklist_template_items').insert({template_id:templateId,item_order:next,section_label:String(box.querySelector('#sf80AuditTaskSection')?.value||'').trim()||'Ajouts validés',label,required:Boolean(box.querySelector('#sf80AuditTaskRequired')?.checked),input_type:'checkbox',help_text:'',active:true});
+      const next=Number(data?.[0]?.item_order||0)+1;
+      const {error:insertError}=await window.supabaseClient.from('checklist_template_items').insert({
+        template_id:templateId,item_order:next,
+        section_label:String(box.querySelector('#sf80AuditTaskSection')?.value||'').trim()||'Ajouts validés',
+        label,required:Boolean(box.querySelector('#sf80AuditTaskRequired')?.checked),
+        input_type:'checkbox',help_text:'',active:true
+      });
       if(insertError)return alert(insertError.message);
       modal.classList.add('hidden');
       setTimeout(()=>document.getElementById('refreshChecklists')?.click(),80);
@@ -221,103 +371,155 @@
 
   async function loadChecklistManagerSuggestions(){
     const panel=document.getElementById('checklistManagerPanel'),box=document.getElementById('checklistSuggestions');
-    if(!panel||panel.classList.contains('hidden')||!box||state.checklistSuggestionsLoading||!cloud())return;
-    if(!anyScope('checklists.templates.manage'))return;
+    if(!panel||panel.classList.contains('hidden')||!box||state.checklistSuggestionsLoading||!cloud()||!anyScope('checklists.templates.manage'))return;
     state.checklistSuggestionsLoading=true;
     try{
-      const {data,error}=await window.supabaseClient.from('checklist_suggestions').select('id,template_id,proposed_by_name,department,proposed_label,explanation,status,created_at').eq('status','en_attente').order('created_at',{ascending:false}).limit(100);
+      const {data,error}=await window.supabaseClient.from('checklist_suggestions')
+        .select('id,template_id,proposed_by_name,department,proposed_label,explanation,status,created_at')
+        .eq('status','en_attente').order('created_at',{ascending:false}).limit(100);
       if(error)throw error;
       const rows=(data||[]).filter(item=>has('checklists.templates.manage',item.department));
-      if(!rows.length){box.innerHTML='<div class="checklist-empty">Aucune suggestion en attente pour les départements que vous gérez.</div>';return}
+      const signature=rows.map(item=>`${item.id}:${item.status}`).join('|');
+      if(signature===state.checklistSuggestionsSignature&&box.dataset.sf80AuditManaged==='1')return;
+      state.checklistSuggestionsSignature=signature;
+      box.dataset.sf80AuditManaged='1';
+
+      if(!rows.length){
+        box.innerHTML='<div class="checklist-empty">Aucune suggestion en attente pour les départements que vous gérez.</div>';
+        return;
+      }
       const templateIds=[...new Set(rows.map(item=>item.template_id).filter(Boolean))];
       let names=new Map();
       if(templateIds.length){
         const {data:templates}=await window.supabaseClient.from('checklist_templates').select('id,name').in('id',templateIds);
         names=new Map((templates||[]).map(item=>[String(item.id),item.name]));
       }
-      box.innerHTML=rows.map(item=>`<div class="checklist-suggestion" data-sf80-audit-checklist-suggestion="${esc(item.id)}"><b>${esc(item.proposed_label)}</b><br><small class="muted">${esc(names.get(String(item.template_id))||'Checklist')} · ${esc(item.proposed_by_name||'')} · ${esc(LABELS[item.department]||item.department)}</small>${item.explanation?`<p>${esc(item.explanation)}</p>`:''}<div class="flex wrap"><button type="button" class="btn primary small" data-sf80-audit-suggestion-accept>Accepter et ajouter</button><button type="button" class="btn danger small" data-sf80-audit-suggestion-reject>Refuser</button></div></div>`).join('');
+      box.innerHTML=rows.map(item=>`<div class="checklist-suggestion" data-sf80-audit-suggestion="${esc(item.id)}">
+        <b>${esc(item.proposed_label)}</b><br>
+        <small class="muted">${esc(names.get(String(item.template_id))||'Checklist')} · ${esc(item.proposed_by_name||'')} · ${esc(LABELS[item.department]||item.department)}</small>
+        ${item.explanation?`<p>${esc(item.explanation)}</p>`:''}
+        <div class="flex wrap"><button type="button" class="btn primary small" data-sf80-audit-accept>Accepter et ajouter</button><button type="button" class="btn danger small" data-sf80-audit-refuse>Refuser</button></div>
+      </div>`).join('');
+
       rows.forEach(item=>{
-        const card=box.querySelector(`[data-sf80-audit-checklist-suggestion="${CSS.escape(String(item.id))}"]`);if(!card)return;
-        bindTap(card.querySelector('[data-sf80-audit-suggestion-accept]'),async()=>{
+        const card=[...box.querySelectorAll('[data-sf80-audit-suggestion]')].find(node=>String(node.dataset.sf80AuditSuggestion)===String(item.id));
+        if(!card)return;
+        bindTap(card.querySelector('[data-sf80-audit-accept]'),async()=>{
           if(!has('checklists.templates.manage',item.department))return;
           const section=prompt('Section de la nouvelle tâche :','Ajouts validés');if(section===null)return;
           const {data:orders,error:orderError}=await window.supabaseClient.from('checklist_template_items').select('item_order').eq('template_id',item.template_id).order('item_order',{ascending:false}).limit(1);
           if(orderError)return alert(orderError.message);
           const next=Number(orders?.[0]?.item_order||0)+1;
-          const {error:itemError}=await window.supabaseClient.from('checklist_template_items').insert({template_id:item.template_id,item_order:next,section_label:String(section||'').trim()||'Ajouts validés',label:item.proposed_label,required:true,input_type:'checkbox',help_text:item.explanation||'',active:true});
+          const {error:itemError}=await window.supabaseClient.from('checklist_template_items').insert({
+            template_id:item.template_id,item_order:next,section_label:String(section||'').trim()||'Ajouts validés',
+            label:item.proposed_label,required:true,input_type:'checkbox',help_text:item.explanation||'',active:true
+          });
           if(itemError)return alert(itemError.message);
-          const {error:updateError}=await window.supabaseClient.from('checklist_suggestions').update({status:'acceptee',reviewed_by:sessionNow()?.id||null,reviewed_by_name:currentName(),reviewed_at:new Date().toISOString(),review_note:section}).eq('id',item.id);
+          const {error:updateError}=await window.supabaseClient.from('checklist_suggestions').update({
+            status:'acceptee',reviewed_by:sessionNow()?.id||null,reviewed_by_name:currentName(),
+            reviewed_at:new Date().toISOString(),review_note:section
+          }).eq('id',item.id);
           if(updateError)return alert(updateError.message);
-          state.checklistSuggestionsLoading=false;await loadChecklistManagerSuggestions();document.getElementById('refreshChecklists')?.click();
+          state.checklistSuggestionsSignature='';
+          await loadChecklistManagerSuggestions();
+          document.getElementById('refreshChecklists')?.click();
         });
-        bindTap(card.querySelector('[data-sf80-audit-suggestion-reject]'),async()=>{
+        bindTap(card.querySelector('[data-sf80-audit-refuse]'),async()=>{
           if(!has('checklists.templates.manage',item.department))return;
           const note=prompt('Motif du refus :');if(note===null)return;
-          const {error:updateError}=await window.supabaseClient.from('checklist_suggestions').update({status:'refusee',reviewed_by:sessionNow()?.id||null,reviewed_by_name:currentName(),reviewed_at:new Date().toISOString(),review_note:String(note||'').trim()}).eq('id',item.id);
+          const {error:updateError}=await window.supabaseClient.from('checklist_suggestions').update({
+            status:'refusee',reviewed_by:sessionNow()?.id||null,reviewed_by_name:currentName(),
+            reviewed_at:new Date().toISOString(),review_note:String(note||'').trim()
+          }).eq('id',item.id);
           if(updateError)return alert(updateError.message);
-          state.checklistSuggestionsLoading=false;await loadChecklistManagerSuggestions();
+          state.checklistSuggestionsSignature='';
+          await loadChecklistManagerSuggestions();
         });
       });
-    }catch(error){console.warn('StopFlow 0.8.0 — checklist manager',error)}
-    finally{state.checklistSuggestionsLoading=false}
+    }catch(error){
+      console.warn('StopFlow 0.8.0 — suggestions checklists',error);
+    }finally{state.checklistSuggestionsLoading=false}
   }
 
   function restrictChecklistTemplateModal(){
     const select=document.getElementById('newChecklistDepartment');if(!select)return;
-    [...select.options].forEach(option=>{option.disabled=!has('checklists.templates.manage',option.value)});
-    if(select.selectedOptions[0]?.disabled){const first=[...select.options].find(option=>!option.disabled);if(first)select.value=first.value}
+    [...select.options].forEach(option=>option.disabled=!has('checklists.templates.manage',option.value));
+    if(select.selectedOptions[0]?.disabled){
+      const first=[...select.options].find(option=>!option.disabled);
+      if(first)select.value=first.value;
+    }
+  }
+
+  function alignChecklistSuggestionForm(){
+    const select=document.getElementById('suggestionTemplate');
+    if(!select)return;
+    let allowed=0;
+    [...select.options].forEach(option=>{
+      const scope=departmentFromText(option.textContent||'');
+      const ok=Boolean(scope&&has('checklists.run',scope));
+      option.disabled=!ok;
+      if(ok)allowed+=1;
+    });
+    if(select.selectedOptions[0]?.disabled){
+      const first=[...select.options].find(option=>!option.disabled);
+      if(first)select.value=first.value;
+    }
+    const submit=document.getElementById('submitChecklistSuggestion');
+    if(submit)submit.disabled=allowed===0;
+    select.closest('.card')?.classList.toggle('sf80-audit-no-run',allowed===0);
   }
 
   function alignChecklists(){
     const page=document.getElementById('checklists');if(!page)return;
-    const accessible=SCOPES.filter(scope=>has('checklists.run',scope)||has('checklists.review',scope)||has('checklists.templates.manage',scope)||has('alerts.view',scope));
+    const accessible=SCOPES.filter(scope=>
+      has('checklists.run',scope)||has('checklists.review',scope)||
+      has('checklists.templates.manage',scope)||has('alerts.view',scope)
+    );
     const access=document.getElementById('checklistAccessText');
-    if(access&&accessible.length)access.textContent=`Accès selon vos permissions : ${accessible.map(scope=>LABELS[scope]).join(' · ')}.`;
+    if(access&&accessible.length)setText(access,`Accès selon vos permissions : ${accessible.map(scope=>LABELS[scope]).join(' · ')}.`);
 
     page.querySelectorAll('.checklist-template').forEach(card=>{
       const scope=departmentFromText(card.querySelector('.checklist-pill.department')?.textContent||'');
-      const start=card.querySelector('[data-start-template]');if(start)start.hidden=!has('checklists.run',scope);
-      const legacyAdd=card.querySelector('[data-add-template-item]');if(legacyAdd)legacyAdd.hidden=!has('checklists.templates.manage',scope);
+      const start=card.querySelector('[data-start-template]');
+      if(start)start.hidden=!has('checklists.run',scope);
+      const legacyAdd=card.querySelector('[data-add-template-item]');
+      if(legacyAdd)legacyAdd.hidden=!has('checklists.templates.manage',scope);
+
       let auditAdd=card.querySelector('.sf80-audit-add-task');
-      if(has('checklists.templates.manage',scope)&&!legacyAdd){
-        if(!auditAdd){auditAdd=document.createElement('button');auditAdd.type='button';auditAdd.className='btn ghost sf80-audit-add-task';auditAdd.textContent='Ajouter une tâche';(start?.parentElement||card).appendChild(auditAdd)}
-        const templateId=start?.dataset.startTemplate;
-        const templateName=card.querySelector('h3')?.textContent||'Checklist';
-        bindTap(auditAdd,()=>addChecklistTask(templateId,templateName));
-      }else if(auditAdd&&!has('checklists.templates.manage',scope))auditAdd.remove();
+      const needAuditAdd=Boolean(scope&&has('checklists.templates.manage',scope)&&!legacyAdd);
+      if(!needAuditAdd){auditAdd?.remove();return}
+      if(!auditAdd){
+        auditAdd=document.createElement('button');
+        auditAdd.type='button';auditAdd.className='btn ghost sf80-audit-add-task';auditAdd.textContent='Ajouter une tâche';
+        (start?.parentElement||card).appendChild(auditAdd);
+        bindTap(auditAdd,()=>addChecklistTask(start?.dataset.startTemplate,card.querySelector('h3')?.textContent||'Checklist',scope));
+      }
     });
+
+    const filterButton=document.querySelector('#sf54ChecklistFilter button');
+    if(filterButton)filterButton.hidden=!isAdminUser();
+
+    alignChecklistSuggestionForm();
 
     const panel=document.getElementById('checklistManagerPanel');
     if(panel){
-      const allowed=anyScope('checklists.templates.manage');panel.classList.toggle('hidden',!allowed);
+      const allowed=anyScope('checklists.templates.manage');
+      panel.classList.toggle('hidden',!allowed);
       if(allowed&&!panel.querySelector('.sf80-audit-manager-note')){
-        const note=document.createElement('div');note.className='sf80-audit-manager-note';note.textContent='Les modèles et suggestions affichés ici suivent uniquement les départements pour lesquels « Gestion des modèles de checklists » est autorisé.';
+        const note=document.createElement('div');note.className='sf80-audit-manager-note';
+        note.textContent='Les modèles et suggestions suivent uniquement les départements pour lesquels « Gestion des modèles de checklists » est autorisé.';
         panel.querySelector('.flex.between')?.insertAdjacentElement('afterend',note);
       }
       if(allowed)setTimeout(loadChecklistManagerSuggestions,0);
     }
 
-    const runner=document.getElementById('checklistRunner');
-    if(runner&&!runner.classList.contains('hidden')){
-      const scope=currentChecklistScope(),meta=String(document.getElementById('checklistRunMeta')?.textContent||'');
-      const ownName=normalize(currentName()),isOwn=ownName&&normalize(meta).includes(`commence par ${ownName}`);
-      if(!isOwn){runner.querySelectorAll('[data-run-check],[data-run-anomaly],[data-run-note]').forEach(control=>control.disabled=true)}
-      const actions=document.getElementById('checklistRunnerActions');
-      if(actions){
-        [...actions.querySelectorAll('button')].forEach(button=>{
-          const text=normalize(button.textContent);
-          if(text.includes('valider la checklist')||text.includes('demander un suivi'))button.hidden=true;
-          if(text.includes('terminer et envoyer')&&!isOwn)button.hidden=true;
-        });
-        actions.querySelectorAll('.sf80-audit-checklist-review').forEach(button=>button.remove());
-        if(scope&&has('checklists.review',scope)&&normalize(meta).includes('a controler')){
-          const validate=document.createElement('button');validate.type='button';validate.className='btn primary sf80-audit-checklist-review';validate.textContent='Valider la checklist';
-          const follow=document.createElement('button');follow.type='button';follow.className='btn danger sf80-audit-checklist-review';follow.textContent='Demander un suivi';
-          actions.append(validate,follow);bindTap(validate,()=>checklistValidate('validee'));bindTap(follow,()=>checklistValidate('suivi_necessaire'));
-        }
-      }
-    }
     restrictChecklistTemplateModal();
+    syncChecklistRunner();
+  }
+
+  function alignHistory(){
+    const allButton=document.querySelector('#sf54HistoryFilter button');
+    if(allButton)allButton.hidden=!isAdminUser();
   }
 
   function alignUsers(){
@@ -326,22 +528,32 @@
     if(role){
       const field=role.closest('.field');
       let help=field?.querySelector('.sf80-audit-role-help');
-      if(field&&!help){help=document.createElement('div');help.className='sf80-audit-role-help';field.appendChild(help)}
-      if(help){
-        const value=role.value;
-        help.textContent=value==='admin'?'Administrateur : accès complet à StopFlow. Les interrupteurs de permissions ne sont pas nécessaires.':'Le rôle décrit le niveau du profil. Les accès métier réels sont définis par les permissions ci-dessous.';
+      if(field&&!help){
+        help=document.createElement('div');help.className='sf80-audit-role-help';field.appendChild(help);
       }
-      if(role.dataset.sf80AuditRole!=='1'){role.dataset.sf80AuditRole='1';role.addEventListener('change',()=>setTimeout(alignUsers,0))}
+      if(help){
+        const text=role.value==='admin'
+          ?'Administrateur : accès complet à StopFlow. Les interrupteurs de permissions ne sont pas nécessaires.'
+          :'Le rôle décrit le niveau du profil. Les accès métier réels sont définis par les permissions ci-dessous.';
+        setText(help,text);
+      }
+      if(role.dataset.sf80AuditRole!=='1'){
+        role.dataset.sf80AuditRole='1';
+        role.addEventListener('change',()=>setTimeout(schedule,0));
+      }
     }
+
     try{
       const users=typeof sharedUsers!=='undefined'?sharedUsers:[];
       document.querySelectorAll('#userRows [data-user-edit]').forEach(button=>{
         const user=users.find(item=>String(item.id)===String(button.dataset.userEdit));if(!user)return;
         const summary=button.closest('tr')?.querySelector('.sf70-user-permission-summary');if(!summary)return;
         let badge=summary.parentElement?.querySelector('.sf80-audit-user-summary');
-        if(!badge){badge=document.createElement('span');badge.className='sf80-audit-user-summary';summary.insertAdjacentElement('afterend',badge)}
-        const count=user.role==='admin'?'Tous':Array.isArray(user.permissions)?user.permissions.length:0;
-        badge.textContent=user.role==='admin'?'Accès complet':`${count} droit${count>1?'s':''} actif${count>1?'s':''}`;
+        if(!badge){
+          badge=document.createElement('span');badge.className='sf80-audit-user-summary';summary.insertAdjacentElement('afterend',badge);
+        }
+        const count=Array.isArray(user.permissions)?user.permissions.length:0;
+        setText(badge,user.role==='admin'?'Accès complet':`${count} droit${count>1?'s':''} actif${count>1?'s':''}`);
       });
     }catch{}
   }
@@ -350,42 +562,56 @@
     const settings=document.getElementById('settings');if(!settings)return;
     const first=settings.querySelector(':scope > .card:first-child');
     if(first&&!first.querySelector('.sf80-audit-shared-note')){
-      const note=document.createElement('div');note.className='sf80-audit-shared-note';note.textContent='Ces paramètres sont partagés : une modification enregistrée ici s’applique à StopFlow pour tous les utilisateurs autorisés.';
+      const note=document.createElement('div');note.className='sf80-audit-shared-note';
+      note.textContent='Ces paramètres sont partagés : une modification enregistrée ici s’applique à StopFlow pour tous les utilisateurs autorisés.';
       first.querySelector('h2')?.insertAdjacentElement('afterend',note);
     }
+
     const localCard=document.getElementById('exportData')?.closest('.card');
     if(localCard){
       localCard.classList.add('sf80-audit-local-card');
-      const title=localCard.querySelector('h2');if(title)title.textContent='Sauvegarde locale';
-      const text=localCard.querySelector('p.muted');
-      if(text)text.textContent=cloud()?'Les données métier sont partagées via Supabase. L’export crée seulement une copie locale de consultation ; l’import et la réinitialisation locale sont masqués pour éviter toute confusion.':'Outils de sauvegarde de la version locale.';
-      const importLabel=document.getElementById('importData')?.closest('label');
-      const reset=document.getElementById('resetData');
-      if(importLabel)importLabel.classList.toggle('sf80-audit-hidden-cloud',cloud());
-      if(reset)reset.classList.toggle('sf80-audit-hidden-cloud',cloud());
-      const exportButton=document.getElementById('exportData');if(exportButton&&cloud())exportButton.textContent='Exporter une copie locale';
+      setText(localCard.querySelector('h2'),'Sauvegarde locale');
+      const text=cloud()
+        ?'Les données métier sont partagées via Supabase. L’export crée seulement une copie locale de consultation ; l’import et la réinitialisation locale sont masqués pour éviter toute confusion.'
+        :'Outils de sauvegarde de la version locale.';
+      setText(localCard.querySelector('p.muted'),text);
+      document.getElementById('importData')?.closest('label')?.classList.toggle('sf80-audit-hidden-cloud',cloud());
+      document.getElementById('resetData')?.classList.toggle('sf80-audit-hidden-cloud',cloud());
+      const exportButton=document.getElementById('exportData');
+      if(exportButton&&cloud())setText(exportButton,'Exporter une copie locale');
     }
-    const allowed=has('settings.manage','global');
-    const save=document.getElementById('saveSettings');if(save)save.hidden=!allowed;
+    const save=document.getElementById('saveSettings');
+    if(save)save.hidden=!has('settings.manage','global');
   }
 
   function refresh(){
-    injectStyles();ensureReviewModal();alignArticleCategories();alignProposals();alignChecklists();alignUsers();alignSettings();
+    injectStyles();
+    ensureReviewModal();
+    alignArticleCategories();
+    alignProposals();
+    alignChecklists();
+    alignHistory();
+    alignUsers();
+    alignSettings();
   }
 
   function schedule(){
-    if(state.scheduled)return;state.scheduled=true;
+    if(state.scheduled)return;
+    state.scheduled=true;
     requestAnimationFrame(()=>{state.scheduled=false;refresh()});
   }
 
   function observe(id){
-    const node=document.getElementById(id);if(!node||node.dataset.sf80AuditObserved==='1')return;
+    const node=document.getElementById(id);
+    if(!node||node.dataset.sf80AuditObserved==='1')return;
     node.dataset.sf80AuditObserved='1';
-    const observer=new MutationObserver(schedule);observer.observe(node,{childList:true,subtree:true});state.observers.push(observer);
+    const observer=new MutationObserver(schedule);
+    observer.observe(node,{childList:true,subtree:true});
+    state.observers.push(observer);
   }
 
   function install(){
-    ['sf54CuisineSuggestions','sf54Lunchs','checklists','users','settings','modalBox','articles'].forEach(observe);
+    ['sf54CuisineSuggestions','sf54Lunchs','checklists','history','users','settings','modalBox','articles'].forEach(observe);
     schedule();
   }
 
