@@ -54,3 +54,13 @@
   script.dataset.stopflow080ArticleEditorUx='0.8.0';
   document.head.appendChild(script);
 })();
+
+/* StopFlow 0.8.0 — audit Administration, permissions et paramètres. */
+(function(){
+  if(document.querySelector('script[data-stopflow-080-admin-permissions-audit="0.8.0"]'))return;
+  const script=document.createElement('script');
+  script.src='stopflow-080-admin-permissions-audit.js?v=0800';
+  script.async=false;
+  script.dataset.stopflow080AdminPermissionsAudit='0.8.0';
+  document.head.appendChild(script);
+})();
