@@ -6,7 +6,13 @@
   const state={categories:DEFAULTS.map((name,index)=>({name,sort_order:(index+1)*10,active:true})),observer:null,loading:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[char]));
   const cloud=()=>typeof isCloudMode==='function'&&isCloudMode()&&window.supabaseClient;
-  const canManage=()=>typeof isResponsible==='function'&&isResponsible()||typeof isAdmin==='function'&&isAdmin();
+  const canManage=()=>{
+    try{
+      if(typeof isAdmin==='function'&&isAdmin())return true;
+      const nav=window.stopflow070CardNavigation;
+      return ['cuisine','salle','nettoyage'].some(scope=>Boolean(nav?.hasPermission?.('articles.manage',scope)));
+    }catch{return false}
+  };
 
   function bindButton(button,handler){
     if(!button||button.dataset.sf80CategoryBound==='1')return;
@@ -97,19 +103,27 @@
     const select=replaceCategoryInput(input);
     if(!select)return;
     const field=select.closest('.field');
-    if(!field||field.dataset.sf80CategoryEnhanced==='1')return;
+    if(!field)return;
+    let row=select.closest('.sf80-category-row');
+    if(!row){
+      row=document.createElement('div');
+      row.className='sf80-category-row';
+      select.insertAdjacentElement('beforebegin',row);
+      row.appendChild(select);
+    }
     field.dataset.sf80CategoryEnhanced='1';
-    const row=document.createElement('div');
-    row.className='sf80-category-row';
-    select.insertAdjacentElement('beforebegin',row);
-    row.appendChild(select);
+    let add=row.querySelector('.sf80-category-add');
     if(canManage()){
-      const add=document.createElement('button');
-      add.type='button';
-      add.className='btn secondary sf80-category-add';
-      add.textContent='+ Ajouter une catégorie';
-      row.appendChild(add);
+      if(!add){
+        add=document.createElement('button');
+        add.type='button';
+        add.className='btn secondary sf80-category-add';
+        add.textContent='+ Ajouter une catégorie';
+        row.appendChild(add);
+      }
       bindButton(add,()=>openCategoryModal(select));
+    }else if(add){
+      add.remove();
     }
   }
 
@@ -134,6 +148,7 @@
   }
 
   function openCategoryModal(target){
+    if(!canManage())return alert('Vous n’avez pas le droit de gérer les catégories d’articles.');
     const modal=ensureModal();
     const input=modal.querySelector('#sf80ArticleCategoryName');
     const save=modal.querySelector('#sf80ArticleCategorySave');
@@ -141,6 +156,7 @@
     modal.classList.remove('hidden');
     save.dataset.targetId=target?.id||'';
     bindButton(save,async()=>{
+      if(!canManage())return;
       const name=String(input.value||'').trim();
       if(!name)return alert('Indiquez le nom de la catégorie.');
       save.disabled=true;save.textContent='Ajout…';
@@ -186,5 +202,5 @@
   injectStyles();
   installObserver();
   load();
-  [100,400,1000].forEach(delay=>setTimeout(enhance,delay));
+  [100,400,1000,2000,4000].forEach(delay=>setTimeout(enhance,delay));
 })();
