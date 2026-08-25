@@ -6,8 +6,24 @@
   const state={observer:null,currentId:null,saving:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const api=()=>window.stopflow070TemperatureV3;
+  const isMobile=()=>window.matchMedia?.('(max-width:950px)').matches===true;
   const currentSession=()=>{try{return typeof session!=='undefined'?session:(window.session||{})}catch{return window.session||{}}};
   const sessionName=()=>{const s=currentSession();return String(s?.name||[s?.prenom,s?.nom].filter(Boolean).join(' ')||'').trim()||'Utilisateur StopFlow'};
+
+  function bindAction(button,handler){
+    if(!button||typeof handler!=='function'||button.dataset.sf80EquipmentActionBound==='1')return;
+    button.dataset.sf80EquipmentActionBound='1';
+    if(typeof window.stopflow073MobileTap?.bind==='function'){
+      window.stopflow073MobileTap.bind(button,handler);
+      button.addEventListener('click',event=>{
+        if(isMobile())return;
+        event.preventDefault();
+        handler(event);
+      });
+      return;
+    }
+    button.addEventListener('click',event=>{event.preventDefault();handler(event)});
+  }
 
   function injectStyles(){
     if(document.getElementById('stopflow080TemperatureEquipmentUxStyles'))return;
@@ -19,6 +35,7 @@
       .sf80-equipment-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
       .sf80-equipment-head h2{margin:0 0 4px;font-size:22px;line-height:1.2}
       .sf80-equipment-head p{margin:0;color:#68778b;font-size:12px;line-height:1.4}
+      .sf80-equipment-head .btn,.sf80-equipment-actions .btn{pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
       .sf80-equipment-form{display:grid;gap:12px;margin-top:16px}
       .sf80-equipment-form .field{gap:5px}
       .sf80-equipment-form label{font-size:12px;font-weight:850;color:#344b63}
@@ -60,6 +77,11 @@
     };
   }
 
+  function focusInput(field){
+    if(!field||field.tagName!=='INPUT'||document.activeElement===field)return;
+    try{field.focus({preventScroll:true})}catch{field.focus()}
+  }
+
   function rebuildEditor(){
     const overlay=document.getElementById('sf70Tv3Overlay');
     const dialog=document.getElementById('sf70Tv3Dialog');
@@ -73,18 +95,25 @@
     overlay.classList.add('sf80-equipment-editor');
     dialog.dataset.sf80EquipmentEditor='1';
     dialog.innerHTML=`<div class="sf80-equipment-head"><div><h2>${existing?'Modifier l’équipement':'Nouvel équipement'}</h2><p>Les informations essentielles suffisent pour les futurs relevés.</p></div><button type="button" class="btn ghost" id="sf80EquipmentClose">Fermer</button></div><div class="sf80-equipment-form"><div class="field"><label for="sf80EquipmentName">Nom de l’équipement *</label><input class="input" id="sf80EquipmentName" autocomplete="off" enterkeyhint="next" placeholder="Ex. Frigo cuisine" value="${esc(value.name)}"></div><div class="field"><label for="sf80EquipmentLocation">Emplacement</label><input class="input" id="sf80EquipmentLocation" autocomplete="off" enterkeyhint="next" placeholder="Ex. Cuisine — passe" value="${esc(value.location)}"></div><div class="field"><label for="sf80EquipmentType">Type</label><select class="input" id="sf80EquipmentType">${Object.entries(TYPE_LABELS).map(([key,label])=>`<option value="${key}" ${value.type===key?'selected':''}>${label}</option>`).join('')}</select></div><div class="sf80-equipment-range"><div class="sf80-equipment-range-title">Plage de température autorisée</div><div class="sf80-equipment-range-grid"><div class="field"><label for="sf80EquipmentMin">Minimum °C</label><input class="input" id="sf80EquipmentMin" type="text" inputmode="decimal" enterkeyhint="next" value="${esc(String(value.min).replace('.',','))}"></div><div class="field"><label for="sf80EquipmentMax">Maximum °C</label><input class="input" id="sf80EquipmentMax" type="text" inputmode="decimal" enterkeyhint="done" value="${esc(String(value.max).replace('.',','))}"></div></div><div class="sf80-equipment-hint">Utilisez une virgule ou un point pour les décimales. Exemple : -18 à -15 °C pour un congélateur.</div></div></div><div class="sf80-equipment-actions"><button type="button" class="btn ghost" id="sf80EquipmentCancel">Annuler</button><button type="button" class="btn primary" id="sf80EquipmentSave">Enregistrer</button></div>`;
-    dialog.querySelector('#sf80EquipmentClose').addEventListener('click',closeEditor);
-    dialog.querySelector('#sf80EquipmentCancel').addEventListener('click',closeEditor);
-    dialog.querySelector('#sf80EquipmentSave').addEventListener('click',saveEditor);
+
+    bindAction(dialog.querySelector('#sf80EquipmentClose'),closeEditor);
+    bindAction(dialog.querySelector('#sf80EquipmentCancel'),closeEditor);
+    bindAction(dialog.querySelector('#sf80EquipmentSave'),saveEditor);
+
     const fields=[...dialog.querySelectorAll('input,select')];
     fields.forEach((field,index)=>{
-      field.addEventListener('pointerup',()=>{if(field.tagName==='INPUT'&&document.activeElement!==field){try{field.focus({preventScroll:true})}catch{field.focus()}}});
+      if(field.tagName==='INPUT'){
+        field.addEventListener('touchend',()=>focusInput(field),{passive:true});
+        field.addEventListener('pointerup',()=>focusInput(field));
+      }
       field.addEventListener('keydown',event=>{
         if(event.key!=='Enter'||field.tagName==='SELECT')return;
-        event.preventDefault();const next=fields[index+1];if(next){next.focus()}else dialog.querySelector('#sf80EquipmentSave')?.click();
+        event.preventDefault();
+        const next=fields[index+1];
+        if(next)next.focus();
+        else saveEditor();
       });
     });
-    setTimeout(()=>{const name=dialog.querySelector('#sf80EquipmentName');try{name?.focus({preventScroll:true})}catch{name?.focus()}},60);
   }
 
   function closeEditor(){
