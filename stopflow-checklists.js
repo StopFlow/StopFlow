@@ -590,27 +590,150 @@
     }catch(error){alert("Traitement impossible : "+error.message)}
   }
 
-  function openAddTaskModal(templateId){
+  function openEditTemplateModal(templateId){
     const template=state.templates.find(item=>item.id===templateId);
-    if(!template)return;
-    document.getElementById("modalBox").innerHTML=`
-      <div class="flex between"><div><h2>Ajouter une tâche</h2><p class="muted">${escapeHtml(template.name)}</p></div><button class="btn ghost" id="closeModal">Fermer</button></div>
-      <div class="field"><label>Section</label><input class="input" id="directTaskSection" value="Ajouts validés"></div>
-      <div class="field" style="margin-top:10px"><label>Tâche</label><textarea class="input" id="directTaskLabel"></textarea></div>
-      <label class="input" style="margin-top:10px"><input type="checkbox" id="directTaskRequired" checked> Tâche obligatoire</label>
-      <button class="btn primary" id="saveDirectTask" style="margin-top:14px">Ajouter au modèle</button>`;
-    document.getElementById("modal").classList.remove("hidden");
-    document.getElementById("closeModal").onclick=()=>document.getElementById("modal").classList.add("hidden");
-    document.getElementById("saveDirectTask").onclick=async()=>{
-      const label=document.getElementById("directTaskLabel").value.trim();
-      if(!label)return alert("La tâche est obligatoire.");
-      const nextOrder=Math.max(0,...template.items.map(item=>Number(item.item_order)||0))+1;
-      const {error}=await supabaseClient.from("checklist_template_items").insert({template_id:template.id,item_order:nextOrder,section_label:document.getElementById("directTaskSection").value.trim()||"Ajouts validés",label,required:document.getElementById("directTaskRequired").checked,input_type:"checkbox",help_text:"",active:true});
-      if(error)return alert(error.message);
-      document.getElementById("modal").classList.add("hidden");
-      await refreshAll(false);
+    if(!template)return alert("Checklist introuvable.");
+    const modal=document.getElementById("modal"),box=document.getElementById("modalBox");
+    if(!modal||!box)return;
+
+    const draft=(template.items||[]).map(item=>({...item,_new:false}));
+    box.classList.add("checklist-template-editor-modal");
+
+    const closeEditor=()=>{
+      modal.classList.add("hidden");
+      box.classList.remove("checklist-template-editor-modal");
     };
+
+    const syncDraft=()=>{
+      box.querySelectorAll("[data-checklist-edit-index]").forEach(row=>{
+        const index=Number(row.dataset.checklistEditIndex);
+        const item=draft[index];
+        if(!item)return;
+        item.section_label=String(row.querySelector("[data-checklist-edit-section]")?.value||"").trim();
+        item.label=String(row.querySelector("[data-checklist-edit-label]")?.value||"").trim();
+        item.required=Boolean(row.querySelector("[data-checklist-edit-required]")?.checked);
+      });
+    };
+
+    const moveItem=(from,to)=>{
+      syncDraft();
+      if(to<0||to>=draft.length)return;
+      const moved=draft.splice(from,1)[0];
+      draft.splice(to,0,moved);
+      renderEditor();
+    };
+
+    const addItem=()=>{
+      syncDraft();
+      const last=draft[draft.length-1];
+      draft.push({
+        id:"",
+        template_id:template.id,
+        item_order:draft.length+1,
+        section_label:last?.section_label||"Tâches",
+        label:"",
+        required:true,
+        input_type:"checkbox",
+        help_text:"",
+        active:true,
+        _new:true
+      });
+      renderEditor();
+      setTimeout(()=>{
+        const row=box.querySelector('[data-checklist-edit-index="'+(draft.length-1)+'"]');
+        row?.querySelector("[data-checklist-edit-label]")?.focus();
+      },0);
+    };
+
+    const saveEditor=async()=>{
+      syncDraft();
+      const empty=draft.findIndex(item=>!String(item.label||"").trim());
+      if(empty>=0)return alert("Chaque tâche doit avoir un texte.");
+      const saveButton=box.querySelector("#saveChecklistTemplateEditor");
+      if(saveButton){saveButton.disabled=true;saveButton.textContent="Enregistrement…"}
+      try{
+        for(let index=0;index<draft.length;index++){
+          const item=draft[index];
+          const payload={
+            item_order:index+1,
+            section_label:String(item.section_label||"").trim()||"Tâches",
+            label:String(item.label||"").trim(),
+            required:Boolean(item.required)
+          };
+          if(item._new){
+            const {error}=await supabaseClient.from("checklist_template_items").insert({
+              template_id:template.id,
+              ...payload,
+              input_type:"checkbox",
+              help_text:"",
+              active:true
+            });
+            if(error)throw error;
+          }else{
+            const {error}=await supabaseClient.from("checklist_template_items").update(payload).eq("id",item.id);
+            if(error)throw error;
+          }
+        }
+        const nextVersion=Math.max(1,Number(template.version)||1)+1;
+        const {error:templateError}=await supabaseClient.from("checklist_templates").update({version:nextVersion}).eq("id",template.id);
+        if(templateError)throw templateError;
+        closeEditor();
+        await refreshAll(false);
+      }catch(error){
+        alert("Modification impossible : "+(error?.message||error));
+        if(saveButton){saveButton.disabled=false;saveButton.textContent="Enregistrer les modifications"}
+      }
+    };
+
+    function renderEditor(){
+      box.innerHTML=`
+        <div class="flex between wrap">
+          <div><h2>Modifier la checklist</h2><p class="muted">${escapeHtml(template.name)} · version ${escapeHtml(template.version)}</p></div>
+          <button class="btn ghost" id="closeChecklistTemplateEditor" type="button">Fermer</button>
+        </div>
+        <div class="notice" style="margin-top:12px">Modifiez le texte, la section et le caractère obligatoire de chaque tâche. Utilisez Monter / Descendre pour changer l’ordre.</div>
+        <div class="checklist-template-editor-list">
+          ${draft.map((item,index)=>`
+            <div class="checklist-template-editor-item" data-checklist-edit-index="${index}">
+              <div class="checklist-template-editor-fields">
+                <div class="field">
+                  <label>Section</label>
+                  <input class="input" data-checklist-edit-section value="${escapeHtml(item.section_label||"Tâches")}">
+                </div>
+                <div class="field">
+                  <label>Tâche</label>
+                  <textarea class="input" rows="2" data-checklist-edit-label>${escapeHtml(item.label||"")}</textarea>
+                </div>
+              </div>
+              <div class="checklist-template-editor-actions">
+                <label class="checklist-template-editor-required">
+                  <input type="checkbox" data-checklist-edit-required ${item.required?"checked":""}>
+                  Tâche obligatoire
+                </label>
+                <div class="checklist-template-editor-order">
+                  <button class="btn ghost small" type="button" data-checklist-move-up="${index}" ${index===0?"disabled":""}>↑ Monter</button>
+                  <button class="btn ghost small" type="button" data-checklist-move-down="${index}" ${index===draft.length-1?"disabled":""}>↓ Descendre</button>
+                </div>
+              </div>
+            </div>`).join("")}
+        </div>
+        <div class="checklist-template-editor-bottom">
+          <button class="btn ghost" id="addChecklistTemplateEditorItem" type="button">+ Ajouter une tâche</button>
+          <button class="btn primary" id="saveChecklistTemplateEditor" type="button">Enregistrer les modifications</button>
+        </div>`;
+
+      modal.classList.remove("hidden");
+      box.querySelector("#closeChecklistTemplateEditor").onclick=closeEditor;
+      box.querySelector("#addChecklistTemplateEditorItem").onclick=addItem;
+      box.querySelector("#saveChecklistTemplateEditor").onclick=saveEditor;
+      box.querySelectorAll("[data-checklist-move-up]").forEach(button=>button.onclick=()=>moveItem(Number(button.dataset.checklistMoveUp),Number(button.dataset.checklistMoveUp)-1));
+      box.querySelectorAll("[data-checklist-move-down]").forEach(button=>button.onclick=()=>moveItem(Number(button.dataset.checklistMoveDown),Number(button.dataset.checklistMoveDown)+1));
+    }
+
+    renderEditor();
   }
+
+  window.stopflowChecklistOpenTemplateEditor=openEditTemplateModal;
 
   function openCreateTemplateModal(){
     document.getElementById("modalBox").innerHTML=`
