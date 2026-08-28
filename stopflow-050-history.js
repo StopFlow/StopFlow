@@ -48,6 +48,7 @@
       .checklist-history-legend>div{padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#f8fafc;font-size:12px;line-height:1.4}
       .checklist-history-list{display:grid;gap:8px}
       .checklist-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff}
+      .checklist-history-person{margin-top:6px;color:#344b63;font-size:12px}
       .checklist-history-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px;color:var(--muted);font-size:11px}
       .checklist-history-meta span{display:block}
       .checklist-anomaly-count{font-weight:800}.checklist-anomaly-count.open{color:var(--red)}.checklist-anomaly-count.resolved{color:var(--green)}
@@ -97,14 +98,14 @@
     checklistPanel.className="hidden";
     checklistPanel.innerHTML=`
       <div class="card" style="margin-top:0">
-        <div class="flex between wrap"><div><h2>Historique des checklists</h2><p class="muted">Retrouvez l’exécutant, les heures, le contrôle et le suivi des anomalies.</p></div><button class="btn ghost" id="refreshChecklistHistory" type="button">Actualiser</button></div>
+        <div class="flex between wrap"><div><h2>Historique des checklists</h2><p class="muted">Retrouvez directement la personne qui a effectué la checklist, les heures et les éventuelles anomalies.</p></div><button class="btn ghost" id="refreshChecklistHistory" type="button">Actualiser</button></div>
         <div class="checklist-history-legend">
-          <div><span class="badge validated">Validée</span><br>Checklist contrôlée : aucune action supplémentaire n’est attendue.</div>
+          <div><span class="badge validated">Validée</span><br>La checklist a été terminée par son exécutant et enregistrée dans l’historique.</div>
           <div><span class="badge cancelled">Suivi nécessaire</span><br>Une ou plusieurs anomalies doivent encore être traitées et clôturées.</div>
         </div>
         <div class="filters" style="grid-template-columns:2fr 1fr 1fr">
           <div class="field"><label>Rechercher</label><input id="checklistHistorySearch" class="input" placeholder="Checklist, personne ou département…"></div>
-          <div class="field"><label>Statut</label><select id="checklistHistoryStatus" class="input"><option value="">Tous</option><option value="en_cours">En cours</option><option value="a_controler">À contrôler</option><option value="validee">Validée</option><option value="suivi_necessaire">Suivi nécessaire</option></select></div>
+          <div class="field"><label>Statut</label><select id="checklistHistoryStatus" class="input"><option value="">Tous</option><option value="en_cours">En cours</option><option value="a_controler">À contrôler (ancien fonctionnement)</option><option value="validee">Validée</option><option value="suivi_necessaire">Suivi nécessaire</option></select></div>
           <div class="field"><label>Ordre</label><select id="checklistHistorySort" class="input"><option value="desc">Plus récent</option><option value="asc">Plus ancien</option></select></div>
         </div>
         <div id="checklistHistoryList" class="checklist-history-list"><div class="checklist-empty">Chargement…</div></div>
@@ -178,12 +179,10 @@
       return `<article class="checklist-history-row">
         <div>
           <div class="flex wrap"><b>${escapeHtml(run.template_name)}</b><span class="badge ${badgeClass(run.status)}">${escapeHtml(statusLabel(run.status))}</span><span class="checklist-pill department">${escapeHtml(departmentLabel(run.department))}</span></div>
+          <div class="checklist-history-person">Effectuée par <b>${escapeHtml(run.performed_by_name||"—")}</b></div>
           <div class="checklist-history-meta">
-            <span><b>Effectuée par</b><br>${escapeHtml(run.performed_by_name||"—")}</span>
             <span><b>Début / fin</b><br>${escapeHtml(formatDate(run.started_at))}<br>${escapeHtml(formatDate(run.completed_at))}</span>
             <span><b>Durée</b><br>${escapeHtml(durationLabel(run.started_at,run.completed_at))}</span>
-            <span><b>Contrôlée par</b><br>${escapeHtml(run.validated_by_name||"—")}</span>
-            <span><b>Heure du contrôle</b><br>${escapeHtml(formatDate(run.validated_at))}</span>
             <span class="checklist-anomaly-count ${anomalyClass}"><b>Anomalies</b><br>${escapeHtml(anomalyText)}</span>
           </div>
         </div>
@@ -208,7 +207,7 @@
     document.getElementById("modalBox").innerHTML=`
       <div class="flex between wrap"><div><h2>${escapeHtml(run.template_name)}</h2><div class="flex wrap"><span class="badge ${badgeClass(run.status)}">${escapeHtml(statusLabel(run.status))}</span><span class="checklist-pill department">${escapeHtml(departmentLabel(run.department))}</span></div></div><button class="btn ghost" id="closeModal" type="button">Fermer</button></div>
       <div class="checklist-history-legend" style="margin-top:12px">
-        <div><b>Validée</b><br>Aucun suivi ne reste à effectuer.</div>
+        <div><b>Validée</b><br>Checklist terminée et enregistrée par son exécutant.</div>
         <div><b>Suivi nécessaire</b><br>Au moins une anomalie reste à résoudre.</div>
       </div>
       <div class="checklist-detail-grid">
@@ -216,11 +215,9 @@
         <div><small>Début</small><b>${escapeHtml(formatDate(run.started_at))}</b></div>
         <div><small>Fin</small><b>${escapeHtml(formatDate(run.completed_at))}</b></div>
         <div><small>Durée</small><b>${escapeHtml(durationLabel(run.started_at,run.completed_at))}</b></div>
-        <div><small>Contrôlée par</small><b>${escapeHtml(run.validated_by_name||"—")}</b></div>
-        <div><small>Heure du contrôle</small><b>${escapeHtml(formatDate(run.validated_at))}</b></div>
       </div>
       <div class="notice"><b>Résultat :</b> ${run.items.filter(item=>item.checked).length} tâche(s) cochée(s) sur ${run.items.length}. ${anomalies.total?`${anomalies.unresolved} anomalie(s) restent à traiter sur ${anomalies.total}.`:"Aucune anomalie signalée."}</div>
-      ${run.validator_note?`<p><b>Note du contrôle :</b><br>${escapeHtml(run.validator_note).replace(/\n/g,"<br>")}</p>`:""}
+      ${run.validator_note?`<p><b>Note :</b><br>${escapeHtml(run.validator_note).replace(/\n/g,"<br>")}</p>`:""}
       <div>${groups.map(group=>`<section class="history-checklist-section"><h3>${escapeHtml(group.section)}</h3>${group.items.map(item=>renderHistoryItem(item)).join("")}</section>`).join("")}</div>`;
 
     document.getElementById("modal").classList.remove("hidden");
@@ -231,7 +228,7 @@
   function renderHistoryItem(item){
     const anomalyStatus=item.anomaly_status||"a_traiter";
     return `<div class="history-checklist-item">
-      <div class="history-checklist-item-head"><div>${escapeHtml(item.label)}${item.required?"":' <span class="checklist-pill optional">Conditionnelle</span>'}</div><span class="history-checklist-state ${item.checked?"done":"missing"}">${item.checked?"Cochée":"Non cochée"}</span></div>
+      <div class="history-checklist-item-head"><div>${escapeHtml(item.label)}${item.required?"":' <span class="checklist-pill optional">Non obligatoire</span>'}</div><span class="history-checklist-state ${item.checked?"done":"missing"}">${item.checked?"Cochée":"Non cochée"}</span></div>
       ${item.anomaly?`<button class="btn small ${anomalyStatus==="resolue"?"secondary":"danger"} history-anomaly-button" data-history-anomaly="${item.id}" type="button">${anomalyStatus==="resolue"?"Anomalie résolue — voir le détail":"Anomalie à traiter — voir le détail"}</button><div class="history-anomaly-detail ${anomalyStatus==="resolue"?"resolved":""} hidden" data-history-anomaly-detail="${item.id}">${anomalyDetailHtml(item)}</div>`:""}
     </div>`;
   }
@@ -310,7 +307,7 @@
     if(!runsCard||runsCard.querySelector(".checklist-history-legend"))return;
     const legend=document.createElement("div");
     legend.className="checklist-history-legend";
-    legend.innerHTML='<div><span class="badge validated">Validée</span><br>Aucun suivi ne reste à effectuer.</div><div><span class="badge cancelled">Suivi nécessaire</span><br>Une anomalie ou une action reste à clôturer.</div>';
+    legend.innerHTML='<div><span class="badge validated">Validée</span><br>Checklist terminée et enregistrée.</div><div><span class="badge cancelled">Suivi nécessaire</span><br>Une anomalie ou une action reste à clôturer.</div>';
     runsCard.querySelector("h2")?.insertAdjacentElement("afterend",legend);
   }
 
