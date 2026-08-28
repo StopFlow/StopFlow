@@ -112,10 +112,11 @@
             <input class="input" id="sf80EquipmentLocation" autocomplete="off" enterkeyhint="next" placeholder="Ex. Cuisine — passe" value="${esc(value.location)}">
           </div>
           <div class="field">
-            <label for="sf80EquipmentType">Type</label>
-            <select class="input" id="sf80EquipmentType">
-              ${Object.entries(TYPE_LABELS).map(([key,label])=>`<option value="${key}" ${value.type===key?'selected':''}>${label}</option>`).join('')}
-            </select>
+            <label>Type</label>
+            <input type="hidden" id="sf80EquipmentType" value="${esc(value.type)}">
+            <div class="sf80-equipment-type-options" role="group" aria-label="Type d’équipement">
+              ${Object.entries(TYPE_LABELS).map(([key,label])=>`<button type="button" class="sf80-equipment-type ${value.type===key?'active':''}" data-sf80-equipment-type="${key}" aria-pressed="${value.type===key?'true':'false'}">${label}</button>`).join('')}
+            </div>
           </div>
           <div class="sf80-equipment-page-range">
             <div class="sf80-equipment-page-range-title">Plage de température autorisée</div>
@@ -142,10 +143,24 @@
     page.querySelector('#sf80EquipmentPageCancel').onclick=returnToEquipment;
     page.querySelector('#sf80EquipmentPageSave').onclick=saveEditor;
 
-    const fields=[...page.querySelectorAll('input,select')];
+    page.querySelectorAll('[data-sf80-equipment-type]').forEach(button=>{
+      button.addEventListener('click',event=>{
+        event.preventDefault();
+        const type=String(button.dataset.sf80EquipmentType||'fridge');
+        const input=page.querySelector('#sf80EquipmentType');
+        if(input)input.value=type;
+        page.querySelectorAll('[data-sf80-equipment-type]').forEach(option=>{
+          const selected=option===button;
+          option.classList.toggle('active',selected);
+          option.setAttribute('aria-pressed',selected?'true':'false');
+        });
+      });
+    });
+
+    const fields=[...page.querySelectorAll('input:not([type="hidden"])')];
     fields.forEach((field,index)=>{
       field.addEventListener('keydown',event=>{
-        if(event.key!=='Enter'||field.tagName==='SELECT')return;
+        if(event.key!=='Enter')return;
         event.preventDefault();
         const next=fields[index+1];
         if(next)next.focus();
