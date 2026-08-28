@@ -42,10 +42,12 @@
 
   function fieldFromTarget(target){
     if(!target?.closest)return null;
-    const direct=target.closest('#sf80TemperatureEquipmentEditor input');
+    /* Les boutons de type, boutons d'action et sélecteurs restent 100 % natifs. */
+    if(target.closest('#sf80TemperatureEquipmentEditor button,#sf80TemperatureEquipmentEditor select,#sf80TemperatureEquipmentEditor [role="button"]'))return null;
+    const direct=target.closest('#sf80TemperatureEquipmentEditor input:not([type="hidden"])');
     if(direct)return direct;
     const field=target.closest('#sf80TemperatureEquipmentEditor .field');
-    return field?.querySelector?.('input')||null;
+    return field?.querySelector?.('input:not([type="hidden"])')||null;
   }
 
   function focusField(field){
