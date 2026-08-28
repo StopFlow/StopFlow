@@ -23,6 +23,10 @@
       .sf80-equipment-page-form .field{gap:6px}
       .sf80-equipment-page-form label{font-size:13px;font-weight:850;color:#344b63}
       .sf80-equipment-page-form .input{width:100%;min-height:50px;font-size:16px!important}
+      .sf80-equipment-type-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+      .sf80-equipment-type{min-height:46px;border:1px solid #cbd7e6;border-radius:11px;background:#fff;color:#28415c;padding:9px 10px;font-weight:850;line-height:1.2;text-align:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto;user-select:none;-webkit-user-select:none}
+      .sf80-equipment-type.active,.sf80-equipment-type[aria-pressed="true"]{background:#2463eb;border-color:#2463eb;color:#fff;box-shadow:0 0 0 2px rgba(36,99,235,.12)}
+      .sf80-equipment-type:focus-visible{outline:3px solid #b8cdfb;outline-offset:2px}
       .sf80-equipment-page-range{padding:14px;border:1px solid #dfe7f0;border-radius:13px;background:#f8fafc}
       .sf80-equipment-page-range-title{font-size:13px;font-weight:900;color:#314a64;margin-bottom:10px}
       .sf80-equipment-page-range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -36,6 +40,8 @@
         .sf80-equipment-page-head h2{font-size:21px}
         .sf80-equipment-page-head p{font-size:12px}
         .sf80-equipment-page-form{gap:12px}
+        .sf80-equipment-type-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .sf80-equipment-type-options .sf80-equipment-type:last-child:nth-child(odd){grid-column:1/-1}
         .sf80-equipment-page-range-grid{grid-template-columns:1fr 1fr}
         .sf80-equipment-page-actions{grid-template-columns:1fr;gap:8px}
         .sf80-equipment-page-actions .btn{width:100%}
@@ -144,8 +150,8 @@
     page.querySelector('#sf80EquipmentPageSave').onclick=saveEditor;
 
     page.querySelectorAll('[data-sf80-equipment-type]').forEach(button=>{
-      button.addEventListener('click',event=>{
-        event.preventDefault();
+      /* Même mécanisme natif que Fermer/Enregistrer, déjà validé sur iPhone. */
+      button.onclick=()=>{
         const type=String(button.dataset.sf80EquipmentType||'fridge');
         const input=page.querySelector('#sf80EquipmentType');
         if(input)input.value=type;
@@ -154,7 +160,7 @@
           option.classList.toggle('active',selected);
           option.setAttribute('aria-pressed',selected?'true':'false');
         });
-      });
+      };
     });
 
     const fields=[...page.querySelectorAll('input:not([type="hidden"])')];
