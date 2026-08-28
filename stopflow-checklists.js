@@ -38,6 +38,18 @@
       .checklist-item-help{display:block;margin-top:3px;color:var(--muted);font-size:11px}.checklist-item-actions{display:flex;gap:5px;align-items:center}
       .checklist-anomaly{margin:0 11px 10px;padding:9px;border-radius:9px;background:#fff5f5;border:1px solid #ffd1d1}.checklist-anomaly textarea{margin-top:7px}
       .checklist-progress-line{display:flex;justify-content:space-between;gap:10px;margin:8px 0 5px;font-size:12px}
+      .checklist-run-footer{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+      .checklist-run-footer #checklistRunnerActions{margin-top:12px}
+      .checklist-run-footer #checklistRunnerActions .btn{min-height:48px}
+      .checklist-template-editor-modal{width:min(980px,100%)!important}
+      .checklist-template-editor-list{display:grid;gap:10px;margin-top:14px}
+      .checklist-template-editor-item{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:11px}
+      .checklist-template-editor-fields{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,2fr);gap:9px}
+      .checklist-template-editor-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px}
+      .checklist-template-editor-order{display:flex;gap:6px;flex-wrap:wrap}
+      .checklist-template-editor-required{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:12px}
+      .checklist-template-editor-required input{width:20px;height:20px}
+      .checklist-template-editor-bottom{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
       .checklist-empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:11px}
       .checklist-manager-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.checklist-suggestion{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
       .user-department-inline{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
@@ -49,6 +61,9 @@
         .checklist-template-grid,.checklist-manager-grid{grid-template-columns:1fr}
         .checklist-run-row{grid-template-columns:1fr}.checklist-run-row .btn{width:100%}
         .checklist-item{grid-template-columns:1fr}.checklist-item-actions{justify-content:flex-end}
+        .checklist-run-footer #checklistRunnerActions .btn{width:100%}
+        .checklist-template-editor-fields{grid-template-columns:1fr}
+        .checklist-template-editor-bottom{grid-template-columns:1fr}
       }
     `;
     document.head.appendChild(style);
@@ -75,7 +90,7 @@
           <h2>Exécutions récentes</h2>
           <div id="checklistRuns" class="checklist-run-list"></div>
         </div>
-        <div class="card">
+        <div class="card" id="checklistSuggestionCard">
           <h2>Proposer une amélioration</h2>
           <p class="muted">Un membre de l’équipe peut suggérer une tâche. Un Responsable ou Administrateur décide ensuite de l’ajouter au modèle.</p>
           <div class="filters" style="grid-template-columns:1fr 2fr 2fr">
@@ -86,21 +101,23 @@
           <button class="btn secondary" id="submitChecklistSuggestion" type="button">Envoyer la suggestion</button>
         </div>
         <div class="card hidden" id="checklistManagerPanel">
-          <div class="flex between wrap"><div><h2>Gestion des modèles</h2><p class="muted">Créer un modèle, ajouter une tâche directement ou traiter les suggestions.</p></div><button class="btn primary" id="createChecklistTemplate" type="button">Créer un modèle</button></div>
+          <div class="flex between wrap"><div><h2>Gestion des modèles</h2><p class="muted">Créez des modèles ou traitez les suggestions reçues. La modification d’une checklist se fait directement depuis sa carte.</p></div><button class="btn primary" id="createChecklistTemplate" type="button">Créer un modèle</button></div>
           <div id="checklistSuggestions" class="checklist-run-list" style="margin-top:12px"></div>
         </div>
       </div>
       <div id="checklistRunner" class="hidden">
         <div class="checklist-toolbar">
           <button class="btn ghost" id="backToChecklists" type="button">Retour aux checklists</button>
-          <div class="flex wrap" id="checklistRunnerActions"></div>
         </div>
         <div class="card" style="margin-top:0">
           <h2 id="checklistRunTitle">Checklist</h2>
           <p class="muted" id="checklistRunMeta"></p>
-          <div class="checklist-progress-line"><span id="checklistProgressText">0 / 0</span><span id="checklistRequiredText"></span></div>
-          <div class="progress"><span id="checklistProgressBar"></span></div>
           <div id="checklistRunItems"></div>
+          <div class="checklist-run-footer">
+            <div class="checklist-progress-line"><span id="checklistProgressText">0 / 0</span><span id="checklistRequiredText"></span></div>
+            <div class="progress"><span id="checklistProgressBar"></span></div>
+            <div class="flex wrap" id="checklistRunnerActions"></div>
+          </div>
         </div>
       </div>`;
     main.appendChild(section);
@@ -325,10 +342,10 @@
       <article class="checklist-template">
         <div><h3>${escapeHtml(template.name)}</h3><div class="checklist-template-meta"><span class="checklist-pill department">${escapeHtml(departmentLabel(template.department))}</span><span class="checklist-pill">${escapeHtml(TYPE_LABELS[template.checklist_type]||template.checklist_type)}</span><span class="checklist-pill">${template.items.length} tâches</span></div></div>
         <p class="muted">${escapeHtml(template.description||"")}</p>
-        <div class="flex wrap"><button class="btn primary" data-start-template="${template.id}" type="button">Commencer</button>${managerAccess()?`<button class="btn ghost" data-add-template-item="${template.id}" type="button">Ajouter une tâche</button>`:""}</div>
+        <div class="flex wrap"><button class="btn primary" data-start-template="${template.id}" type="button">Commencer</button>${managerAccess()?`<button class="btn ghost" data-add-template-item="${template.id}" type="button">Modifier</button>`:""}</div>
       </article>`).join("");
     box.querySelectorAll("[data-start-template]").forEach(button=>button.addEventListener("click",()=>startRun(button.dataset.startTemplate)));
-    box.querySelectorAll("[data-add-template-item]").forEach(button=>button.addEventListener("click",()=>openAddTaskModal(button.dataset.addTemplateItem)));
+    box.querySelectorAll("[data-add-template-item]").forEach(button=>button.addEventListener("click",()=>openEditTemplateModal(button.dataset.addTemplateItem)));
   }
 
   function renderRuns(){
@@ -346,6 +363,7 @@
   }
 
   function renderSuggestionForm(){
+    document.getElementById("checklistSuggestionCard")?.classList.toggle("hidden",managerAccess());
     const select=document.getElementById("suggestionTemplate");
     select.innerHTML=state.templates.map(template=>`<option value="${template.id}">${escapeHtml(template.name)} — ${escapeHtml(departmentLabel(template.department))}</option>`).join("");
     document.getElementById("submitChecklistSuggestion").disabled=!state.templates.length;
@@ -460,19 +478,13 @@
     actions.innerHTML="";
     if(editable){
       const complete=document.createElement("button");
-      complete.className="btn primary";complete.type="button";complete.textContent="Terminer et envoyer au contrôle";complete.addEventListener("click",completeRun);actions.appendChild(complete);
-    }
-    if(managerAccess()&&run.status==="a_controler"){
-      const validate=document.createElement("button");
-      validate.className="btn primary";validate.type="button";validate.textContent="Valider la checklist";validate.addEventListener("click",validateRun);actions.appendChild(validate);
-      const follow=document.createElement("button");
-      follow.className="btn danger";follow.type="button";follow.textContent="Demander un suivi";follow.addEventListener("click",markFollowUp);actions.appendChild(follow);
+      complete.className="btn primary";complete.type="button";complete.textContent="Terminer la checklist";complete.addEventListener("click",completeRun);actions.appendChild(complete);
     }
   }
 
   function renderRunItem(item,editable){
     return `<div class="checklist-item ${item.checked?"done":""}" data-run-item="${item.id}">
-      <div class="checklist-item-main"><input type="checkbox" data-run-check="${item.id}" ${item.checked?"checked":""} ${editable?"":"disabled"}><div><span class="checklist-item-label">${escapeHtml(item.label)}</span>${item.required?"":'<span class="checklist-pill optional" style="margin-left:6px">Conditionnelle</span>'}${item.help_text?`<small class="checklist-item-help">${escapeHtml(item.help_text)}</small>`:""}</div></div>
+      <div class="checklist-item-main"><input type="checkbox" data-run-check="${item.id}" ${item.checked?"checked":""} ${editable?"":"disabled"}><div><span class="checklist-item-label">${escapeHtml(item.label)}</span>${item.required?"":'<span class="checklist-pill optional" style="margin-left:6px">Non obligatoire</span>'}${item.help_text?`<small class="checklist-item-help">${escapeHtml(item.help_text)}</small>`:""}</div></div>
       <div class="checklist-item-actions"><button class="btn small ${item.anomaly?"danger":"ghost"}" data-run-anomaly="${item.id}" type="button" ${editable?"":"disabled"}>${item.anomaly?"Anomalie signalée":"Signaler"}</button></div>
     </div>${item.anomaly?`<div class="checklist-anomaly"><b>Anomalie ou remarque</b><textarea class="input" data-run-note="${item.id}" ${editable?"":"disabled"} placeholder="Décrire le problème et l’action nécessaire">${escapeHtml(item.note||"")}</textarea></div>`:""}`;
   }
@@ -497,10 +509,15 @@
       alert(`${missing.length} tâche(s) obligatoire(s) ne sont pas cochée(s).`);
       return;
     }
-    if(!confirm("Terminer cette checklist et l’envoyer au contrôle ?"))return;
-    const {error}=await supabaseClient.from("checklist_runs").update({status:"a_controler",completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",state.activeRun.id);
+    if(!confirm("Terminer cette checklist ? Elle sera enregistrée comme validée dans l’historique."))return;
+    const now=new Date().toISOString();
+    const {error}=await supabaseClient.from("checklist_runs").update({
+      status:"validee",completed_at:now,validated_by:null,validated_by_name:null,validated_at:null,validator_note:"",updated_at:now
+    }).eq("id",state.activeRun.id);
     if(error)return alert(error.message);
-    await openRun(state.activeRun.id);
+    showChecklistHome();
+    await refreshAll(false);
+    alert("Checklist terminée et enregistrée dans l’historique.");
   }
 
   async function validateRun(){
