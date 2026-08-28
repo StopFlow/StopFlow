@@ -307,11 +307,9 @@
 
     const fallback=fallbackChecklistRun();
     const run=state.checklistRun.data||fallback;
-    const scope=run.department||fallback.department;
     const own=run.performed_by
       ?String(run.performed_by)===String(sessionNow()?.id||'')
       :Boolean(fallback.fallbackOwn);
-    const status=run.status||fallback.status;
 
     if(!own){
       runner.querySelectorAll('[data-run-check],[data-run-anomaly],[data-run-note]').forEach(control=>control.disabled=true);
@@ -319,26 +317,12 @@
 
     const actions=document.getElementById('checklistRunnerActions');
     if(!actions)return;
-    [...actions.querySelectorAll('button:not(.sf80-audit-checklist-review)')].forEach(button=>{
+    actions.querySelectorAll('.sf80-audit-checklist-review').forEach(button=>button.remove());
+    [...actions.querySelectorAll('button')].forEach(button=>{
       const text=normalize(button.textContent);
-      if(text.includes('valider la checklist')||text.includes('demander un suivi'))button.hidden=true;
-      if(text.includes('terminer et envoyer'))button.hidden=!own;
+      if(text.includes('valider la checklist')||text.includes('demander un suivi'))button.remove();
+      if(text.includes('terminer la checklist'))button.hidden=!own;
     });
-
-    const shouldReview=Boolean(scope&&status==='a_controler'&&has('checklists.review',scope));
-    let validate=actions.querySelector('[data-sf80-audit-checklist="validate"]');
-    let follow=actions.querySelector('[data-sf80-audit-checklist="follow"]');
-    if(!shouldReview){validate?.remove();follow?.remove();return}
-    if(!validate){
-      validate=document.createElement('button');validate.type='button';validate.className='btn primary sf80-audit-checklist-review';
-      validate.dataset.sf80AuditChecklist='validate';validate.textContent='Valider la checklist';actions.appendChild(validate);
-      bindTap(validate,()=>checklistValidate('validee'));
-    }
-    if(!follow){
-      follow=document.createElement('button');follow.type='button';follow.className='btn danger sf80-audit-checklist-review';
-      follow.dataset.sf80AuditChecklist='follow';follow.textContent='Demander un suivi';actions.appendChild(follow);
-      bindTap(follow,()=>checklistValidate('suivi_necessaire'));
-    }
   }
 
   function addChecklistTask(templateId,templateName,scope){
@@ -466,7 +450,10 @@
     }
     const submit=document.getElementById('submitChecklistSuggestion');
     if(submit)submit.disabled=allowed===0;
-    select.closest('.card')?.classList.toggle('sf80-audit-no-run',allowed===0);
+    const suggestionCard=document.getElementById('checklistSuggestionCard')||select.closest('.card');
+    const directManager=anyScope('checklists.templates.manage');
+    suggestionCard?.classList.toggle('hidden',directManager);
+    suggestionCard?.classList.toggle('sf80-audit-no-run',!directManager&&allowed===0);
   }
 
   function alignChecklists(){
@@ -483,16 +470,23 @@
       const start=card.querySelector('[data-start-template]');
       if(start)start.hidden=!has('checklists.run',scope);
       const legacyAdd=card.querySelector('[data-add-template-item]');
-      if(legacyAdd)legacyAdd.hidden=!has('checklists.templates.manage',scope);
+      if(legacyAdd){
+        legacyAdd.textContent='Modifier';
+        legacyAdd.hidden=!has('checklists.templates.manage',scope);
+      }
 
       let auditAdd=card.querySelector('.sf80-audit-add-task');
       const needAuditAdd=Boolean(scope&&has('checklists.templates.manage',scope)&&!legacyAdd);
       if(!needAuditAdd){auditAdd?.remove();return}
       if(!auditAdd){
         auditAdd=document.createElement('button');
-        auditAdd.type='button';auditAdd.className='btn ghost sf80-audit-add-task';auditAdd.textContent='Ajouter une tâche';
+        auditAdd.type='button';auditAdd.className='btn ghost sf80-audit-add-task';auditAdd.textContent='Modifier';
         (start?.parentElement||card).appendChild(auditAdd);
-        bindTap(auditAdd,()=>addChecklistTask(start?.dataset.startTemplate,card.querySelector('h3')?.textContent||'Checklist',scope));
+        bindTap(auditAdd,()=>{
+          const templateId=start?.dataset.startTemplate;
+          if(typeof window.stopflowChecklistOpenTemplateEditor==='function')return window.stopflowChecklistOpenTemplateEditor(templateId);
+          alert('L’éditeur de checklist est indisponible. Actualisez la page puis réessayez.');
+        });
       }
     });
 
@@ -507,7 +501,7 @@
       panel.classList.toggle('hidden',!allowed);
       if(allowed&&!panel.querySelector('.sf80-audit-manager-note')){
         const note=document.createElement('div');note.className='sf80-audit-manager-note';
-        note.textContent='Les modèles et suggestions suivent uniquement les départements pour lesquels « Gestion des modèles de checklists » est autorisé.';
+        note.textContent='Vous pouvez modifier directement les checklists des départements autorisés. Les suggestions envoyées par les équipes restent disponibles ici.';
         panel.querySelector('.flex.between')?.insertAdjacentElement('afterend',note);
       }
       if(allowed)setTimeout(loadChecklistManagerSuggestions,0);
