@@ -1,9 +1,9 @@
-/* StopFlow 0.8.0 — identification fiable de la version publiée ou preview. */
+/* StopFlow 0.9.0 — identification fiable de la version publiée ou preview. */
 (function(){
   if(window.stopflow073VersionLabel)return;
   window.stopflow073VersionLabel=true;
 
-  const VERSION='0.8.0';
+  const VERSION='0.9.0';
   const productionHosts=new Set(['stopflow-app.vercel.app']);
   const isProduction=()=>productionHosts.has(location.hostname);
   const loginLabel=()=>isProduction()?`Version ${VERSION}`:`Version ${VERSION} — Preview de développement`;
@@ -102,7 +102,7 @@
   };
 
   const observer=new MutationObserver(scheduleApply);
-  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+  observer.observe(document.documentElement,{subtree:true,childList:true});
 
   [0,100,300,800,1600,3000,5000].forEach(delay=>setTimeout(apply,delay));
 })();
