@@ -165,7 +165,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-preview-label="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-preview-label.js?v=0730';
+  script.src='stopflow-070-preview-label.js?v=0900';
   script.async=false;
   script.dataset.stopflow070PreviewLabel='0.7.0';
   document.head.appendChild(script);
