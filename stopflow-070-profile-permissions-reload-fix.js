@@ -65,23 +65,6 @@
   document.head.appendChild(script);
 })();
 
-/* StopFlow 0.7.0 — empêcher les anciens menus 0.6.0 de réapparaître après chargement. */
-(function(){
-  const load=()=>{
-    if(document.querySelector('script[data-stopflow-070-menu-enforcer="0.7.0"]'))return;
-    const script=document.createElement("script");
-    script.src="stopflow-070-menu-enforcer.js?v=0701";
-    script.async=false;
-    script.dataset.stopflow070MenuEnforcer="0.7.0";
-    document.head.appendChild(script);
-  };
-  let attempts=0;
-  const timer=setInterval(()=>{
-    if(window.stopflow070CardNavigation?.active){clearInterval(timer);load();return}
-    if(++attempts>=40){clearInterval(timer);load()}
-  },75);
-})();
-
 /* StopFlow 0.7.0 — le bouton ☰ et les clics du menu appartiennent définitivement à la navigation 0.7.0. */
 (function(){
   const load=()=>{
