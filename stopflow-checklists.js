@@ -520,22 +520,6 @@
     alert("Checklist terminée et enregistrée dans l’historique.");
   }
 
-  async function validateRun(){
-    const note=prompt("Note de validation facultative :",state.activeRun.validator_note||"");
-    if(note===null)return;
-    const {error}=await supabaseClient.from("checklist_runs").update({status:"validee",validated_by:session.id,validated_by_name:session.name,validated_at:new Date().toISOString(),validator_note:note,updated_at:new Date().toISOString()}).eq("id",state.activeRun.id);
-    if(error)return alert(error.message);
-    await openRun(state.activeRun.id);
-  }
-
-  async function markFollowUp(){
-    const note=prompt("Quel suivi est nécessaire ?");
-    if(!note)return;
-    const {error}=await supabaseClient.from("checklist_runs").update({status:"suivi_necessaire",validated_by:session.id,validated_by_name:session.name,validated_at:new Date().toISOString(),validator_note:note,updated_at:new Date().toISOString()}).eq("id",state.activeRun.id);
-    if(error)return alert(error.message);
-    await openRun(state.activeRun.id);
-  }
-
   async function submitSuggestion(){
     const template=state.templates.find(item=>item.id===document.getElementById("suggestionTemplate").value);
     const label=document.getElementById("suggestionLabel").value.trim();
