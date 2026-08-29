@@ -149,7 +149,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-profile-permissions-reload-fix="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-profile-permissions-reload-fix.js?v=0701";
+    script.src="stopflow-070-profile-permissions-reload-fix.js?v=0900";
     script.async=false;
     script.dataset.stopflow070ProfilePermissionsReloadFix="0.7.0";
     document.head.appendChild(script);
