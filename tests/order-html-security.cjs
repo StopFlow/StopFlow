@@ -45,6 +45,42 @@ async function assertSafe(page, selector, label) {
   assert.equal(result.injectedNodes, 0, `${label}: free text created HTML nodes`);
 }
 
+async function checkSuggestions(page) {
+  const fields = ['title', 'status', 'category', 'priority', 'description'];
+  const values = [...attacks, `<script>${marker}</script>`, normal];
+  for (const field of fields) {
+    for (const value of values) {
+      const suggestion = {
+        title: normal, status: 'Nouvelle', category: 'Organisation', priority: 'Normale',
+        description: normal, createdAt: '2026-10-16T10:00:00.000Z', [field]: value
+      };
+      await page.evaluate(suggestion => {
+        db.suggestions = [suggestion];
+        window.__orderHtmlInjection = 0;
+        renderSuggestions();
+      }, suggestion);
+      await assertSafe(page, '#suggestionList', `suggestion ${field}`);
+      const rendered = await page.evaluate(() => {
+        const card = document.querySelector('#suggestionList > div');
+        return {
+          title: card.querySelector('b').textContent,
+          status: card.querySelector('.badge').textContent,
+          metadata: card.querySelector('.muted').textContent,
+          description: card.querySelector('p').textContent,
+          date: fmt(db.suggestions[0].createdAt), stored: db.suggestions[0]
+        };
+      });
+      assert.equal(rendered.title, suggestion.title);
+      assert.equal(rendered.status, suggestion.status);
+      assert.equal(rendered.metadata, `${suggestion.category} · ${suggestion.priority} · ${rendered.date}`);
+      assert.equal(rendered.description, suggestion.description);
+      assert.deepEqual(rendered.stored, suggestion, 'Rendering must not modify suggestion data');
+    }
+  }
+  await page.evaluate(() => { db.suggestions = []; renderSuggestions(); });
+  assert.equal(await page.locator('#suggestionList').textContent(), 'Aucune idée partagée pour le moment.');
+}
+
 async function runViewport(browser, mobile) {
   const context = await browser.newContext({
     ...(mobile ? devices['iPhone 13'] : {viewport: {width: 1280, height: 900}}),
@@ -67,8 +103,9 @@ async function runViewport(browser, mobile) {
   page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto('http://localhost/', {waitUntil: 'networkidle'});
-    await page.waitForFunction(() => window.__stopflowDraftExperienceInstalled && window.stopflow073HistoryUx?.active && window.stopflow073InventoryStandard?.active);
+    await page.waitForFunction(() => window.__stopflowDraftExperienceInstalled && window.stopflow073HistoryUx?.active && window.stopflow073InventoryStandard?.active && window.stopflow080SuggestionsUx?.active);
     await page.waitForTimeout(3500); // Allow the repository's existing startup layers to finish.
+    await checkSuggestions(page);
     for (const [index, value] of [...attacks, normal].entries()) {
       const order = fixture(value);
       await page.evaluate(order => {
@@ -173,7 +210,7 @@ async function runViewport(browser, mobile) {
     assert.equal(pdfHeader, '%PDF-');
     await pdfPopup.close();
     assert.deepEqual(errors, [], 'No JavaScript exception may occur in the app or print windows');
-    console.log(`PASS ${mobile ? 'Chromium mobile/iPhone viewport' : 'Chromium desktop'}: 4 attack notes, normal French text, all metadata, print windows/previews, PDF parsing/opening, history, recovery and quoted attributes`);
+    console.log(`PASS ${mobile ? 'Chromium mobile/iPhone viewport' : 'Chromium desktop'}: 30 suggestion cases and empty state; 4 attack notes, normal French text, all metadata, print windows/previews, PDF parsing/opening, history, recovery and quoted attributes`);
   } finally { await context.close(); }
 }
 

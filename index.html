@@ -764,7 +764,7 @@ function articleModal(id){
 }
 
 function renderSuggestions(){
- $("#suggestionList").innerHTML=db.suggestions.length?db.suggestions.slice().reverse().map(s=>`<div style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="flex between"><b>${s.title}</b><span class="badge draft">${s.status}</span></div><div class="muted" style="font-size:13px">${s.category} · ${s.priority} · ${fmt(s.createdAt)}</div><p>${s.description}</p></div>`).join(""):`<p class="muted">Aucune suggestion enregistrée.</p>`;
+ $("#suggestionList").innerHTML=db.suggestions.length?db.suggestions.slice().reverse().map(s=>`<div style="padding:14px 0;border-bottom:1px solid var(--line)"><div class="flex between"><b>${escapeHTML(s.title)}</b><span class="badge draft">${escapeHTML(s.status)}</span></div><div class="muted" style="font-size:13px">${escapeHTML(s.category)} · ${escapeHTML(s.priority)} · ${escapeHTML(fmt(s.createdAt))}</div><p>${escapeHTML(s.description)}</p></div>`).join(""):`<p class="muted">Aucune suggestion enregistrée.</p>`;
 }
 function loadSettings(){$("#establishment").value=db.settings.establishment;$("#manager").value=db.settings.manager;$("#footerText").value=db.settings.footer}
 
