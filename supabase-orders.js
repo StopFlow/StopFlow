@@ -323,7 +323,7 @@ function stopFlowRenderRecovery(){
     box.style.cssText="margin:0 0 10px;background:#fff8e8;border-color:#f1d493;color:#76520b";
     dashboard.prepend(box);
   }
-  box.innerHTML=`<div class="flex between wrap"><div><b>Saisie locale à récupérer</b><br><span style="font-size:11px">${local.order.supplier} · enregistrée sur cet appareil le ${stopFlowDateTime(local.savedAt)}</span></div><div class="flex wrap"><button class="btn small secondary" id="stopflowResumeLocal">Reprendre</button><button class="btn small ghost" id="stopflowDeleteLocal">Supprimer la copie</button></div></div>`;
+  box.innerHTML=`<div class="flex between wrap"><div><b>Saisie locale à récupérer</b><br><span style="font-size:11px">${escapeHTML(local.order.supplier)} · enregistrée sur cet appareil le ${escapeHTML(stopFlowDateTime(local.savedAt))}</span></div><div class="flex wrap"><button class="btn small secondary" id="stopflowResumeLocal">Reprendre</button><button class="btn small ghost" id="stopflowDeleteLocal">Supprimer la copie</button></div></div>`;
   box.querySelector("#stopflowResumeLocal").onclick=()=>stopFlowResumeOrder(local.order,"local");
   box.querySelector("#stopflowDeleteLocal").onclick=()=>{
     if(confirm("Supprimer la copie locale de cette saisie ?"))stopFlowClearLocalDraft();
@@ -365,8 +365,8 @@ function stopFlowInstallDraftExperience(){
       const badge=order.status==="Brouillon"?"draft":order.status==="À valider"?"pending":order.status==="Validé"?"validated":order.status==="Commandé"?"ordered":"cancelled";
       const edited=order.lastEditedName||order.author||"—";
       const editDate=order.updatedAt||order.inventoryAt;
-      const resume=order.status==="Brouillon"?`<button class="btn small secondary" data-resume-order="${order.id}">Reprendre</button>`:"";
-      return `<tr><td><b>${order.number}</b></td><td>${order.supplier}</td><td>${typeof fmt==="function"?fmt(order.inventoryAt):stopFlowDateTime(order.inventoryAt)}</td><td><span class="badge ${badge}">${order.status}</span></td><td>${order.author}<br><small class="muted">Modifié par ${edited} · ${stopFlowDateTime(editDate)}</small></td><td>${order.validator||"—"}</td><td><div class="flex wrap">${resume}<button class="btn small ghost" data-detail="${order.id}">Détail</button></div></td></tr>`;
+      const resume=order.status==="Brouillon"?`<button class="btn small secondary" data-resume-order="${escapeHTML(order.id)}">Reprendre</button>`:"";
+      return `<tr><td><b>${escapeHTML(order.number)}</b></td><td>${escapeHTML(order.supplier)}</td><td>${escapeHTML(typeof fmt==="function"?fmt(order.inventoryAt):stopFlowDateTime(order.inventoryAt))}</td><td><span class="badge ${badge}">${escapeHTML(order.status)}</span></td><td>${escapeHTML(order.author)}<br><small class="muted">Modifié par ${escapeHTML(edited)} · ${escapeHTML(stopFlowDateTime(editDate))}</small></td><td>${escapeHTML(order.validator||"—")}</td><td><div class="flex wrap">${resume}<button class="btn small ghost" data-detail="${escapeHTML(order.id)}">Détail</button></div></td></tr>`;
     }).join(""):`<tr><td colspan="7" class="muted">Aucun document.</td></tr>`;
     document.querySelectorAll("[data-detail]").forEach(button=>button.onclick=()=>showDetail(button.dataset.detail));
     document.querySelectorAll("[data-resume-order]").forEach(button=>button.onclick=()=>{

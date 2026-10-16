@@ -246,6 +246,11 @@ Admin : contact@srlreunion.com / stopflow
 <script src="supabase-users.js"></script>
 <script src="supabase-user-delete.js"></script>
 <script>
+// Text and quoted HTML attributes only; keep the original values for storage and PDF generation.
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+
 const COLRUYT = [
  "Campari","Gancia","Aperol","Martini rouge","Martini blanc","Picon","Pineau des Charentes",
  "Pisang Ambon","Porto rouge","Porto blanc","Sherry","Ricard","Baileys","Limoncello","Grappa",
@@ -519,9 +524,9 @@ function renderInventory(){
  const q=$("#articleSearch").value.toLowerCase();
  const arts=activeArticles().filter(a=>a.name.toLowerCase().includes(q));
  $("#inventoryRows").innerHTML=arts.map(a=>`<tr>
- <td><b>${a.name}</b><br><small class="muted">${a.unit}</small></td>
- <td>${a.category}</td><td>${a.target}</td>
- <td><div class="qty"><button data-minus="${a.id}">−</button><input data-stock="${a.id}" inputmode="numeric" value="${current.stocks[a.id]??""}" placeholder="—"><button data-plus="${a.id}">+</button></div></td>
+ <td><b>${escapeHTML(a.name)}</b><br><small class="muted">${escapeHTML(a.unit)}</small></td>
+ <td>${escapeHTML(a.category)}</td><td>${escapeHTML(a.target)}</td>
+ <td><div class="qty"><button data-minus="${escapeHTML(a.id)}">−</button><input data-stock="${escapeHTML(a.id)}" inputmode="numeric" value="${escapeHTML(current.stocks[a.id]??"")}" placeholder="—"><button data-plus="${escapeHTML(a.id)}">+</button></div></td>
  <td class="${calc(a)?'order':'zero'}">${calc(a)}</td></tr>`).join("");
  const filled=Object.values(current.stocks).filter(v=>v!==null&&v!=="").length,total=activeArticles().length,pct=total?Math.round(filled/total*100):0;
  $("#progressText").textContent=filled+" / "+total+" — "+pct+"%"; $("#progressBar").style.width=pct+"%";
@@ -539,7 +544,7 @@ function renderSummary(){
  $("#summaryRows").innerHTML=arts.map(a=>{
    const proposed=calc(a),adj=current.adjustments[a.id]??proposed;
    if(adj>0){lines++;qty+=Number(adj)}
-   return `<tr><td><b>${a.name}</b><br><small class="muted">${a.category} · ${a.unit}</small></td><td>${a.target}</td><td>${Number(current.stocks[a.id]??0)}</td><td class="${proposed?'order':'zero'}">${proposed}</td><td><div class="qty"><button data-adj-minus="${a.id}">−</button><input data-adjust="${a.id}" value="${adj}"><button data-adj-plus="${a.id}">+</button></div></td></tr>`
+   return `<tr><td><b>${escapeHTML(a.name)}</b><br><small class="muted">${escapeHTML(a.category)} · ${escapeHTML(a.unit)}</small></td><td>${escapeHTML(a.target)}</td><td>${Number(current.stocks[a.id]??0)}</td><td class="${proposed?'order':'zero'}">${proposed}</td><td><div class="qty"><button data-adj-minus="${escapeHTML(a.id)}">−</button><input data-adjust="${escapeHTML(a.id)}" value="${escapeHTML(adj)}"><button data-adj-plus="${escapeHTML(a.id)}">+</button></div></td></tr>`
  }).join("");
  $("#sumLines").textContent=lines;$("#sumQty").textContent=qty;$("#generalNote").value=current.note||"";
  $("#validateOrder").classList.toggle("hidden",!canValidateOrders());
@@ -556,7 +561,7 @@ function renderDashboard(){
 function renderHistory(){
  const q=$("#historySearch").value.toLowerCase(),st=$("#historyStatus").value,dir=$("#historySort").value;
  let rows=[...db.orders].filter(o=>(!st||o.status===st)&&(!q||JSON.stringify(o).toLowerCase().includes(q))).sort((a,b)=>(new Date(b.inventoryAt)-new Date(a.inventoryAt))*(dir==="desc"?1:-1));
- $("#historyRows").innerHTML=rows.length?rows.map(o=>`<tr><td><b>${o.number}</b></td><td>${o.supplier}</td><td>${fmt(o.inventoryAt)}</td><td><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${o.status}</span></td><td>${o.author}</td><td>${o.validator||"—"}</td><td><button class="btn small ghost" data-detail="${o.id}">Détail</button></td></tr>`).join(""):`<tr><td colspan="7" class="muted">Aucun document.</td></tr>`;
+ $("#historyRows").innerHTML=rows.length?rows.map(o=>`<tr><td><b>${escapeHTML(o.number)}</b></td><td>${escapeHTML(o.supplier)}</td><td>${escapeHTML(fmt(o.inventoryAt))}</td><td><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${escapeHTML(o.status)}</span></td><td>${escapeHTML(o.author)}</td><td>${escapeHTML(o.validator||"—")}</td><td><button class="btn small ghost" data-detail="${escapeHTML(o.id)}">Détail</button></td></tr>`).join(""):`<tr><td colspan="7" class="muted">Aucun document.</td></tr>`;
  $$("[data-detail]").forEach(b=>b.onclick=()=>showDetail(b.dataset.detail));
 }
 
@@ -565,10 +570,10 @@ function showDetail(id){
  const canValidate=canValidateOrders()&&o.status==="À valider";
  const canManageOrder=canValidateOrders();
  const canResume=o.status==="Brouillon"&&(canValidateOrders()||o.authorId===session.id||!isCloudMode());
- $("#modalBox").innerHTML=`<div class="flex between"><div><h2>${o.number} — ${o.supplier}</h2><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${o.status}</span></div><button class="btn ghost" id="closeModal">Fermer</button></div>
- <p class="muted">Inventaire : ${fmt(o.inventoryAt)} — ${o.author}<br>Validation : ${o.validatedAt?fmt(o.validatedAt)+" — "+o.validator:"Non validé"}</p>
- <div class="tablewrap"><table><thead><tr><th>Article</th><th>Stock</th><th>Cible</th><th>Commande</th></tr></thead><tbody>${o.lines.map(l=>`<tr><td>${l.name}<br><small class="muted">${l.unit}</small></td><td>${l.stock}</td><td>${l.target}</td><td><b>${l.quantity}</b></td></tr>`).join("")||`<tr><td colspan="4">Aucune ligne.</td></tr>`}</tbody></table></div>
- <p><b>Remarque :</b> ${o.note||"—"}</p>
+ $("#modalBox").innerHTML=`<div class="flex between"><div><h2>${escapeHTML(o.number)} — ${escapeHTML(o.supplier)}</h2><span class="badge ${o.status==="Brouillon"?"draft":o.status==="À valider"?"pending":o.status==="Validé"?"validated":o.status==="Commandé"?"ordered":"cancelled"}">${escapeHTML(o.status)}</span></div><button class="btn ghost" id="closeModal">Fermer</button></div>
+ <p class="muted">Inventaire : ${escapeHTML(fmt(o.inventoryAt))} — ${escapeHTML(o.author)}<br>Validation : ${o.validatedAt?escapeHTML(fmt(o.validatedAt))+" — "+escapeHTML(o.validator):"Non validé"}</p>
+ <div class="tablewrap"><table><thead><tr><th>Article</th><th>Stock</th><th>Cible</th><th>Commande</th></tr></thead><tbody>${o.lines.map(l=>`<tr><td>${escapeHTML(l.name)}<br><small class="muted">${escapeHTML(l.unit)}</small></td><td>${escapeHTML(l.stock)}</td><td>${escapeHTML(l.target)}</td><td><b>${escapeHTML(l.quantity)}</b></td></tr>`).join("")||`<tr><td colspan="4">Aucune ligne.</td></tr>`}</tbody></table></div>
+ <p><b>Remarque :</b> ${escapeHTML(o.note||"—")}</p>
  <div class="flex wrap">
  ${canResume?`<button class="btn primary" id="resumeDraft">Reprendre le brouillon</button>`:""}
  ${o.status!=="Brouillon"?`<button class="btn primary" id="openPdf">Ouvrir le PDF</button><button class="btn ghost" id="downloadPdf">Télécharger le PDF</button><button class="btn ghost" id="printOrder">Imprimer le bon</button><div id="pdfStatus" style="width:100%"></div>`:""}
@@ -679,21 +684,21 @@ function downloadPDF(o){
 function buildPrintableHTML(o){
  return `<h1>StopFlow — Bon de commande</h1>
  <div class="print-meta">
-  <div><b>Établissement</b><br>${db.settings.establishment}</div>
-  <div><b>N° du bon</b><br>${o.number}</div>
-  <div><b>Fournisseur</b><br>${o.supplier}</div>
-  <div><b>Statut</b><br>${o.status}</div>
-  <div><b>Inventaire</b><br>${fmt(o.inventoryAt)} — ${o.author}</div>
-  <div><b>Validation</b><br>${o.validatedAt?fmt(o.validatedAt)+" — "+o.validator:"Non validé"}</div>
+  <div><b>Établissement</b><br>${escapeHTML(db.settings.establishment)}</div>
+  <div><b>N° du bon</b><br>${escapeHTML(o.number)}</div>
+  <div><b>Fournisseur</b><br>${escapeHTML(o.supplier)}</div>
+  <div><b>Statut</b><br>${escapeHTML(o.status)}</div>
+  <div><b>Inventaire</b><br>${escapeHTML(fmt(o.inventoryAt))} — ${escapeHTML(o.author)}</div>
+  <div><b>Validation</b><br>${o.validatedAt?escapeHTML(fmt(o.validatedAt))+" — "+escapeHTML(o.validator):"Non validé"}</div>
  </div>
  <table class="print-table"><thead><tr><th>Article</th><th>Conditionnement</th><th>Quantité</th></tr></thead>
- <tbody>${o.lines.map(l=>`<tr><td>${l.name}</td><td>${l.unit}</td><td><b>${l.quantity}</b></td></tr>`).join("")}</tbody></table>
- <p><b>Remarque :</b> ${o.note||"—"}</p>
- <div class="print-foot">${db.settings.footer}</div>`;
+ <tbody>${o.lines.map(l=>`<tr><td>${escapeHTML(l.name)}</td><td>${escapeHTML(l.unit)}</td><td><b>${escapeHTML(l.quantity)}</b></td></tr>`).join("")}</tbody></table>
+ <p><b>Remarque :</b> ${escapeHTML(o.note||"—")}</p>
+ <div class="print-foot">${escapeHTML(db.settings.footer)}</div>`;
 }
 function openPrintableWindow(o){
  const body=buildPrintableHTML(o);
- const doc=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${o.number} - ${o.supplier}</title>
+ const doc=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${escapeHTML(o.number)} - ${escapeHTML(o.supplier)}</title>
  <style>
  body{font-family:Arial,sans-serif;color:#111;margin:36px}h1{margin:0 0 22px}.print-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
  table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:10px;text-align:left}th{background:#f3f3f3}
