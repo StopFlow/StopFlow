@@ -178,10 +178,10 @@ function stopFlowInstallArticleTools(){
       <td>${supplierText(article.supplier)}</td>
       <td>${supplierText(article.category||"—")}</td>
       <td>${supplierText(article.unit||"—")}</td>
-      <td><div class="flex" style="gap:5px"><input class="input" style="width:92px" type="number" min="0" step="0.01" placeholder="—" value="${stopFlowPriceValue(article.purchasePrice)}" data-price="${article.id}"><span class="muted">€</span></div></td>
-      <td><input class="input" style="width:82px" type="number" min="0" value="${article.target}" data-target="${article.id}"></td>
-      <td><input type="checkbox" data-active="${article.id}" ${article.active?"checked":""}></td>
-      <td><button class="btn small ghost" data-edit="${article.id}">Modifier</button></td>
+      <td><div class="flex" style="gap:5px"><input class="input" style="width:92px" type="number" min="0" step="0.01" placeholder="—" value="${stopFlowPriceValue(article.purchasePrice)}" data-price="${escapeHTML(article.id)}"><span class="muted">€</span></div></td>
+      <td><input class="input" style="width:82px" type="number" min="0" value="${escapeHTML(article.target)}" data-target="${escapeHTML(article.id)}"></td>
+      <td><input type="checkbox" data-active="${escapeHTML(article.id)}" ${article.active?"checked":""}></td>
+      <td><button class="btn small ghost" data-edit="${escapeHTML(article.id)}">Modifier</button></td>
     </tr>`).join(""):'<tr><td colspan="8" class="muted">Aucun article pour ce fournisseur.</td></tr>';
 
     rows.querySelectorAll("[data-price]").forEach(input=>input.onchange=async event=>{
@@ -220,7 +220,7 @@ function stopFlowInstallArticleTools(){
       </div>
       <div class="filters" style="grid-template-columns:1fr 1fr 1fr">
         <div class="field"><label>Conditionnement</label><input id="mUnit" class="input" list="stopflowArticleUnits" placeholder="Facultatif" value="${supplierText(article.unit)}"></div>
-        <div class="field"><label>Stock cible</label><input id="mTarget" class="input" type="number" min="0" value="${article.target}"></div>
+        <div class="field"><label>Stock cible</label><input id="mTarget" class="input" type="number" min="0" value="${escapeHTML(article.target)}"></div>
         <div class="field"><label>Prix d’achat HTVA (€)</label><input id="mPrice" class="input" type="number" min="0" step="0.01" placeholder="Facultatif" value="${stopFlowPriceValue(article.purchasePrice)}"></div>
       </div>
       ${stopFlowUnitListMarkup("stopflowArticleUnits")}

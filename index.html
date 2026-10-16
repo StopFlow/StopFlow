@@ -725,7 +725,7 @@ function printOrder(o){ showPrintView(o); }
 function renderArticles(){
  const supplier=$("#articleSupplier").value;
  const articles=db.articles.filter(a=>a.supplier===supplier);
- $("#articleRows").innerHTML=articles.length?articles.map(a=>`<tr><td><b>${a.name}</b></td><td>${a.supplier}</td><td>${a.category}</td><td>${a.unit}</td><td><input class="input" style="width:90px" type="number" min="0" value="${a.target}" data-target="${a.id}"></td><td><input type="checkbox" data-active="${a.id}" ${a.active?"checked":""}></td><td><button class="btn small ghost" data-edit="${a.id}">Modifier</button></td></tr>`).join(""):`<tr><td colspan="7" class="muted">Aucun article pour ce fournisseur.</td></tr>`;
+ $("#articleRows").innerHTML=articles.length?articles.map(a=>`<tr><td><b>${escapeHTML(a.name)}</b></td><td>${escapeHTML(a.supplier)}</td><td>${escapeHTML(a.category)}</td><td>${escapeHTML(a.unit)}</td><td><input class="input" style="width:90px" type="number" min="0" value="${escapeHTML(a.target)}" data-target="${escapeHTML(a.id)}"></td><td><input type="checkbox" data-active="${escapeHTML(a.id)}" ${a.active?"checked":""}></td><td><button class="btn small ghost" data-edit="${escapeHTML(a.id)}">Modifier</button></td></tr>`).join(""):`<tr><td colspan="7" class="muted">Aucun article pour ce fournisseur.</td></tr>`;
  $$("[data-target]").forEach(input=>input.onchange=async event=>{
    const id=Number(event.target.dataset.target),article=db.articles.find(a=>Number(a.id)===id),previous=article?.target;
    event.target.disabled=true;
@@ -746,9 +746,9 @@ function articleModal(id){
  const nextSort=Math.max(0,...db.articles.filter(x=>x.supplier===selected).map(x=>Number(x.sortOrder||0)))+1;
  const a=existing?{...existing}:{id:null,name:"",supplier:selected,category:selected==="Leloup"?"Vins maison":"Apéritifs",unit:selected==="Leloup"?"fût 20 L":"bouteille",target:4,active:true,sortOrder:nextSort};
  $("#modalBox").innerHTML=`<div class="flex between"><h2>${id?"Modifier":"Ajouter"} un article</h2><button class="btn ghost" id="closeModal">Fermer</button></div>
- <div class="field"><label>Nom</label><input id="mName" class="input" value="${a.name}"></div>
- <div class="filters" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="field"><label>Fournisseur</label><select id="mSupplier" class="input"><option ${a.supplier==="Colruyt"?"selected":""}>Colruyt</option><option ${a.supplier==="Leloup"?"selected":""}>Leloup</option></select></div><div class="field"><label>Catégorie</label><input id="mCat" class="input" value="${a.category}"></div></div>
- <div class="filters" style="grid-template-columns:1fr 1fr"><div class="field"><label>Unité</label><input id="mUnit" class="input" value="${a.unit}"></div><div class="field"><label>Stock cible</label><input id="mTarget" class="input" type="number" min="0" value="${a.target}"></div></div>
+ <div class="field"><label>Nom</label><input id="mName" class="input" value="${escapeHTML(a.name)}"></div>
+ <div class="filters" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="field"><label>Fournisseur</label><select id="mSupplier" class="input"><option ${a.supplier==="Colruyt"?"selected":""}>Colruyt</option><option ${a.supplier==="Leloup"?"selected":""}>Leloup</option></select></div><div class="field"><label>Catégorie</label><input id="mCat" class="input" value="${escapeHTML(a.category)}"></div></div>
+ <div class="filters" style="grid-template-columns:1fr 1fr"><div class="field"><label>Unité</label><input id="mUnit" class="input" value="${escapeHTML(a.unit)}"></div><div class="field"><label>Stock cible</label><input id="mTarget" class="input" type="number" min="0" value="${escapeHTML(a.target)}"></div></div>
  <button class="btn primary" id="saveArticle">Enregistrer</button>`;
  $("#modal").classList.remove("hidden");$("#closeModal").onclick=()=>$("#modal").classList.add("hidden");
  $("#saveArticle").onclick=async()=>{

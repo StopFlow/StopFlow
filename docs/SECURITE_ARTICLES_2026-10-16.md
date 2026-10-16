@@ -1,8 +1,9 @@
 # Audit ciblé de la sécurité des rendus Articles — 16 octobre 2026
 
-État : **P0 confirmé avant la fin du chargement de la page**. Les fonctions Articles
-restent inchangées dans le correctif Suggestions. L'analyse porte sur la branche
-`stopflow-dev`, après le correctif Commandes `ca3f55254e7bbdd9144d333c86217e8cc5400744`.
+État actuel : **rendu historique et attributs de la surcharge corrigés** sur
+`stopflow-dev`, avec la fonction commune `escapeHTML()` du correctif Commandes.
+La reproduction ci-dessous décrit l'état antérieur au correctif Articles, au
+commit Suggestions `796d9e1921fcafb70b7ef2ba426f2cc8a48c2720`.
 
 ## Protection observée après chargement complet
 
@@ -26,12 +27,12 @@ clic sur Modifier. Un nom d'article contenant une balise `<img onerror=...>` res
 du texte dans la liste et dans le champ du nouvel éditeur ; aucun élément image
 n'est créé et aucun JavaScript injecté ne s'exécute.
 
-## Fenêtre de chargement vulnérable reproduite
+## Fenêtre de chargement vulnérable reproduite avant correction
 
 Les surcharges de `supabase-article-tools.js` sont installées sur `window.load`
 (`supabase-article-tools.js:370–371`). Avant cet événement, les fonctions
 historiques existent toujours : `index.html:725–741` pour la liste et
-`index.html:743–764` pour le formulaire. Leurs interpolations ne sont pas échappées.
+`index.html:743–764` pour le formulaire. Leurs interpolations n'étaient pas échappées.
 
 Reproduction réalisée dans Chromium ordinateur, en navigateur jetable :
 
@@ -50,12 +51,46 @@ Le test a confirmé l'exploitation de la **liste** avant `window.load`. Il ne
 confirme pas séparément une exploitation du formulaire historique : dans ce
 scénario, l'éditeur 0.8 était déjà installé.
 
-## Portée et suite
+## Correction ciblée et contrôles
 
-Les surcharges sécurisent le parcours une fois installées, mais ne constituent
-pas une garantie pendant tout le démarrage. Le risque Articles n'est donc plus
-à classer comme uniquement latent. Un correctif distinct reste nécessaire,
-conformément à la décision de ne pas modifier Articles dans cette étape.
+Le test `tests/article-html-security.cjs` a d'abord échoué sur la navigation
+réelle avant `window.load`, avec le marqueur JavaScript passant de 0 à 1. Le socle
+historique est désormais protégé directement : cellules, attributs `data-*` et
+`value` de la liste, puis nom, catégorie, unité et cible du formulaire passent
+par `escapeHTML()`. Les branches `checked` et `selected` ne produisent que des
+constantes, sans interpolation des données.
+
+Le contrôle des attributs a également trouvé des interpolations brutes d'`id`
+et de `target` dans `supabase-article-tools.js`, avec des données locales
+malformées. Ces attributs utilisent maintenant le même `escapeHTML()`. Les
+identifiants et cibles issus de Supabase sont déjà convertis en nombres par
+`normalizeSharedArticle()` ; cette correction protège aussi les données du
+cache local, sans dépendre de cette conversion. Les prix passent par une
+conversion numérique et les autres textes surchargés étaient déjà échappés.
+
+Le nouveau test couvre la navigation avant et après `window.load`, les fonctions
+historiques capturées indépendamment des surcharges, l'éditeur intermédiaire et
+l'éditeur 0.8, les noms/catégories/unités/fournisseurs malveillants, les sorties
+d'attributs, ainsi que la modification et la sauvegarde locale. Il utilise
+Chromium ordinateur et une émulation iPhone avec de vrais événements tactiles,
+en respectant le délai existant de protection contre les taps après défilement.
+Les caractères accentués, apostrophes, guillemets, `&`, `<` et `>` sont vérifiés
+à l'identique à l'affichage et dans les données enregistrées.
+
+Validation finale :
+
+- `node tests/order-html-security.cjs` : réussi sur ordinateur et iPhone émulé,
+  y compris Commandes, Suggestions, impression et PDF.
+- `node tests/article-html-security.cjs` : réussi sur les deux configurations,
+  y compris navigation tactile mobile, édition et sauvegarde locale.
+- 85 contrôles `node --check` : réussis (84 fichiers et un script inline).
+- `git diff --check` : réussi.
+
+Limite ergonomique observée en émulation : avec un catalogue réduit à un seul
+article, l'en-tête mobile peut recouvrir les actions du modal. Les tests de
+sécurité conservent un second article témoin pour exercer la sauvegarde sans
+modifier le CSS ni les gestionnaires tactiles. Ce cas réduit reste à contrôler
+sur iPhone réel ; il n'est pas corrigé dans cette étape XSS.
 
 Ces observations concernent un scénario local isolé ; elles ne prouvent pas un
 incident en production ni un résultat sur Safari/iPhone réel. Les requêtes
