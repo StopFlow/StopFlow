@@ -51,7 +51,9 @@
   function numberText(value){const n=Number(value);return Number.isFinite(n)?String(n).replace('.',','):String(value??'')}
 
   function decorateRow(row){
-    const input=row.querySelector('.sf70-tv3-value'),note=row.querySelector('.sf70-tv3-note');if(!input)return;
+    const input=row.querySelector('.sf70-tv3-value'),note=row.querySelector('.sf70-tv3-note');
+    // Reparenting a focused field closes its native keyboard, including on Safari.
+    if(!input||row.contains(document.activeElement))return;
     input.placeholder='Ex. 4,2';if(note)note.placeholder='Facultatif — ex. porte restée ouverte';
 
     let info=row.firstElementChild;
@@ -100,6 +102,8 @@
   }
 
   function decorate(){injectStyles();const page=document.getElementById('sf70TemperatureV3');if(!page)return;page.querySelectorAll('.sf70-tv3-reading').forEach(decorateRow);updateProgress(page)}
+
+  window.stopflow070TemperatureV3Visibility={active:true,refresh:decorate};
 
   document.addEventListener('input',event=>{const input=event.target.closest?.('#sf70TemperatureV3 .sf70-tv3-value');if(!input)return;updateRow(input.closest('.sf70-tv3-reading'));updateProgress(document.getElementById('sf70TemperatureV3'))},true);
   document.addEventListener('pointerup',event=>{if(!event.target.closest?.('#sf70TemperatureV3,[data-sf70-card="temperatures.use"]'))return;[0,60,180,450].forEach(delay=>setTimeout(decorate,delay))},true);

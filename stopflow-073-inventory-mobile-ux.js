@@ -13,6 +13,7 @@
     suppressUntil:0,
     syntheticAction:null,
     mode:'summary',
+    validationKey:null,
     renderingSummary:false,
     validating:false
   };
@@ -322,7 +323,6 @@
   function renderValidationMode(){
     if(!isMobile()||!summaryVisible())return;
     state.mode='validation';
-    setStepperMode('validation');
     const root=ensureMobileReviewRoot();
     if(!root)return;
     const {arts,lines,qty,filled}=stats();
@@ -332,10 +332,20 @@
       if(orderQty<=0)return '';
       return `<div class="sf73-order-line"><span>${htmlEscape(article.name)}</span><b>${orderQty}</b></div>`;
     }).join('');
-    const note=htmlEscape(current?.note||document.getElementById('generalNote')?.value||'');
+    const noteValue=String(current?.note||document.getElementById('generalNote')?.value||'');
+    const note=htmlEscape(noteValue);
     const responsible=typeof canValidateOrders==='function'&&canValidateOrders();
     const actionLabel=responsible?'Valider et générer le PDF':'Envoyer pour validation';
 
+    // Notes are intentionally absent from the key: typing must keep the same textarea.
+    const key=JSON.stringify(['validation',current?.id,current?.createdAt,supplier,arts.length,filled,lines,qty,orderLines,responsible]);
+    const existing=root.querySelector('#sf73ValidationNote');
+    if(existing&&(state.validationKey===key||document.activeElement===existing)){
+      if(document.activeElement!==existing&&existing.value!==noteValue)existing.value=noteValue;
+      root.hidden=false;
+      return;
+    }
+    setStepperMode('validation');
     root.innerHTML=`
       <h2 class="sf73-review-heading">Validation — ${supplier}</h2>
       <div class="sf73-review-kpis">
@@ -361,6 +371,7 @@
         <button type="button" class="btn primary" id="sf73ValidationConfirm">${actionLabel}</button>
       </div>
     `;
+    state.validationKey=key;
     root.hidden=false;
     const textarea=document.getElementById('sf73ValidationNote');
     textarea?.addEventListener('input',event=>{

@@ -78,9 +78,9 @@
   function clear(){state.buffer='';pushValue()}
 
   function openPad(input){
-    if(!isMobile()||!input)return;
+    if(!isMobile()||!input?.matches('#sf70TemperatureV3 .sf70-tv3-value'))return;
     const overlay=ensurePad();state.input=input;state.buffer=displayText(input.value||'');state.open=true;
-    try{input.blur()}catch{}
+    try{document.activeElement?.blur()}catch{}
     overlay.classList.remove('hidden');document.body.classList.add('sf70-temp-keypad-open');syncDisplay();
   }
   function closePad(){const overlay=document.getElementById('sf70TempKeypadOverlay');overlay?.classList.add('hidden');document.body.classList.remove('sf70-temp-keypad-open');state.input=null;state.buffer='';state.open=false}
