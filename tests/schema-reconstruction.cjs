@@ -35,6 +35,9 @@ const platform=`create schema auth;create table auth.users(id uuid primary key,e
     assert.equal(metadata.relations.filter(r=>r.name.startsWith('reservation_')).length,7);
     assert(metadata.functions.some(f=>f.name==='reservations_context'&&f.securityDefiner));
     assert(!JSON.stringify(metadata).includes('request.jwt.claim.sub'),'Function bodies must not be exported');
+    // Phase 2 deliberately includes bodies: review privately before sharing.
+    const finalState=server.sql(fs.readFileSync(path.join(root,'docs/schema/EXTRACT-FINAL-STATE.sql'),'utf8'),'module_contract');
+    for(const section of ['relations|','columns|','constraints|','indexes|','functions|','triggers|','policies|','types|','dependencies|'])assert(finalState.includes(section),'Missing extraction section: '+section);
     assert.throws(()=>server.sql('begin read only;create table public.forbidden_write(id int);commit;','module_contract'),error=>error.code==='25006');
     const id='10000000-0000-4000-8000-000000000099';
     server.sql(`insert into auth.users values('${id}','qa.contract@stopflow.invalid',null);insert into public.profiles values('${id}','admin',true);`,'module_contract');

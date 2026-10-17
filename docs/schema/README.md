@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+Suite après réception du rapprochement Production : voir
+[RECONCILIATION.md](RECONCILIATION.md) pour les huit références, les dépendances
+restantes et les requêtes exactes de prochaine extraction. La baseline reste partielle.
+
 Travail local depuis `8de30a16667977231d7029446b80184c1a985508`, branche
 `feat/reservations-foundations`. Aucun accès distant pendant cette mission.
 
