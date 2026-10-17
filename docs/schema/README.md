@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Mission 2.1 :** [proposition de moindre privilège, audit RPC et export unique](MISSION-2.1.md).
+Correctif isolé sous supabase/proposals, jamais appliqué à Supabase ; snapshot
+complet et tests Auth réels toujours nécessaires.
+
 **Dernier état, mission 2.0 :** [quatre tables et cinq helpers recoupés/testés](MISSION-2.0.md),
 [statut actualisé](baseline/MISSION20-STATUS.json). La PK réelle remplace le
 prérequis fictif dans le nouveau mode de test. Le snapshot global reste partiel.

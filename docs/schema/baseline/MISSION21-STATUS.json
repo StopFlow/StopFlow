@@ -1,0 +1,22 @@
+{
+  "status": "LOCAL_LEAST_PRIVILEGE_PROPOSAL_TESTED_REMOTE_NO_GO",
+  "proposal": "supabase/proposals/20261017_least_privilege_REVIEW_ONLY.sql",
+  "proposalInActiveMigrations": false,
+  "proposalAppliedRemotely": false,
+  "audit": {
+    "advisorIdentityListReceived": false,
+    "localCandidateRpcCount": 11,
+    "allElevenFinalBodiesVerified": false,
+    "profileAdminIndirectCallsTested": true,
+    "localNullAuthorGuardIssue": true
+  },
+  "exportMethod": "Owner workstation, version-matched pg_dump schema-only public/private plus read-only companion using the same exported snapshot",
+  "availableToolHere": "Docker postgres:16-alpine pg_dump 16.15; no host pg_dump or Supabase CLI",
+  "productionServerVersionVerifiedHere": false,
+  "rawExportObtained": false,
+  "offlineReviewAidReady": true,
+  "humanReviewMandatory": true,
+  "fullBaselineReady": false,
+  "realGoTruePostgrestJwtTested": false,
+  "remoteOperationsPerformed": false
+}

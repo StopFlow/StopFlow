@@ -5,7 +5,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {splitOutside}=require('../scripts/audit-migrations.cjs');
 const {emptyPostgres}=require('./helpers/reconstruction-db.cjs');
 const root=path.resolve(__dirname,'..'),dir='docs/schema/references/mission-1.9/';
-const mission20=process.argv.includes('--mission20')?require('./helpers/mission20-profile-contract.cjs'):null;
+const mission21=process.argv.includes('--mission21');
+const mission20=(process.argv.includes('--mission20')||mission21)?require('./helpers/mission20-profile-contract.cjs'):null;
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const statements=p=>splitOutside(read(p)).map(s=>s.text.replace(/^(?:\s|--[^\n]*(?:\n|$))*/,'')).filter(s=>s.trim());
 const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));assert.equal(matches.length,1,'Ambiguous/missing source: '+pattern);return matches[0]};
@@ -141,6 +142,46 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
    const before=sql('select count(*) from public.profile_departments');assert(Number(before)>0);
    assert.equal(sql('begin;set local role authenticated;truncate public.profile_departments;reset role;select count(*) from public.profile_departments;rollback;'),'0','RLS does not filter TRUNCATE');
    assert.equal(sql('select count(*) from public.profile_departments'),before);
+   if(mission21){
+    const proposal=read('supabase/proposals/20261017_least_privilege_REVIEW_ONLY.sql');
+    sql('alter default privileges for role postgres in schema public grant all on tables to authenticated,anon;');
+    // Global defaults cannot be undone by a schema-scoped REVOKE. Refuse silently
+    // broadening the change to all schemas and confirm atomic failure.
+    sql('alter default privileges for role postgres grant select on tables to authenticated;');
+    assert.throws(()=>sql(proposal),e=>/GLOBAL_TABLE_DEFAULTS_REQUIRE_EXPLICIT_REVIEW/.test(e.message));
+    assert.equal(sql("select has_table_privilege('authenticated','public.profile_departments','truncate')"),'t');
+    sql('alter default privileges for role postgres revoke select on tables from authenticated;');
+    sql('create role fixture_truncate_holder nologin;grant fixture_truncate_holder to authenticated;alter default privileges for role postgres in schema public grant select on tables to fixture_truncate_holder;');
+    assert.throws(()=>sql(proposal),e=>/INHERITED_PUBLIC_DEFAULTS_REQUIRE_EXPLICIT_REVIEW/.test(e.message));
+    sql('alter default privileges for role postgres in schema public revoke select on tables from fixture_truncate_holder;grant truncate on public.profile_departments to fixture_truncate_holder;');
+    assert.throws(()=>sql(proposal),e=>/TRUNCATE_EFFECTIVE_GRANT_REMAINS/.test(e.message));
+    assert.equal(sql("select has_function_privilege('authenticated','private.sync_legacy_profile_permissions(uuid)','execute')"),'t','Failed inherited-grant check must roll back helper revoke');
+    sql('revoke fixture_truncate_holder from authenticated;');
+    sql(proposal);sql(proposal); // safe to repeat on the same reviewed contract
+    for(const role of ['authenticated','anon']){
+     assert.equal(sql(`select has_table_privilege('${role}','public.profile_departments','truncate')`),'f');
+     assert.equal(sql(`select has_function_privilege('${role}','private.sync_legacy_profile_permissions(uuid)','execute')`),'f');
+    }
+    assert.throws(()=>asUser(operator,'truncate public.profile_departments'),e=>e.code==='42501');
+    for(const id of [operator,manager,employee])assert.throws(()=>asUser(id,`select private.sync_legacy_profile_permissions('${manager}')`),e=>e.code==='42501');
+    // Trusted admin RPC still calls its helper with its owner's permissions.
+    asUser(operator,legacyOrdinary);asUser(operator,modernOrdinary);
+    for(const id of [manager,employee,inactive])assert.throws(()=>asUser(id,legacyOrdinary),e=>e.code==='42501');
+    assert.equal(asUser(operator,'select private.is_admin()'),'t');
+    assert.equal(asUser(employee,`select private.user_has_department('${employee}','cuisine')`),'t');
+    sql('create table public.fixture_after_hardening(id int);');
+    assert.equal(sql("select has_table_privilege('authenticated','public.fixture_after_hardening','select,insert,update,delete,truncate')"),'f');
+    assert.equal(sql("select has_table_privilege('anon','public.fixture_after_hardening','select,insert,update,delete,truncate')"),'f');
+    sql('grant select on public.fixture_after_hardening to authenticated;');
+    assert.equal(asUser(employee,'select count(*) from public.fixture_after_hardening'),'0');
+    assert.equal(sql("select has_function_privilege('service_role','private.sync_legacy_profile_permissions(uuid)','execute')"),'t');
+    assert.equal(sql("select has_table_privilege('service_role','public.profile_departments','truncate')"),'t');
+    sql(read('supabase/migrations/20261017120000_stopflow_reservations_foundation.sql'));
+    assert.equal(sql("select has_table_privilege('authenticated','public.reservation_rooms','select')"),'t');
+    assert.equal(sql("select has_table_privilege('authenticated','public.reservation_rooms','truncate')"),'f');
+    assert.equal(asUser(operator,"select public.reservations_context()->'establishments'"),'[]');
+    console.log('PASS mission 2.1 proposal: TRUNCATE/direct helper denied; admin definer RPC preserves indirect calls; manager/employee denied admin actions; defaults deny new client table grants; explicit SELECT works; global-default precondition rollback; repeatable. No cloud or full application validation.');
+   }
    console.log('Mission 2.0 canonical helper MD5 comparison:',JSON.stringify(helperHashes));
    console.log('PASS mission 2.0: real 15 constraints/14 indexes/7 policies, actual department PK and partial primary index, five received helpers/ACLs. SQL-role risks: PUBLIC sync helper can resync other profile; granted TRUNCATE bypasses RLS. No API exploit or Production execution claimed. MAINTAIN unavailable on PostgreSQL 16.');
   }
