@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Mission 1.7 :** [échec réel de bootstrap et correction conditionnelle](MISSION-1.7.md).
+La branche Test a été signalée MIGRATIONS_FAILED par le pilote ; aucune écriture
+distante effectuée par Codex. Baseline toujours bloquée avant collecte des DDL finaux.
+
 Préparation de la future branche Supabase Pro :
 [stopflow-reservations-test](SUPABASE-TEST-BRANCH.md), avec diagnostic et matrice
 de validation après création. Aucune branche distante créée par ce travail.
