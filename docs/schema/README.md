@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Dernier état, mission 1.9 :** [tests des six fonctions profils reçues et limites](MISSION-1.9.md),
+[statut actualisé](baseline/MISSION19-STATUS.json). Les fonctions des trois triggers
+sont disponibles ; le snapshot final et les tests Auth réels restent nécessaires.
+
 **Dernier état, mission 1.8 :** [preuves et tests sur les sources authentiques](MISSION-1.8.md),
 [statut actualisé](baseline/MISSION18-STATUS.json). PK/FK de profiles et provisioning
 documentés ; baseline complète et reset Supabase réel toujours non validés.

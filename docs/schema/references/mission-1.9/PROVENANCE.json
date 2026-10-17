@@ -1,0 +1,22 @@
+{
+  "source": "User-supplied sanitized references; NOT an exact machine export or approved permanent identity mapping",
+  "archiveSha256": "91d40e3f509ca0cc0f845c7a4078d778c77a0a625b5868cea8464388b1df39ee",
+  "files": [
+    {
+      "file": "FONCTIONS_ADMINISTRATIVES_REFERENCE.sql",
+      "sha256": "e8e8a4b1365d9a0043208de1e30b39c85bd6cf8ee0da4c187aeb5e077ea545d4"
+    },
+    {
+      "file": "INSTRUCTIONS_CODEX.md",
+      "sha256": "60d65dfe6eb886bcbb8923c573f19140cad93fa1f67d61ad229410590f551872"
+    },
+    {
+      "file": "README.md",
+      "sha256": "83f065ec822d75acb5c35d8831339e8617b996b0e8dc6511848bbc37055abed4"
+    },
+    {
+      "file": "TRIGGERS_PROFILES_REFERENCE.sql",
+      "sha256": "6c3d80e2094098eded47f0783a8b9f71c02444f7765601f02ffcc6f4d206949d"
+    }
+  ]
+}

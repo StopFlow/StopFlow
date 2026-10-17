@@ -1,0 +1,25 @@
+{
+  "status": "BLOCKED_INCOMPLETE_FINAL_SNAPSHOT_AND_REAL_AUTH_VALIDATION",
+  "supersedes": "MISSION18-STATUS.json",
+  "referenceProvenance": "../references/mission-1.9/PROVENANCE.json",
+  "profileTriggerFunctionBodiesReceived": true,
+  "fourProtectedIdentityFunctionBodiesReceivedSanitized": true,
+  "permanentIdentityMappingApproved": false,
+  "testEnvironment": "Disposable PostgreSQL 16 with MOCK Auth, partial constraints and explicit fixture prerequisites",
+  "observedLimits": [
+    "BEFORE UPDATE protection does not prevent privileged DELETE",
+    "Protected display names are editable; email changes are rejected",
+    "RPCs coerce protected role/active rather than rejecting the request",
+    "Inactive employee retains primary department assignment",
+    "Delete audit emits nothing without an archived identity"
+  ],
+  "stillRequired": [
+    "Reviewed complete final public/private schema-only snapshot, dependencies, ACL and owners",
+    "Exact final department uniqueness/constraints and remaining table/index/policy/trigger definitions",
+    "Final transitive helper definitions compared to local historical versions",
+    "Approval of distinct fictitious identities and clarification of deletion/display-name protection requirements",
+    "Full isolated Supabase reset, real Auth/GoTrue/PostgREST and user JWT/RLS tests"
+  ],
+  "fullBaselineReady": false,
+  "remoteOperationsPerformed": false
+}
