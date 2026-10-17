@@ -165,6 +165,25 @@
     pageNode.addEventListener('pointerdown',event=>{if(event.button!=null&&event.button!==0)return;const button=event.target.closest?.('[data-tv3-action]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();last={button,at:Date.now()};performAction(button)},true);
     pageNode.addEventListener('click',event=>{const button=event.target.closest?.('[data-tv3-action]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();if(last.button!==button||Date.now()-last.at>700)performAction(button)},true);
     pageNode.addEventListener('input',event=>{if(event.target.classList?.contains('sf70-tv3-value'))markReading(event.target)},true);
+    // Local text activation only: leave the temperature keypad and button owners untouched.
+    let noteTouch=null;
+    pageNode.addEventListener('touchstart',event=>{
+      const field=event.target.closest?.('input.sf70-tv3-note');
+      const touch=window.matchMedia?.('(max-width: 950px)').matches&&field&&event.touches.length===1?event.touches[0]:null;
+      noteTouch=touch?{field,id:touch.identifier,x:touch.clientX,y:touch.clientY,moved:false}:null;
+    },{passive:true});
+    pageNode.addEventListener('touchmove',event=>{
+      const touch=Array.from(event.touches).find(touch=>touch.identifier===noteTouch?.id);
+      if(noteTouch&&touch&&Math.hypot(touch.clientX-noteTouch.x,touch.clientY-noteTouch.y)>10)noteTouch.moved=true;
+    },{passive:true});
+    pageNode.addEventListener('touchcancel',()=>{noteTouch=null},{passive:true});
+    pageNode.addEventListener('touchend',event=>{
+      const gesture=noteTouch;noteTouch=null;
+      const touch=Array.from(event.changedTouches).find(touch=>touch.identifier===gesture?.id);
+      const field=gesture?.field;
+      if(!window.matchMedia?.('(max-width: 950px)').matches||!gesture||gesture.moved||!touch||event.touches.length||Math.hypot(touch.clientX-gesture.x,touch.clientY-gesture.y)>10||event.target.closest?.('input.sf70-tv3-note')!==field||!field.isConnected||field.disabled||field.readOnly)return;
+      try{field.focus({preventScroll:true})}catch{field.focus()}
+    },{passive:true});
   }
 
   function installCardBridge(){

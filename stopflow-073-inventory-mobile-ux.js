@@ -379,6 +379,23 @@
       const legacy=document.getElementById('generalNote');
       if(legacy)legacy.value=event.target.value;
     });
+    // Keep explicit Safari keyboard activation inside the original touch gesture.
+    let noteTouch=null;
+    textarea?.addEventListener('touchstart',event=>{
+      const touch=isMobile()&&event.touches.length===1?event.touches[0]:null;
+      noteTouch=touch?{id:touch.identifier,x:touch.clientX,y:touch.clientY,moved:false}:null;
+    },{passive:true});
+    textarea?.addEventListener('touchmove',event=>{
+      const touch=Array.from(event.touches).find(touch=>touch.identifier===noteTouch?.id);
+      if(noteTouch&&touch&&Math.hypot(touch.clientX-noteTouch.x,touch.clientY-noteTouch.y)>10)noteTouch.moved=true;
+    },{passive:true});
+    textarea?.addEventListener('touchcancel',()=>{noteTouch=null},{passive:true});
+    textarea?.addEventListener('touchend',event=>{
+      const gesture=noteTouch;noteTouch=null;
+      const touch=Array.from(event.changedTouches).find(touch=>touch.identifier===gesture?.id);
+      if(!isMobile()||!gesture||gesture.moved||!touch||event.touches.length||Math.hypot(touch.clientX-gesture.x,touch.clientY-gesture.y)>10||!textarea.isConnected||textarea.disabled||textarea.readOnly)return;
+      try{textarea.focus({preventScroll:true})}catch{textarea.focus()}
+    },{passive:true});
     window.stopflow070BackNavigation?.refresh?.();
   }
 

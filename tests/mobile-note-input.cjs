@@ -19,7 +19,8 @@ async function tap(page, selector) {
   const box = await page.evaluate(selector => document.querySelector(selector)?.getBoundingClientRect().toJSON(), selector);
   assert(box?.width && box?.height, `${selector} must be visible`);
   const point = {x: box.x + box.width / 2, y: box.y + box.height / 2};
-  await page.touchscreen.tap(point.x, point.y);
+  // Wait for a stable hit target if an existing smooth scroll is still finishing.
+  await page.locator(selector).tap();
   return point;
 }
 
@@ -58,6 +59,8 @@ async function checkInventory(page) {
   }
   await tap(page, '#showSummary');
   await page.locator('#summary').waitFor({state: 'visible'});
+  // The mobile cards are populated asynchronously after the summary page becomes visible.
+  await page.waitForFunction(() => document.querySelectorAll('#sf73MobileReviewRoot .sf73-review-card').length === activeArticles().length);
   assert.equal(await page.locator('#sf73MobileReviewRoot .sf73-review-card').count(),
     await page.evaluate(() => activeArticles().length));
   await controlGesture(page, '#sf73SummaryContinue');
