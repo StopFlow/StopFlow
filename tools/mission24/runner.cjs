@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),cryp
 const S=require('./safety.cjs');
 const root=__dirname,workdir=path.join(os.homedir(),'Library/Application Support/StopFlow-test-local');
 let writes=false,apiBase,credentials,dbId;
-const report={mission:'2.4',decision:'NO-GO',scope:'Local PG17 tests only; pilot review required before any cloud action',timeZone:'Europe/Brussels',checks:[],databaseModified:false,realAuthTested:false};
+const report={mission:'2.4.1',decision:'NO-GO',scope:'Local PG17 tests only; pilot review required before any cloud action',timeZone:'Europe/Brussels',checks:[],databaseModified:false,realAuthTested:false};
 function command(args){try{return cp.execFileSync('docker',args,{encoding:'utf8',stdio:['pipe','pipe','pipe'],timeout:30000,maxBuffer:8*1024*1024})}catch{throw new S.Failure('DOCKER_COMMAND_FAILED')}}
 function inspect(name){let data;try{data=JSON.parse(command(['inspect',name]))}catch{throw new S.Failure('CONTAINER_INSPECTION_FAILED')}S.need(data.length===1,'CONTAINER_INSPECTION_FAILED');return data[0]}
 function sql(text,mutate=false){
@@ -20,7 +20,7 @@ const rpc=(name,body,user)=>request('/rest/v1/rpc/'+name,{method:'POST',body,tok
 async function check(name,fn){process.stdout.write(name+'…\n');await fn();report.checks.push({name,result:'PASS'});}
 function integrity(){
  const m=JSON.parse(fs.readFileSync(path.join(root,'transfer-manifest.json'),'utf8'));
- S.need(m.mission==='2.4'&&m.project===S.project,'PACKAGE_IDENTITY_REFUSED');
+ S.need(m.mission==='2.4.1'&&m.project===S.project,'PACKAGE_IDENTITY_REFUSED');
  for(const item of m.files){S.need(/^[A-Za-z0-9._/-]+$/.test(item.name)&&!item.name.split('/').includes('..'),'PACKAGE_PATH_REFUSED');const file=path.join(root,item.name);S.need(fs.lstatSync(file).isFile()&&!fs.lstatSync(file).isSymbolicLink()&&S.hash(fs.readFileSync(file))===item.sha256,'PACKAGE_HASH_MISMATCH')}
 }
 async function preflight(){
@@ -38,11 +38,23 @@ async function preflight(){
  const volumeInfo=JSON.parse(command(['volume','inspect',volume.Name]))[0];S.need(volumeInfo.Driver==='local'&&Object.keys(volumeInfo.Options||{}).length===0,'NON_LOCAL_VOLUME_REFUSED');
  const aliases=[S.dbName,...Object.values(db.NetworkSettings.Networks).flatMap(n=>[...(n.Aliases||[]),n.IPAddress]).filter(Boolean)];
  S.databaseRoute(S.environment(auth).GOTRUE_DB_DATABASE_URL,aliases);S.databaseRoute(S.environment(rest).PGRST_DB_URI,aliases);
- const ports=[...new Set((kong.NetworkSettings.Ports['8000/tcp']||[]).map(p=>p.HostPort))];S.need(ports.length===1&&/^\d+$/.test(ports[0]),'GATEWAY_PORT_REFUSED');apiBase='http://127.0.0.1:'+ports[0];S.localUrl(apiBase,ports[0]);
+ const port=S.gatewayPort(kong);apiBase='http://127.0.0.1:'+port;S.localUrl(apiBase,port);
  const env=S.environment(kong),configPath=env.KONG_DECLARATIVE_CONFIG;
  S.need(['/home/kong/kong.yml','/etc/kong/kong.yml'].includes(configPath),'GATEWAY_CONFIG_PATH_REFUSED');
  const gatewayConfig=command(['exec',kong.Id,'cat',configPath]);
- S.gateway(gatewayConfig);S.authHooks(S.environment(auth));
+ // Inspect every endpoint, without a project filter: otherwise an alias
+ // collision from a foreign container could be silently omitted.
+ const kongNetworks=Object.values(kong.NetworkSettings.Networks);
+ S.need(kongNetworks.length===1,'GATEWAY_NETWORK_REFUSED');
+ const networkId=kongNetworks[0].NetworkID;
+ S.need(/^[0-9a-f]{64}$/.test(networkId),'GATEWAY_NETWORK_REFUSED');
+ const inspectedNetworks=JSON.parse(command(['network','inspect',networkId]));
+ S.need(inspectedNetworks.length===1,'GATEWAY_NETWORK_REFUSED');
+ const network=inspectedNetworks[0],members=Object.keys(network.Containers||{});
+ S.need(members.length>0&&members.every(id=>/^[0-9a-f]{64}$/.test(id)),'GATEWAY_NETWORK_INCOMPLETE');
+ const endpoints=JSON.parse(command(['inspect',...members]));
+ report.gateway=S.gateway(gatewayConfig,{kong,network,containers:endpoints,authId:auth.Id,restId:rest.Id});
+ S.authHooks(S.environment(auth));
  credentials=S.keys(gatewayConfig,env);
  dbId=db.Id;
  const info=JSON.parse(sql(`select json_build_object('version',current_setting('server_version_num')::int,'database',current_database(),'socket',inet_server_addr() is null,'users',(select count(*) from auth.users),'tables',(select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p','v','m')),'private',to_regnamespace('private') is not null)`));
@@ -162,7 +174,7 @@ async function tests(){
 function saveReport(){
  const dir=path.join(root,'reports');fs.mkdirSync(dir,{recursive:true,mode:0o700});
  fs.writeFileSync(path.join(dir,'result.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});
- fs.writeFileSync(path.join(dir,'result.md'),'# StopFlow 2.4 — '+report.decision+'\n\n'+report.checks.map(t=>'- '+t.name+' : '+t.result).join('\n')+'\n\nCode : '+(report.failure||'NONE')+'\n\nAucun secret inclus. Aucun déploiement ni autorisation cloud automatique. Tests UI/iPhone hors périmètre.\n',{mode:0o600});
+ fs.writeFileSync(path.join(dir,'result.md'),'# StopFlow 2.4.1 — '+report.decision+'\n\n'+report.checks.map(t=>'- '+t.name+' : '+t.result).join('\n')+'\n\nCode : '+(report.failure||'NONE')+'\n\nAucun secret inclus. Aucun déploiement ni autorisation cloud automatique. Tests UI/iPhone hors périmètre.\n',{mode:0o600});
 }
 async function main(){
  let lock;

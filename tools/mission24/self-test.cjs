@@ -22,8 +22,8 @@ async function main(){
  ok(()=>assert.deepEqual(S.keys(anon+' '+service,{}),{anon,service}));
  refuses(()=>S.keys(anon,{}));refuses(()=>S.keys(anon+' '+token('anon','other')+' '+service,{}));
  for(const ref of ['gjwvquhoecfikjorapud','ojqbzyrwuyjggbyphdqi'])ok(()=>assert.equal(S.jwt(token('authenticated',ref),'authenticated'),false));
- const gateway='services:\n  - name: auth\n    url: http://supabase_auth_StopFlow-test-local:9999/\n  - name: rest\n    url: http://supabase_rest_StopFlow-test-local:3000/';
- ok(()=>S.gateway(gateway));refuses(()=>S.gateway(gateway+'\n    url: https://example.invalid/'));refuses(()=>S.gateway('services: []'));
+ count+=require('./gateway-self-test.cjs').run();
+ refuses(()=>S.gateway('services: []'));
  ok(()=>S.authHooks({GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_ENABLED:'false'}));refuses(()=>S.authHooks({GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_ENABLED:'true'}));
  ok(()=>assert.equal(S.safeSqlState('password=CANARY ERROR: 42501: token=CANARY'),'SQL_42501'));
  ok(()=>assert.equal(S.safeSqlState('password=CANARY'),'LOCAL_COMMAND_FAILED'));

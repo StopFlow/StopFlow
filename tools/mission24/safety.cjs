@@ -8,13 +8,70 @@ function localUrl(value,port){
  const actual=Number(value.match(/:([0-9]+)\/?$/)[1]);need(actual>0&&actual<=65535&&(!port||actual===Number(port)),'API_PORT_MISMATCH');return new URL(value);
 }
 function authHooks(env){need(!Object.entries(env).some(([k,v])=>/^GOTRUE_HOOK_.*_ENABLED$/.test(k)&&/^(true|1)$/i.test(v)),'AUTH_HOOK_REFUSED')}
-function gateway(config){
- const urls=[...config.matchAll(/^\s*url:\s*["']?([^\s"']+)/gm)].map(m=>m[1]);
- need(urls.length>0,'GATEWAY_ROUTES_UNREADABLE');
- for(const value of urls){let u;try{u=new URL(value)}catch{throw new Failure('GATEWAY_ROUTE_REFUSED')}
-  need(['http:','https:','ws:','wss:'].includes(u.protocol)&&!u.username&&!u.password&&new RegExp('^supabase_[a-z0-9_]+_'+project.toLowerCase()+'$').test(u.hostname),'NON_LOCAL_GATEWAY_ROUTE_REFUSED');
+// Parse only literal URLs from the CLI-generated declarative YAML; no YAML
+// evaluation, DNS lookup, redirects or network requests occur in these checks.
+function gatewayUrls(config){
+ const urls=[];
+ for(const line of config.split(/\r?\n/)){
+  if(!/^\s*url\s*:/.test(line))continue;
+  const match=line.match(/^\s*url:\s*(?:"([^"\\]+)"|'([^']+)'|([^\s"']+))\s*(?:#.*)?$/);
+  need(match,'GATEWAY_ROUTE_REFUSED');const raw=match[1]||match[2]||match[3];
+  need(/^(?:https?|wss?):\/\/[a-z0-9_-]+:[0-9]{1,5}(?:\/[^\s]*)?$/i.test(raw),'NON_LOCAL_GATEWAY_ROUTE_REFUSED');
+  const port=Number(raw.match(/^[^:]+:\/\/[^:]+:([0-9]+)/)[1]);need(port>0&&port<=65535,'GATEWAY_ROUTE_REFUSED');
+  let u;try{u=new URL(raw)}catch{throw new Failure('GATEWAY_ROUTE_REFUSED')}
+  need(!u.username&&!u.password&&!u.search&&!u.hash,'GATEWAY_ROUTE_REFUSED');
+  urls.push(u);
  }
- for(const [service,port]of [['auth','9999'],['rest','3000']])need(urls.some(v=>{const u=new URL(v);return u.hostname===('supabase_'+service+'_'+project).toLowerCase()&&u.port===port}),'GATEWAY_SERVICE_MISSING');
+ need(urls.length>0,'GATEWAY_ROUTES_UNREADABLE');return urls;
+}
+function gatewayPort(kong){
+ // Check EVERY published Kong listener, including admin/TLS ports, not only 8000.
+ const maps=[kong.NetworkSettings?.Ports,kong.HostConfig?.PortBindings];
+ for(const map of maps){need(map&&typeof map==='object','GATEWAY_BINDINGS_UNREADABLE');
+  for(const bindings of Object.values(map))for(const b of bindings||[]){
+   need(['127.0.0.1','::1'].includes(b.HostIp),'GATEWAY_NETWORK_EXPOSURE_REFUSED');
+   need(/^[0-9]{1,5}$/.test(b.HostPort)&&Number(b.HostPort)>0&&Number(b.HostPort)<=65535,'GATEWAY_PORT_REFUSED');
+  }
+ }
+ const active=kong.NetworkSettings.Ports['8000/tcp']||[];
+ const declared=kong.HostConfig.PortBindings['8000/tcp']||[];
+ need(active.some(b=>b.HostIp==='127.0.0.1'),'GATEWAY_IPV4_LOOPBACK_REQUIRED');
+ const ports=[...new Set(active.map(b=>b.HostPort))];
+ need(ports.length===1&&declared.some(b=>b.HostIp==='127.0.0.1'&&b.HostPort===ports[0]),'GATEWAY_PORT_REFUSED');
+ return ports[0];
+}
+function gateway(config,{kong,network,containers,authId,restId}={}){
+ need(kong&&network&&Array.isArray(containers),'GATEWAY_DOCKER_EVIDENCE_REQUIRED');
+ container(kong,'supabase_kong_'+project);
+ need(network.Name==='supabase_network_'+project&&network.Driver==='bridge'&&network.Scope==='local'&&!network.Ingress&&
+  (!network.Labels?.['com.supabase.cli.project']||network.Labels['com.supabase.cli.project']===project), 'GATEWAY_NETWORK_REFUSED');
+ need(/^[0-9a-f]{64}$/.test(network.Id),'GATEWAY_NETWORK_REFUSED');
+ const kNets=kong.NetworkSettings?.Networks||{};
+ need(Object.keys(kNets).length===1&&kNets[network.Name]?.NetworkID===network.Id,'GATEWAY_NETWORK_REFUSED');
+ const members=network.Containers||{},byId=new Map(containers.map(c=>[c.Id,c]));
+ need(byId.size===containers.length&&Object.keys(members).length===containers.length&&
+  Object.keys(members).every(id=>byId.has(id))&&byId.has(kong.Id),'GATEWAY_NETWORK_INCOMPLETE');
+ const aliases=new Map();
+ for(const c of containers){
+  const endpoint=c.NetworkSettings?.Networks?.[network.Name];
+  need(endpoint?.NetworkID===network.Id&&members[c.Id]?.Name===c.Name.slice(1),'GATEWAY_ENDPOINT_MISMATCH');
+  need(endpoint.EndpointID&&endpoint.EndpointID===members[c.Id].EndpointID,'GATEWAY_ENDPOINT_MISMATCH');
+  // Enumerate ALL endpoints, including foreign containers, to detect collisions.
+  for(const name of new Set([c.Name.slice(1),...(endpoint.Aliases||[]),...(endpoint.DNSNames||[])].map(n=>n.toLowerCase()))){
+   if(!aliases.has(name))aliases.set(name,new Set());aliases.get(name).add(c.Id);
+  }
+ }
+ const urls=gatewayUrls(config),resolved=[];
+ for(const url of urls){
+  const ids=aliases.get(url.hostname);need(ids?.size===1,'GATEWAY_DESTINATION_UNKNOWN_OR_AMBIGUOUS');
+  const c=byId.get([...ids][0]);container(c,c.Name.slice(1));
+  need(/^\/supabase_[a-z0-9_-]+_StopFlow-test-local$/.test(c.Name),'GATEWAY_CONTAINER_NAME_REFUSED');
+  if(['realtime','realtime-dev'].includes(url.hostname))need(c.Name==='/supabase_realtime_'+project,'GATEWAY_REALTIME_IDENTITY_REFUSED');
+  need(Object.keys(c.NetworkSettings.Networks).length===1,'GATEWAY_DESTINATION_FOREIGN_NETWORK');
+  resolved.push({url,id:c.Id});
+ }
+ for(const [id,port]of [[authId,'9999'],[restId,'3000']])need(id&&resolved.some(r=>r.id===id&&r.url.port===port),'GATEWAY_SERVICE_MISSING');
+ return {routes:resolved.length,destinations:new Set(resolved.map(r=>r.id)).size};
 }
 function daemon(env,context){need(!env.DOCKER_HOST&&!env.DOCKER_TLS_VERIFY&&!env.DOCKER_CERT_PATH,'DOCKER_OVERRIDE_REFUSED');need(/^unix:\/\/\//.test(context),'NON_LOCAL_DOCKER_REFUSED')}
 function container(c,name){
@@ -39,4 +96,4 @@ function keys(config,env){
 }
 function safeSqlState(stderr){const m=String(stderr).match(/ERROR:\s+([A-Z0-9]{5}):/);return m?'SQL_'+m[1]:'LOCAL_COMMAND_FAILED'}
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
-module.exports={project,dbName,Failure,need,localUrl,daemon,container,environment,databaseRoute,jwt,keys,safeSqlState,hash,gateway,authHooks};
+module.exports={project,dbName,Failure,need,localUrl,daemon,container,environment,databaseRoute,jwt,keys,safeSqlState,hash,gateway,gatewayUrls,gatewayPort,authHooks};
