@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Dernier état, mission 1.8 :** [preuves et tests sur les sources authentiques](MISSION-1.8.md),
+[statut actualisé](baseline/MISSION18-STATUS.json). PK/FK de profiles et provisioning
+documentés ; baseline complète et reset Supabase réel toujours non validés.
+
 **Mission 1.7 :** [échec réel de bootstrap et correction conditionnelle](MISSION-1.7.md).
 La branche Test a été signalée MIGRATIONS_FAILED par le pilote ; aucune écriture
 distante effectuée par Codex. Baseline toujours bloquée avant collecte des DDL finaux.

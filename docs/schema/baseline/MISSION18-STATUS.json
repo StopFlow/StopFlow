@@ -1,0 +1,22 @@
+{
+  "status": "BLOCKED_INCOMPLETE_FINAL_STATE_AND_SUPABASE_LOCAL_UNAVAILABLE",
+  "previousStatusFile": "STATUS.json",
+  "sourceProvenance": "../references/mission-1.8/PROVENANCE.json",
+  "resolved": [
+    "Exact first remote migration bytes and MD5 verified",
+    "profiles primary key, unique email, Auth FK, checks, policies, trigger identities and documented ACL received",
+    "handle_new_user body, ACL and exact Auth trigger received",
+    "Exact historical failure reproduced on PostgreSQL with mock Auth; table-order correction verified on partial contract"
+  ],
+  "pending": [
+    "Reviewed final public/private schema-only export: 23 other tables, all final dependencies, policies, constraints, functions, triggers, sequences, types and privileges",
+    "Final protect_core_accounts, stopflow_060_sync_primary_assignment and stopflow_060_audit_profile_delete dependencies and ACL",
+    "Four protected-account function bodies with distinct fictitious identity mapping explicitly approved",
+    "PostgreSQL version and platform/extension compatibility including reported MAINTAIN privilege",
+    "CLI installation blocked by EAI_AGAIN github.com, including retry with extended network permission",
+    "Full reset and actual GoTrue/PostgREST user-JWT/RLS tests on isolated local Supabase"
+  ],
+  "fullBaselineReady": false,
+  "remoteBranchUsableVerified": false,
+  "remoteOperationsPerformed": false
+}

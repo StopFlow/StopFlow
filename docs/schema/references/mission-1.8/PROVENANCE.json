@@ -1,0 +1,31 @@
+{
+  "source": "User supplied ZIP; definitions reported extracted read-only from Production; no remote inspection by Codex",
+  "archiveSha256": "dfac896b345f59e1cb3245f20fbcbf35a580aabfb4e99ebbe12cb9cd8ad93030",
+  "files": [
+    {
+      "file": "20260801214108_create_shared_orders_workflow_REFERENCE.sql",
+      "sha256": "876195e5cc249bab5f25fb07ea529babc028cb7c70d095753bcf182e9874c68e",
+      "md5": "39e0dab3f768e2fb6a9f3a68261710e5"
+    },
+    {
+      "file": "HANDLE_NEW_USER_AND_AUTH_TRIGGER_REFERENCE.sql",
+      "sha256": "ed711caa812536fd75e713467cc5ce9632d9463166d364b411245421a8568066",
+      "md5": "361f7924e409ae4128d1c579023a078d"
+    },
+    {
+      "file": "INSTRUCTIONS_CODEX.md",
+      "sha256": "23c2b5a871c46b3cdef67d51e89e599468253d9e4a556ad648ba5172e178c582",
+      "md5": "11f822941f7719bcdef73064ed92236f"
+    },
+    {
+      "file": "PROFILES_ACTUAL_REFERENCE.sql",
+      "sha256": "6a199eb236d000b1ac0a5d46d82962b22e321d13c41ae818e62d0c2c30e6e2d8",
+      "md5": "200b2856a8278b54ba18357a2b34e60d"
+    },
+    {
+      "file": "README.md",
+      "sha256": "2e122f2e26e1a2a150ea6afecc72b90dd9dbb6f030621d98e9ffbab144a203fb",
+      "md5": "da370755f04cf6d567d6ac7911021e83"
+    }
+  ]
+}
