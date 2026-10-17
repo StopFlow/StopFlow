@@ -5,6 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {splitOutside}=require('../scripts/audit-migrations.cjs');
 const {emptyPostgres}=require('./helpers/reconstruction-db.cjs');
 const root=path.resolve(__dirname,'..'),dir='docs/schema/references/mission-1.9/';
+const mission20=process.argv.includes('--mission20')?require('./helpers/mission20-profile-contract.cjs'):null;
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const statements=p=>splitOutside(read(p)).map(s=>s.text.replace(/^(?:\s|--[^\n]*(?:\n|$))*/,'')).filter(s=>s.trim());
 const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));assert.equal(matches.length,1,'Ambiguous/missing source: '+pattern);return matches[0]};
@@ -26,10 +27,14 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
   for(const table of ['profile_departments','deleted_user_identities','user_admin_events'])sql(find(columnSource,new RegExp('^CREATE TABLE public\\.'+table+'\\b','i')));
   const permissionSource='supabase/migrations/20260809074438_stopflow_070_profile_permissions_foundation.sql';
   sql(find(permissionSource,/^create table if not exists public.profile_permissions\b/i));
+  let helperHashes;
+  if(mission20){mission20.verify();mission20.structure(sql);helperHashes=mission20.helpers(sql)}
+  else {
   sql(find('supabase/migrations/20260805143900_stopflow_060_department_security.sql',/^create or replace function private.is_operational_department\(/i));
   sql(find('docs/schema/references/stopflow_fonctions_manquantes_reference.sql',/^CREATE OR REPLACE FUNCTION private.is_admin\(/i));
   // Real local helper, not yet verified against final Production definition.
   sql(find('supabase/migrations/20260809074647_stopflow_070_permission_rls.sql',/^create or replace function private.sync_legacy_profile_permissions\(/i));
+  }
   for(const f of functions)sql(f);
   for(const s of statements(profileSource).filter(s=>/^ALTER TABLE|^CREATE POLICY|^CREATE TRIGGER/i.test(s)))sql(s);
   sql(read('docs/schema/references/mission-1.8/HANDLE_NEW_USER_AND_AUTH_TRIGGER_REFERENCE.sql'));
@@ -40,18 +45,22 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
   sql('grant select,insert,update,delete on public.profiles to authenticated;');
   // Restrictive fixture only: do not invent final departmental/audit RLS policies.
   for(const table of ['profile_departments','profile_permissions','user_admin_events','deleted_user_identities'])sql('alter table public.'+table+' enable row level security;');
+  if(mission20)mission20.security(sql);
   const ids=Array.from({length:7},(_,i)=>'19000000-0000-4000-8000-'+String(i+1).padStart(12,'0'));
   const [admin,manager,operator,employee,inactive,auditTarget,noAudit]=ids;
   for(let i=0;i<ids.length;i++)sql(`insert into auth.users(id,email) values('${ids[i]}','${i===0?'admin-test@example.invalid':i===1?'responsable-test@example.invalid':'ordinary'+i+'@example.invalid'}');`);
   sql(`update public.profiles set role='admin',departement='bureau' where id in ('${admin}','${operator}','${inactive}');update public.profiles set role='responsable',departement='bureau' where id='${manager}';update public.profiles set actif=false where id='${inactive}';`);
   // ON CONFLICT requires a real unique contract, not merely columns.
+  if(!mission20){
   assert.throws(()=>sql(`update public.profiles set departement='salle' where id='${employee}'`),e=>e.code==='42P10');
   assert.equal(sql(`select departement is null from public.profiles where id='${employee}'`),'t');
   // Test-only prerequisite derived from the function's explicit conflict target.
   // Production constraint name/type/DDL remains to be exported and compared.
   sql('alter table public.profile_departments add constraint fixture_only_department_unique unique(profile_id,department);');
+  }
   sql(`update public.profiles set departement='salle' where id='${employee}';update public.profiles set departement='salle' where id='${employee}';`);
   assert.equal(sql(`select count(*) from public.profile_departments where profile_id='${employee}'`),'1');
+  if(mission20)assert.throws(()=>sql(`insert into public.profile_departments(profile_id,department,is_primary) values('${employee}','cuisine',true)`),e=>e.code==='23505');
   sql(`update public.profiles set departement='cuisine' where id='${employee}'`);
   assert.equal(sql(`select department from public.profile_departments where profile_id='${employee}' and is_primary`),'cuisine');
   sql(`update public.profiles set actif=false where id='${employee}'`);
@@ -84,7 +93,8 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
   sql("update public.fixture_legacy_probe set actif=false where role='responsable'");
   assert.equal(sql("select actif from public.fixture_legacy_probe where role='responsable'"),'f','Historical guard protects only admin, unlike current core guard');
   const legacyOrdinary=`select public.admin_set_user_access('${employee}','Normal','Test','employe',true,'cuisine',array['cuisine','salle'])`;
-  const modernOrdinary=`select public.admin_set_user_profile_permissions_070('${employee}','Normal','Test','employe',true,'[{"permission_key":"lunchs.manage","scope":"cuisine"}]'::jsonb,'update')`;
+  const ordinaryPermissions=mission20?'[{"permission_key":"lunchs.manage","scope":"cuisine"},{"permission_key":"temperatures.readings.use","scope":"cuisine"},{"permission_key":"temperatures.equipment.manage","scope":"cuisine"}]':'[{"permission_key":"lunchs.manage","scope":"cuisine"}]';
+  const modernOrdinary=`select public.admin_set_user_profile_permissions_070('${employee}','Normal','Test','employe',true,'${ordinaryPermissions}'::jsonb,'update')`;
   for(const body of [legacyOrdinary,modernOrdinary]){
    for(const id of [manager,employee,inactive])assert.throws(()=>asUser(id,body),e=>e.code==='42501');
    assert.throws(()=>asUser(employee,body,'anon'),e=>e.code==='42501');
@@ -97,7 +107,11 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
   assert.throws(()=>asUser(operator,`select public.admin_set_user_profile_permissions_070('${employee}','','','employe',true,'{}'::jsonb)`),e=>e.code==='22023');
   asUser(operator,`update public.profiles set email='ordinary-renamed@example.invalid',actif=false where id='${employee}'`);
   assert.equal(sql(`select actif from public.profiles where id='${employee}'`),'f');
-  sql(`insert into public.deleted_user_identities(former_user_id,email,deleted_by,deleted_at) values('${auditTarget}','old@example.invalid','${manager}','2026-01-01'),('${auditTarget}','latest@example.invalid','${operator}','2026-02-01');delete from public.profiles where id='${auditTarget}';`);
+  if(mission20){
+   assert.equal(sql(`select count(*) from public.profile_permissions where profile_id='${employee}' and permission_key like 'temperatures.%'`),'2');
+   assert.throws(()=>sql(`insert into public.deleted_user_identities(former_user_id,email,deleted_by) values('${auditTarget}','old@example.invalid','${manager}'),('${auditTarget}','latest@example.invalid','${operator}')`),e=>e.code==='23505');
+   sql(`insert into public.deleted_user_identities(former_user_id,email,deleted_by) values('${auditTarget}','latest@example.invalid','${operator}');delete from public.profiles where id='${auditTarget}';`);
+  }else sql(`insert into public.deleted_user_identities(former_user_id,email,deleted_by,deleted_at) values('${auditTarget}','old@example.invalid','${manager}','2026-01-01'),('${auditTarget}','latest@example.invalid','${operator}','2026-02-01');delete from public.profiles where id='${auditTarget}';`);
   assert.equal(sql(`select actor_user_id||'|'||(target_user_id is null)||'|'||action from public.user_admin_events where action='delete'`),operator+'|true|delete');
   const count=sql("select count(*) from public.user_admin_events where action='delete'");
   sql(`delete from public.profiles where id='${noAudit}'`);
@@ -105,6 +119,31 @@ const find=(p,pattern)=>{const matches=statements(p).filter(s=>pattern.test(s));
   // Demonstrate scope of protection without permanently removing fixture identity.
   assert.equal(sql(`begin;delete from public.profiles where id='${admin}';select count(*) from public.profiles where id='${admin}';rollback;`),'0','UPDATE trigger does not prevent privileged DELETE');
   assert.equal(sql(`select count(*) from public.profiles where id='${admin}'`),'1');
+  if(mission20){
+   assert.equal(sql("select count(*) from information_schema.columns where table_schema='public' and table_name in ('profile_departments','profile_permissions','deleted_user_identities','user_admin_events')"),'25');
+   assert.equal(sql("select count(*) from pg_constraint k join pg_class c on c.oid=k.conrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('profile_departments','profile_permissions','deleted_user_identities','user_admin_events')"),'15');
+   assert.equal(sql("select count(*) from pg_policies where schemaname='public' and tablename in ('profile_departments','profile_permissions','deleted_user_identities','user_admin_events')"),'7');
+   assert.equal(sql("select count(*) from pg_indexes where schemaname='public' and tablename in ('profile_departments','profile_permissions','deleted_user_identities','user_admin_events')"),'14');
+   sql(`insert into public.profile_departments(profile_id,department,is_primary) values('${manager}','cuisine',false)`);
+   assert.equal(sql(`select count(*) from public.profile_departments where profile_id='${manager}'`),'1');
+   assert.equal(asUser(employee,`select count(*) from public.profile_departments where profile_id='${manager}'`),'0');
+   assert.equal(asUser(employee,'select count(*) from public.user_admin_events'),'0');
+   assert(Number(asUser(operator,'select count(*) from public.user_admin_events'))>0);
+   assert.equal(asUser(employee,'select count(*) from public.deleted_user_identities'),'0');
+   assert.equal(asUser(operator,'select count(*) from public.deleted_user_identities'),'1');
+   assert.throws(()=>asUser(operator,`insert into public.deleted_user_identities(email) values('blocked@example.invalid')`),e=>e.code==='42501');
+   assert.throws(()=>asUser(operator,"insert into public.user_admin_events(action) values('update')"),e=>e.code==='42501');
+   assert.throws(()=>asUser(operator,`insert into public.profile_permissions(profile_id,permission_key,scope) values('${manager}','ideas.share','global')`),e=>e.code==='42501','Table ACL denies direct DML even to admin JWT');
+   assert.equal(asUser(employee,`select private.user_has_department('${employee}','cuisine')`),'t','This helper does not check inactive status');
+   // SQL-role observation only: private schema is not presumed exposed by REST.
+   asUser(employee,`select private.sync_legacy_profile_permissions('${manager}')`);
+   assert(Number(sql(`select count(*) from public.profile_permissions where profile_id='${manager}'`))>0,'Default EXECUTE permits resync of another profile even by inactive caller');
+   const before=sql('select count(*) from public.profile_departments');assert(Number(before)>0);
+   assert.equal(sql('begin;set local role authenticated;truncate public.profile_departments;reset role;select count(*) from public.profile_departments;rollback;'),'0','RLS does not filter TRUNCATE');
+   assert.equal(sql('select count(*) from public.profile_departments'),before);
+   console.log('Mission 2.0 canonical helper MD5 comparison:',JSON.stringify(helperHashes));
+   console.log('PASS mission 2.0: real 15 constraints/14 indexes/7 policies, actual department PK and partial primary index, five received helpers/ACLs. SQL-role risks: PUBLIC sync helper can resync other profile; granted TRUNCATE bypasses RLS. No API exploit or Production execution claimed. MAINTAIN unavailable on PostgreSQL 16.');
+  }
   assert.equal(sql(`select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname in ('protect_core_accounts','protect_main_admin','stopflow_060_audit_profile_delete','stopflow_060_sync_primary_assignment','admin_set_user_access','admin_set_user_profile_permissions_070') and p.prosecdef and 'search_path=""'=any(p.proconfig) and pg_get_userbyid(p.proowner)='postgres'`),'6');
   console.log('PASS mission 1.9: six sanitized functions, distinct temporary identities, UPDATE protection, RPC coercion/admin checks, permission rollback, ON CONFLICT prerequisite/idempotent sync, conditional delete audit and ACL semantics. Confirmed limitations: privileged DELETE not blocked; display names editable; inactive primary retained; no identity means no delete audit. Partial PostgreSQL fixture/MOCK Auth, NOT full baseline or GoTrue/PostgREST.');
  }finally{db.close()}

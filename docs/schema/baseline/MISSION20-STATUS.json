@@ -1,0 +1,29 @@
+{
+  "status": "PARTIAL_PROFILE_CONTRACT_VERIFIED_GLOBAL_SNAPSHOT_BLOCKED",
+  "supersedes": "MISSION19-STATUS.json",
+  "referenceProvenance": "../references/mission-2.0/PROVENANCE.json",
+  "resolved": [
+    "Actual department PK separately from unique partial primary index",
+    "Four tables: 25 columns, 15 constraints, 14 indexes, 7 policies applied in local test",
+    "Five canonical pg_get_functiondef MD5s match provided fingerprints",
+    "Five normalized helper bodies match prior local sources",
+    "Actual permission CHECK includes two split temperature permissions",
+    "Actual archive unique index rules out duplicate non-NULL former_user_id"
+  ],
+  "reviewRequired": [
+    "Authenticated TRUNCATE bypasses RLS in SQL-role probe; API exposure not established",
+    "PUBLIC/default EXECUTE on definer sync helper permits cross-profile resync in SQL-role probe; API exposure not established",
+    "MAINTAIN privilege not supported by PostgreSQL 16 test version",
+    "Distinct identity mapping remains simulation-only, not permanently approved"
+  ],
+  "estimatedMissingCoverage": {
+    "tablesFinalDdl": 19,
+    "policies": 54,
+    "publicTriggers": 13,
+    "functionSignaturesApproximately": 38,
+    "note": "Documentation coverage estimates, not a complete catalogue comparison; sequences/types/extensions/ACL and platform dependencies remain"
+  },
+  "realGoTruePostgrestJwtTested": false,
+  "fullBaselineReady": false,
+  "remoteOperationsPerformed": false
+}

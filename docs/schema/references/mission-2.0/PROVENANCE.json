@@ -1,0 +1,22 @@
+{
+  "source": "User-supplied partial catalogue; remote facts not independently inspected by Codex",
+  "archiveSha256": "2a77a08b5a2656a039cb6c3d09d6f637847a75c4ada97bb9137f26d4c1292ccd",
+  "files": [
+    {
+      "file": "DEPENDANCES_PROFILS_4_TABLES_REFERENCE.md",
+      "sha256": "07c38f54d5666e0af2ffa094a0ddecd38b6b26b5e9fa1c6362954e1cefc3e028"
+    },
+    {
+      "file": "HELPERS_TRANSITIFS_REFERENCE.sql",
+      "sha256": "de97cf8c76e3be5f89ed8ed27fca32ca377df8a251612d5d43d199b20fee5da0"
+    },
+    {
+      "file": "INSTRUCTIONS_CODEX.md",
+      "sha256": "53e99156151d6649b59f9e257e778455f4309517973fca73846c2de7bbc9bdb3"
+    },
+    {
+      "file": "README.md",
+      "sha256": "f44b3feb972a27b0fefe08bd28df15015e9cdf407959e557bb8c97e5e25c24f3"
+    }
+  ]
+}

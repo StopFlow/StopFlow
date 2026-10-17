@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Dernier état, mission 2.0 :** [quatre tables et cinq helpers recoupés/testés](MISSION-2.0.md),
+[statut actualisé](baseline/MISSION20-STATUS.json). La PK réelle remplace le
+prérequis fictif dans le nouveau mode de test. Le snapshot global reste partiel.
+
 **Dernier état, mission 1.9 :** [tests des six fonctions profils reçues et limites](MISSION-1.9.md),
 [statut actualisé](baseline/MISSION19-STATUS.json). Les fonctions des trois triggers
 sont disponibles ; le snapshot final et les tests Auth réels restent nécessaires.
