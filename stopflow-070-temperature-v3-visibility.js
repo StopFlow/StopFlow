@@ -98,7 +98,7 @@
     progress.classList.toggle('complete',done===total&&total>0);
     progress.innerHTML=`<div><div class="sf70-tv3-progress-title">${done===total?'Relevé complet':'Progression du relevé'}</div><div class="sf70-tv3-progress-sub">${done===total?'Toutes les températures sont encodées.':'Encodez la température de chaque équipement.'}</div></div><div class="sf70-tv3-progress-count">${done} / ${total}</div>`;
     card.querySelector('.sf70-tv3-list')?.classList.add('sf70-tv3-reading-list');
-    const save=card.querySelector('[data-tv3-action="save-round"]');if(save){save.disabled=done!==total;save.textContent=done===total?'Enregistrer le relevé complet':'Complétez toutes les températures'}
+    const save=card.querySelector('[data-tv3-action="save-round"]');if(save){const saving=Boolean(window.stopflow070TemperatureV3?.state.saving);save.disabled=saving||done!==total;save.textContent=saving?'Enregistrement…':done===total?'Enregistrer le relevé complet':'Complétez toutes les températures';save.setAttribute('aria-busy',String(saving))}
   }
 
   function decorate(){injectStyles();const page=document.getElementById('sf70TemperatureV3');if(!page)return;page.querySelectorAll('.sf70-tv3-reading').forEach(decorateRow);updateProgress(page)}

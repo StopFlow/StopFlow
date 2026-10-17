@@ -3,7 +3,7 @@
   if(window.stopflow070TemperatureV3?.active)return;
 
   const TYPE_LABELS={fridge:'Frigo',freezer:'Congélateur',cold_room:'Chambre froide',display:'Vitrine réfrigérée',other:'Autre'};
-  const state={equipment:[],rounds:[],readings:[],view:'readings',error:'',loading:false,loadSeq:0,lastCardOpen:0,editUserId:null,permissionSnapshot:null};
+  const state={equipment:[],rounds:[],readings:[],view:'readings',error:'',loading:false,saving:false,loadSeq:0,lastCardOpen:0,editUserId:null,permissionSnapshot:null};
   const nav=()=>window.stopflow070CardNavigation;
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const has=(key)=>Boolean(nav()?.hasPermission?.(key,'cuisine'));
@@ -29,6 +29,7 @@
       .sf70-tv3-badge{display:inline-flex;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:850;background:#eaf8f1;color:#167247;margin-left:6px}.sf70-tv3-badge.off{background:#eef1f5;color:#687586}.sf70-tv3-badge.alert{background:#fff0f0;color:#a12d2d}
       .sf70-tv3-reading{display:grid;grid-template-columns:minmax(190px,1.4fr) 130px minmax(150px,1fr);gap:10px;align-items:end;padding:12px;border:1px solid #e1e8f0;border-radius:12px;background:#fff}.sf70-tv3-reading.ok{border-color:#b9dfc8;background:#fbfffc}.sf70-tv3-reading.alert{border-color:#efb0b0;background:#fff7f7}
       .sf70-tv3-name{font-weight:850}.sf70-tv3-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}.sf70-tv3-round{border:1px solid #e1e8f0;border-radius:11px;background:#fff;overflow:hidden}.sf70-tv3-round-head{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;align-items:center}.sf70-tv3-round-detail{display:none;border-top:1px solid #edf1f5;padding:8px 12px}.sf70-tv3-round.open .sf70-tv3-round-detail{display:block}.sf70-tv3-history-line{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #edf1f5;font-size:11px}.sf70-tv3-history-line:last-child{border-bottom:0}
+      .sf70-tv3-history-line>span:first-child{min-width:0;flex:1}.sf70-tv3-history-line>span:last-child{flex-shrink:0}.sf70-tv3-history-note{display:block;margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere}
       .sf70-tv3-overlay{position:fixed;inset:0;z-index:100;background:rgba(3,16,30,.56);display:grid;place-items:center;padding:18px}.sf70-tv3-dialog{width:min(680px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 20px 70px rgba(0,0,0,.25)}
       .sf70-tv3-formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.sf70-tv3-formgrid.three{grid-template-columns:1fr 1fr 1fr}
       .sf70-tv3-permission-group{padding:4px 4px 7px;border-bottom:1px solid #e8edf4}.sf70-tv3-permission-title{padding:7px 0 3px;font-size:13px;font-weight:850}.sf70-tv3-permission-group .sf70-switch-row{border:0!important;margin-left:18px!important;padding:7px 4px!important;min-height:40px!important}
@@ -77,10 +78,11 @@
     const body=document.getElementById('sf70Tv3Body');if(!body)return;
     const active=state.equipment.filter(e=>e.active!==false);
     const rows=active.map(e=>`<div class="sf70-tv3-reading" data-equipment-id="${esc(e.id)}" data-min="${e.min_allowed}" data-max="${e.max_allowed}"><div><span class="sf70-tv3-name">${esc(e.name)}</span><span class="sf70-tv3-meta">${esc(TYPE_LABELS[e.equipment_type]||'Équipement')}${e.location?' · '+esc(e.location):''} · limites ${e.min_allowed} à ${e.max_allowed} °C</span></div><div class="field"><label>Température °C</label><input class="input sf70-tv3-value" type="number" step="0.1" inputmode="decimal" placeholder="0,0"></div><div class="field"><label>Remarque</label><input class="input sf70-tv3-note" placeholder="Facultatif"></div></div>`).join('');
-    const rounds=state.rounds.slice(0,12).map(round=>{const detail=state.readings.filter(r=>r.round_id===round.id).map(r=>`<div class="sf70-tv3-history-line"><span><strong>${esc(r.equipment)}</strong>${r.equipment_location?' · '+esc(r.equipment_location):''}</span><span><strong>${r.temperature} °C</strong> · ${r.anomaly?'Hors limite':'Conforme'}</span></div>`).join('');return `<div class="sf70-tv3-round"><button type="button" class="sf70-tv3-round-head" style="width:100%;border:0;background:#fff;text-align:left" data-tv3-action="toggle-round"><span><strong>${dateTime(round.completed_at)}</strong><span class="sf70-tv3-meta">${esc(round.performed_by_name||'—')} · ${round.equipment_count} équipement${round.equipment_count>1?'s':''}</span></span><span class="sf70-tv3-badge ${round.anomaly_count?'alert':''}">${round.anomaly_count?round.anomaly_count+' anomalie'+(round.anomaly_count>1?'s':''):'Conforme'}</span></button><div class="sf70-tv3-round-detail">${detail||'<span class="muted">Détail non disponible.</span>'}</div></div>`}).join('');
+    const rounds=state.rounds.slice(0,12).map(round=>{const detail=state.readings.filter(r=>r.round_id===round.id).map(r=>`<div class="sf70-tv3-history-line"><span><strong>${esc(r.equipment)}</strong>${r.equipment_location?' · '+esc(r.equipment_location):''}${String(r.note??'').trim()?`<span class="sf70-tv3-history-note">${esc(r.note)}</span>`:''}</span><span><strong>${esc(r.temperature)} °C</strong> · ${r.anomaly?'Hors limite':'Conforme'}</span></div>`).join('');return `<div class="sf70-tv3-round"><button type="button" class="sf70-tv3-round-head" style="width:100%;border:0;background:#fff;text-align:left" data-tv3-action="toggle-round"><span><strong>${dateTime(round.completed_at)}</strong><span class="sf70-tv3-meta">${esc(round.performed_by_name||'—')} · ${round.equipment_count} équipement${round.equipment_count>1?'s':''}</span></span><span class="sf70-tv3-badge ${round.anomaly_count?'alert':''}">${round.anomaly_count?round.anomaly_count+' anomalie'+(round.anomaly_count>1?'s':''):'Conforme'}</span></button><div class="sf70-tv3-round-detail">${detail||'<span class="muted">Détail non disponible.</span>'}</div></div>`}).join('');
     body.innerHTML=`<div class="card" style="margin-top:0"><div><h2>Relevé complet</h2><p class="muted">${active.length} équipement${active.length>1?'s':''} actif${active.length>1?'s':''}</p></div>${active.length?`<div class="sf70-tv3-list">${rows}</div><button type="button" class="btn primary" style="margin-top:12px" data-tv3-action="save-round">Enregistrer le relevé complet</button>`:`<div class="sf70-tv3-empty">Aucun équipement frigorifique actif n’est configuré.${canManage()?' Utilisez « Équipements frigorifiques » pour créer le premier équipement.':''}</div>`}</div><div class="card"><h2>Dernières sessions</h2><div class="sf70-tv3-list">${rounds||'<div class="sf70-tv3-empty">Aucune session de relevé enregistrée.</div>'}</div></div>`;
     // Decorate new rows before a native text field can receive its first tap.
     window.stopflow070TemperatureV3Visibility?.refresh?.();
+    updateRoundSaveButton();
   }
 
   function setView(view){
@@ -135,12 +137,24 @@
     try{const {error}=await supabaseClient.from('temperature_equipment').update({active}).eq('id',id);if(error)throw error;await loadDashboard()}catch(error){console.warn('StopFlow 0.7.0 — Températures V3 activation',error);alert(error?.message||'Impossible de modifier cet équipement.')}
   }
 
+  function updateRoundSaveButton(){
+    const button=document.querySelector('#sf70TemperatureV3 [data-tv3-action="save-round"]');if(!button)return;
+    const rows=[...document.querySelectorAll('#sf70TemperatureV3 .sf70-tv3-reading')];
+    const complete=rows.length>0&&rows.every(row=>Boolean(row.querySelector('.sf70-tv3-value')?.value.trim()));
+    button.disabled=state.saving||!complete;
+    button.textContent=state.saving?'Enregistrement…':complete?'Enregistrer le relevé complet':'Complétez toutes les températures';
+    button.setAttribute('aria-busy',String(state.saving));
+  }
+
   async function saveRound(){
+    if(state.saving)return;
     const rows=[...document.querySelectorAll('#sf70TemperatureV3 .sf70-tv3-reading')];if(!rows.length)return;
     const readings=[];let missing=null;
     rows.forEach(row=>{const input=row.querySelector('.sf70-tv3-value'),temperature=Number(input.value);if(input.value===''||!Number.isFinite(temperature)){missing=missing||row;return}readings.push({equipment_id:row.dataset.equipmentId,temperature,note:row.querySelector('.sf70-tv3-note')?.value.trim()||''})});
     if(missing){missing.scrollIntoView({behavior:'smooth',block:'center'});missing.querySelector('.sf70-tv3-value')?.focus();return alert('Encodez la température de tous les équipements actifs avant d’enregistrer.')}
+    state.saving=true;updateRoundSaveButton();
     try{const {data,error}=await supabaseClient.rpc('save_temperature_round_070',{p_readings:readings});if(error)throw error;await loadDashboard();const count=Number(data?.anomaly_count||0);alert(count?`Relevé enregistré : ${count} anomalie${count>1?'s':''}.`:'Relevé complet enregistré : toutes les températures sont conformes.')}catch(error){console.warn('StopFlow 0.7.0 — Températures V3 relevé',error);alert(error?.message||'Impossible d’enregistrer le relevé.')}
+    finally{state.saving=false;updateRoundSaveButton()}
   }
 
   function markReading(input){
@@ -164,7 +178,7 @@
     let last={button:null,at:0};
     pageNode.addEventListener('pointerdown',event=>{if(event.button!=null&&event.button!==0)return;const button=event.target.closest?.('[data-tv3-action]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();last={button,at:Date.now()};performAction(button)},true);
     pageNode.addEventListener('click',event=>{const button=event.target.closest?.('[data-tv3-action]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();if(last.button!==button||Date.now()-last.at>700)performAction(button)},true);
-    pageNode.addEventListener('input',event=>{if(event.target.classList?.contains('sf70-tv3-value'))markReading(event.target)},true);
+    pageNode.addEventListener('input',event=>{if(event.target.classList?.contains('sf70-tv3-value')){markReading(event.target);updateRoundSaveButton()}},true);
     // Local text activation only: leave the temperature keypad and button owners untouched.
     let noteTouch=null;
     pageNode.addEventListener('touchstart',event=>{
