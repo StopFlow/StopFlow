@@ -168,7 +168,7 @@
     const visibleZones=OPERATIONAL.filter(zone=>zoneVisible(zone));
     const cards=[...visibleZones.map(zone=>({
       id:`zone:${zone}`,title:ZONES[zone].label,description:`${zoneCards(zone).length} fonction${zoneCards(zone).length>1?"s":""} disponible${zoneCards(zone).length>1?"s":""}`,icon:ZONES[zone].icon,tone:ZONES[zone].tone
-    })),{id:"zone:general",title:"Général",description:"Fonctions communes et outils de gestion autorisés",icon:ZONES.general.icon,tone:ZONES.general.tone}];
+    })),...(window.stopflowReservations?.canOpen()?[{id:'zone:reservations',title:'Réservations',description:'Salles, tables et plan de salle',icon:'▦',tone:'green'}]:[]),{id:"zone:general",title:"Général",description:"Fonctions communes et outils de gestion autorisés",icon:ZONES.general.icon,tone:ZONES.general.tone}];
     const banner=activeBanner();
     pageNode.innerHTML=`
       ${banner?`<div class="sf70-home-banner ${esc(banner.level||"")}"><strong>${esc(banner.title||"Message d’équipe")}</strong>${banner.message?`<div style="margin-top:4px">${esc(banner.message)}</div>`:""}</div>`:""}
@@ -307,6 +307,7 @@
   }
 
   function openZone(zone){
+    if(zone==='reservations')return window.stopflowReservations?.open();
     if(zone!=="general"&&!zoneVisible(zone))return openHome();
     runtime.currentZone=zone;
     runtime.currentDetail=null;
@@ -352,6 +353,7 @@
   function navEntries(){
     const entries=[{id:"home",label:"Accueil",icon:"⌂"}];
     OPERATIONAL.forEach(zone=>{if(zoneVisible(zone))entries.push({id:zone,label:ZONES[zone].label,icon:ZONES[zone].icon})});
+    if(window.stopflowReservations?.canOpen())entries.push({id:'reservations',label:'Réservations',icon:'▦'});
     entries.push({id:"general",label:"Général",icon:ZONES.general.icon});
     return entries;
   }

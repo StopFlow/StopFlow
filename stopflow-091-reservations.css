@@ -1,0 +1,28 @@
+#sf91Reservations{max-width:1180px;min-width:0}
+#sf91Reservations h1{font-size:clamp(1.3rem,4vw,1.8rem);margin:0}
+#sf91Reservations h2{margin-top:0}
+#sf91Reservations .sf91-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#sf91Reservations .sf91-filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+#sf91Reservations label{display:grid;gap:6px;min-width:0}
+#sf91Reservations .sf91-filters label{flex:1;min-width:min(220px,100%)}
+#sf91Reservations fieldset{border:0;padding:0;display:grid;gap:12px;min-width:0;margin-top:16px}
+#sf91Reservations legend{font-weight:800;padding:0 0 8px}
+#sf91Reservations input,#sf91Reservations textarea,#sf91Reservations select{width:100%;min-width:0;font-size:16px}
+#sf91Reservations .sf91-list{list-style:none;padding:0;display:grid;gap:10px}
+#sf91Reservations .sf91-list li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px}
+#sf91Reservations .sf91-list li>span{flex:1;min-width:120px;overflow-wrap:anywhere}
+#sf91Reservations .sf91-status{margin:10px 0;color:var(--green,#167247);white-space:pre-wrap}
+#sf91Reservations .sf91-status.error{color:var(--danger,#a12d2d)}
+#sf91Reservations .sf91-provisional{padding:12px;border:1px dashed var(--line);border-radius:10px;background:var(--bg,#f5f7fa)}
+#sf91Reservations .sf91-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:18px;padding:14px 0}
+#sf91Reservations .sf91-table{border:2px solid var(--blue);background:var(--card,#fff);color:var(--text);min-height:84px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;overflow-wrap:anywhere;cursor:pointer}
+#sf91Reservations .sf91-table.round{border-radius:50%;aspect-ratio:1;max-width:130px;width:100%;justify-self:center}
+#sf91Reservations .sf91-table.square{aspect-ratio:1;max-width:130px;width:100%;justify-self:center;border-radius:4px}
+#sf91Reservations .sf91-table.rectangle{border-radius:4px}
+#sf91Reservations button:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+#sf91Reservations button{touch-action:manipulation;min-height:44px}
+#sf91Reservations .sf91-table b{font-size:1.15em}
+#sf91Reservations .sf91-canvas{position:relative;width:100%;border:1px solid var(--line);background:var(--bg,#f5f7fa);overflow:auto}
+#sf91Reservations .sf91-canvas .sf91-table{position:absolute;min-height:0;max-width:none;aspect-ratio:auto;padding:2px;font-size:clamp(9px,1.5vw,16px)}
+#sf91Reservations .sf91-properties{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:10px}
+@media(max-width:620px){#sf91Reservations{padding-bottom:80px}#sf91Reservations .sf91-list li>span{flex-basis:100%}#sf91Reservations .sf91-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
