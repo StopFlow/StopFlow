@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+Préparation de la future branche Supabase Pro :
+[stopflow-reservations-test](SUPABASE-TEST-BRANCH.md), avec diagnostic et matrice
+de validation après création. Aucune branche distante créée par ce travail.
+
 **Dernier état :** [analyse du dossier complet reçu](DOSSIER-REPORT.md) et
 [préparation de baseline bloquée](baseline/README.md). `current_role()` et les
 colonnes des 19 tables sont désormais documentées ; la baseline reste incomplète.
