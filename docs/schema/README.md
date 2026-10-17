@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Mission 2.3 :** [snapshot complet reçu, reconstruction diagnostique et NO-GO Supabase PG17](MISSION-2.3.md).
+Le dump et son paquet restent hors Git. Le manque d'export est levé ; l'outillage
+Supabase PG17 et les validations Auth réelles restent bloquants.
+
 **Mission 2.1 :** [proposition de moindre privilège, audit RPC et export unique](MISSION-2.1.md).
 Correctif isolé sous supabase/proposals, jamais appliqué à Supabase ; snapshot
 complet et tests Auth réels toujours nécessaires.
