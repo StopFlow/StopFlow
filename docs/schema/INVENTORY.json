@@ -1,0 +1,2961 @@
+{
+  "formatVersion": 1,
+  "status": "PARTIAL_REPOSITORY_NOT_A_COMPLETE_BASELINE",
+  "method": "Lexical index of current unquoted identifiers; DO/dynamic SQL and function bodies require review; candidate references are not a complete dependency graph.",
+  "migrationOrder": [
+    "supabase/migrations/202608022228_step_033_shared_suppliers.sql",
+    "supabase/migrations/202608022247_step_033_article_purchase_price.sql",
+    "supabase/migrations/20260803_step_034a_order_revision_and_atomic_save.sql",
+    "supabase/migrations/20260804132000_stopflow_050_checklists.sql",
+    "supabase/migrations/20260804135500_stopflow_050_checklist_history_followup.sql",
+    "supabase/migrations/20260805143900_stopflow_060_department_security.sql",
+    "supabase/migrations/20260806060200_stopflow_060_password_reset_audit.sql",
+    "supabase/migrations/20260809000500_stopflow_060_invite_audit.sql",
+    "supabase/migrations/20260809071500_stopflow_060_complete_user_admin_audit.sql",
+    "supabase/migrations/20260809074438_stopflow_070_profile_permissions_foundation.sql",
+    "supabase/migrations/20260809074647_stopflow_070_permission_rls.sql",
+    "supabase/migrations/20260809095500_stopflow_070_user_profile_permissions_rpc.sql",
+    "supabase/migrations/20260809235000_stopflow_070_card_preferences.sql",
+    "supabase/migrations/20260810221000_stopflow_070_temperature_refactor.sql",
+    "supabase/migrations/20260810225500_stopflow_070_temperature_dashboard_rpc.sql",
+    "supabase/migrations/20260825120500_stopflow_080_article_categories_permission_alignment.sql",
+    "supabase/migrations/20260829065738_stopflow_090_harden_security_definer_rpc_access.sql",
+    "supabase/migrations/20260829070049_stopflow_090_revoke_anonymous_data_access.sql",
+    "supabase/migrations/20260829070330_stopflow_090_harden_private_permission_helpers.sql",
+    "supabase/migrations/20261017120000_stopflow_reservations_foundation.sql"
+  ],
+  "active": [
+    {
+      "path": "supabase/migrations/202608022228_step_033_shared_suppliers.sql",
+      "sha256": "3d28389c5e5dd342d03ae5c3f9de88793e0977761f9ea6f1c9949f4b5e0f7263",
+      "statements": [
+        {
+          "line": 4,
+          "kind": "create table",
+          "object": "public.suppliers",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "code text not null unique",
+            "name text not null",
+            "description text not null default ''",
+            "contact_name text not null default ''",
+            "email text not null default ''",
+            "phone text not null default ''",
+            "address text not null default ''",
+            "vat_number text not null default ''",
+            "delivery_notes text not null default ''",
+            "logo_path text not null default ''",
+            "active boolean not null default true",
+            "sort_order integer not null default 0 check (sort_order >= 0)",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "updated_by uuid references auth.users(id) on delete set null",
+            "constraint suppliers_code_not_blank check (btrim(code) <> '')",
+            "constraint suppliers_code_lowercase check (code = lower(code))",
+            "constraint suppliers_code_format check (code ~ '^[a-z0-9][a-z0-9-]*$')",
+            "constraint suppliers_name_not_blank check (btrim(name) <> '')"
+          ]
+        },
+        {
+          "line": 27,
+          "kind": "create unique index",
+          "definition": "create unique index if not exists suppliers_name_lower_idx on public.suppliers (lower(name));"
+        },
+        {
+          "line": 30,
+          "kind": "alter table",
+          "definition": "alter table public.suppliers enable row level security;"
+        },
+        {
+          "line": 32,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_select_active_users on public.suppliers;"
+        },
+        {
+          "line": 33,
+          "kind": "create policy",
+          "definition": "create policy suppliers_select_active_users on public.suppliers for select to authenticated using (private.is_active_user() and (active = true or private.is_admin()));"
+        },
+        {
+          "line": 39,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_insert_admin on public.suppliers;"
+        },
+        {
+          "line": 40,
+          "kind": "create policy",
+          "definition": "create policy suppliers_insert_admin on public.suppliers for insert to authenticated with check (private.is_admin());"
+        },
+        {
+          "line": 46,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_update_admin on public.suppliers;"
+        },
+        {
+          "line": 47,
+          "kind": "create policy",
+          "definition": "create policy suppliers_update_admin on public.suppliers for update to authenticated using (private.is_admin()) with check (private.is_admin());"
+        },
+        {
+          "line": 54,
+          "kind": "grant select",
+          "definition": "grant select, insert, update on public.suppliers to authenticated;"
+        },
+        {
+          "line": 56,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.suppliers"
+        },
+        {
+          "line": 68,
+          "kind": "alter table",
+          "definition": "alter table public.articles add column if not exists supplier_id uuid;"
+        },
+        {
+          "line": 70,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 86,
+          "kind": "update public",
+          "dataMutation": true,
+          "target": "public.articles"
+        },
+        {
+          "line": 93,
+          "kind": "create index",
+          "definition": "create index if not exists articles_supplier_id_idx on public.articles (supplier_id);"
+        },
+        {
+          "line": 95,
+          "kind": "create function",
+          "object": "private.sync_article_supplier",
+          "header": "create or replace function private.sync_article_supplier() returns trigger language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 125,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists articles_sync_supplier on public.articles;"
+        },
+        {
+          "line": 126,
+          "kind": "create trigger",
+          "definition": "create trigger articles_sync_supplier before insert or update of supplier, supplier_id on public.articles for each row execute function private.sync_article_supplier();"
+        },
+        {
+          "line": 130,
+          "kind": "create function",
+          "object": "private.sync_supplier_name_to_articles",
+          "header": "create or replace function private.sync_supplier_name_to_articles() returns trigger language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 144,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists suppliers_set_catalog_audit on public.suppliers;"
+        },
+        {
+          "line": 145,
+          "kind": "create trigger",
+          "definition": "create trigger suppliers_set_catalog_audit before update on public.suppliers for each row execute function private.set_catalog_audit();"
+        },
+        {
+          "line": 149,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists suppliers_sync_article_names on public.suppliers;"
+        },
+        {
+          "line": 150,
+          "kind": "create trigger",
+          "definition": "create trigger suppliers_sync_article_names after update of name on public.suppliers for each row execute function private.sync_supplier_name_to_articles();"
+        },
+        {
+          "line": 154,
+          "kind": "comment on"
+        },
+        {
+          "line": 156,
+          "kind": "comment on"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.articles",
+        "public.suppliers"
+      ],
+      "functionCandidates": [
+        "private.is_active_user",
+        "private.is_admin",
+        "private.set_catalog_audit",
+        "private.sync_article_supplier",
+        "private.sync_supplier_name_to_articles",
+        "public.articles",
+        "public.suppliers"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/202608022247_step_033_article_purchase_price.sql",
+      "sha256": "151e28b88f55e035865c697c70ee0b66ce0943785fc3668cd9178dbfcb98c160",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "alter table",
+          "definition": "alter table public.articles add column if not exists purchase_price numeric(12,2);"
+        },
+        {
+          "line": 6,
+          "kind": "alter table",
+          "definition": "alter table public.articles drop constraint if exists articles_purchase_price_non_negative;"
+        },
+        {
+          "line": 9,
+          "kind": "alter table",
+          "definition": "alter table public.articles add constraint articles_purchase_price_non_negative check (purchase_price is null or purchase_price >= 0);"
+        },
+        {
+          "line": 13,
+          "kind": "comment on"
+        }
+      ],
+      "relationCandidates": [
+        "public.articles"
+      ],
+      "functionCandidates": [],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20260803_step_034a_order_revision_and_atomic_save.sql",
+      "sha256": "021dc909fbe41c144e59c8ca21cc236f241458c7edbcf7cf179b9177c77c78e3",
+      "statements": [
+        {
+          "line": 1,
+          "kind": "alter table",
+          "definition": "alter table public.orders add column if not exists revision bigint not null default 1, add column if not exists last_edited_by uuid references public.profiles(id) on delete set null, add column if not exists last_edited_name text;"
+        },
+        {
+          "line": 6,
+          "kind": "alter table",
+          "definition": "alter table public.orders drop constraint if exists orders_revision_positive;"
+        },
+        {
+          "line": 9,
+          "kind": "alter table",
+          "definition": "alter table public.orders add constraint orders_revision_positive check (revision >= 1);"
+        },
+        {
+          "line": 12,
+          "kind": "create function",
+          "object": "public.save_order_draft_atomic",
+          "header": "create or replace function public.save_order_draft_atomic( p_order_id uuid, p_supplier text, p_author_name text, p_note text, p_stocks jsonb, p_adjustments jsonb, p_inventory_at timestamptz, p_created_at timestamptz, p_expected_revision bigint, p_lines jsonb ) returns public.orders language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 118,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.save_order_draft_atomic(uuid,text,text,text,jsonb,jsonb,timestamptz,timestamptz,bigint,jsonb) from public;"
+        },
+        {
+          "line": 119,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.save_order_draft_atomic(uuid,text,text,text,jsonb,jsonb,timestamptz,timestamptz,bigint,jsonb) to authenticated;"
+        }
+      ],
+      "relationCandidates": [
+        "public.order_lines",
+        "public.orders",
+        "public.profiles"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.is_responsible_or_admin",
+        "public.save_order_draft_atomic"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260804132000_stopflow_050_checklists.sql",
+      "sha256": "903fe3b14126b925a84717430ce2026662f54e52fc542877fa2a6fcbedf12604",
+      "statements": [
+        {
+          "line": 4,
+          "kind": "alter table",
+          "definition": "alter table public.checklist_template_items add column if not exists section_label text not null default '';"
+        },
+        {
+          "line": 7,
+          "kind": "alter table",
+          "definition": "alter table public.checklist_run_items add column if not exists section_label text not null default '';"
+        },
+        {
+          "line": 10,
+          "kind": "create function",
+          "object": "private.current_department",
+          "header": "create or replace function private.current_department() returns text language sql stable security definer set search_path = public, pg_temp"
+        },
+        {
+          "line": 24,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.current_department() from public;"
+        },
+        {
+          "line": 25,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.current_department() to authenticated;"
+        },
+        {
+          "line": 28,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_templates_read on public.checklist_templates;"
+        },
+        {
+          "line": 29,
+          "kind": "create policy",
+          "definition": "create policy checklist_templates_read on public.checklist_templates for select to authenticated using ( private.is_responsible_or_admin() or (active = true and department = private.current_department()) );"
+        },
+        {
+          "line": 38,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_items_read on public.checklist_template_items;"
+        },
+        {
+          "line": 39,
+          "kind": "create policy",
+          "definition": "create policy checklist_items_read on public.checklist_template_items for select to authenticated using ( exists ( select 1 from public.checklist_templates t where t.id = checklist_template_items.template_id and ( private.is_responsible_or_admin() or (t.active = true and t.department = private.current_department()) ) ) );"
+        },
+        {
+          "line": 55,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_runs_insert on public.checklist_runs;"
+        },
+        {
+          "line": 56,
+          "kind": "create policy",
+          "definition": "create policy checklist_runs_insert on public.checklist_runs for insert to authenticated with check ( performed_by = auth.uid() and ( private.is_responsible_or_admin() or department = private.current_department() ) );"
+        },
+        {
+          "line": 68,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_suggestions_insert on public.checklist_suggestions;"
+        },
+        {
+          "line": 69,
+          "kind": "create policy",
+          "definition": "create policy checklist_suggestions_insert on public.checklist_suggestions for insert to authenticated with check ( proposed_by = auth.uid() and ( private.is_responsible_or_admin() or department = private.current_department() ) and exists ( select 1 from public.checklist_templates t where t.id = checklist_suggestions.template_id and t.department = checklist_suggestions.department ) );"
+        },
+        {
+          "line": 89,
+          "kind": "update public",
+          "dataMutation": true,
+          "target": "public.checklist_templates"
+        },
+        {
+          "line": 95,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.checklist_templates"
+        },
+        {
+          "line": 110,
+          "kind": "with source"
+        },
+        {
+          "line": 260,
+          "kind": "create index",
+          "definition": "create index if not exists checklist_templates_department_active_idx on public.checklist_templates(department, active, checklist_type);"
+        },
+        {
+          "line": 263,
+          "kind": "create index",
+          "definition": "create index if not exists checklist_runs_department_status_idx on public.checklist_runs(department, status, started_at desc);"
+        },
+        {
+          "line": 266,
+          "kind": "create index",
+          "definition": "create index if not exists checklist_suggestions_status_idx on public.checklist_suggestions(status, created_at desc);"
+        }
+      ],
+      "relationCandidates": [
+        "public.checklist_run_items",
+        "public.checklist_template_items",
+        "public.checklist_templates",
+        "public.profiles"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.current_department",
+        "private.is_responsible_or_admin",
+        "public.checklist_runs",
+        "public.checklist_suggestions",
+        "public.checklist_templates"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260804135500_stopflow_050_checklist_history_followup.sql",
+      "sha256": "b86e6c9d9c7ea8f1a16fbae8b81440519e3049a0b0b9f19addf8634e3fed1f6b",
+      "statements": [
+        {
+          "line": 4,
+          "kind": "alter table",
+          "definition": "alter table public.checklist_run_items add column if not exists anomaly_status text, add column if not exists anomaly_reported_at timestamptz, add column if not exists resolved_at timestamptz, add column if not exists resolved_by uuid references auth.users(id) on delete set null, add column if not exists resolved_by_name text, add column if not exists resolution_note text not null default '';"
+        },
+        {
+          "line": 12,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 25,
+          "kind": "update public",
+          "dataMutation": true,
+          "target": "public.checklist_run_items"
+        },
+        {
+          "line": 32,
+          "kind": "update public",
+          "dataMutation": true,
+          "target": "public.checklist_run_items"
+        },
+        {
+          "line": 41,
+          "kind": "create index",
+          "definition": "create index if not exists checklist_run_items_anomaly_status_idx on public.checklist_run_items(run_id, anomaly_status) where anomaly = true;"
+        },
+        {
+          "line": 45,
+          "kind": "create function",
+          "object": "public.stopflow_prepare_checklist_anomaly",
+          "header": "create or replace function public.stopflow_prepare_checklist_anomaly() returns trigger language plpgsql security invoker set search_path = public, private, auth"
+        },
+        {
+          "line": 91,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists stopflow_prepare_checklist_anomaly_trigger on public.checklist_run_items;"
+        },
+        {
+          "line": 92,
+          "kind": "create trigger",
+          "definition": "create trigger stopflow_prepare_checklist_anomaly_trigger before insert or update on public.checklist_run_items for each row execute function public.stopflow_prepare_checklist_anomaly();"
+        },
+        {
+          "line": 96,
+          "kind": "create function",
+          "object": "public.resolve_checklist_anomaly",
+          "header": "create or replace function public.resolve_checklist_anomaly( p_item_id uuid, p_resolution_note text default '' ) returns table ( run_id uuid, run_status text, remaining_anomalies bigint ) language plpgsql security definer set search_path = public, private, auth"
+        },
+        {
+          "line": 170,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.resolve_checklist_anomaly(uuid, text) from public;"
+        },
+        {
+          "line": 171,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.resolve_checklist_anomaly(uuid, text) to authenticated;"
+        },
+        {
+          "line": 173,
+          "kind": "comment on"
+        },
+        {
+          "line": 174,
+          "kind": "comment on"
+        },
+        {
+          "line": 175,
+          "kind": "comment on"
+        },
+        {
+          "line": 176,
+          "kind": "comment on"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.checklist_run_items",
+        "public.checklist_runs",
+        "public.profiles"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.is_responsible_or_admin",
+        "public.checklist_run_items",
+        "public.resolve_checklist_anomaly",
+        "public.stopflow_prepare_checklist_anomaly"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260805143900_stopflow_060_department_security.sql",
+      "sha256": "ebf5c4dfd65b1edbdecd85764edf9588d7c10ec6ba6138c4b8e782d84b78b254",
+      "statements": [
+        {
+          "line": 4,
+          "kind": "begin"
+        },
+        {
+          "line": 6,
+          "kind": "create function",
+          "object": "private.is_operational_department",
+          "header": "create or replace function private.is_operational_department(p_department text) returns boolean language sql immutable set search_path to ''"
+        },
+        {
+          "line": 15,
+          "kind": "create function",
+          "object": "private.can_access_department",
+          "header": "create or replace function private.can_access_department(p_department text) returns boolean language sql stable security definer set search_path to ''"
+        },
+        {
+          "line": 30,
+          "kind": "create function",
+          "object": "private.can_access_order",
+          "header": "create or replace function private.can_access_order(p_order_id uuid) returns boolean language sql stable security definer set search_path to ''"
+        },
+        {
+          "line": 45,
+          "kind": "create function",
+          "object": "private.can_edit_order_lines",
+          "header": "create or replace function private.can_edit_order_lines(p_order_id uuid) returns boolean language sql stable security definer set search_path to ''"
+        },
+        {
+          "line": 67,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.is_operational_department(text) from public;"
+        },
+        {
+          "line": 68,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.can_access_department(text) from public;"
+        },
+        {
+          "line": 69,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.can_access_order(uuid) from public;"
+        },
+        {
+          "line": 70,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.can_edit_order_lines(uuid) from public;"
+        },
+        {
+          "line": 71,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.is_operational_department(text) to authenticated;"
+        },
+        {
+          "line": 72,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.can_access_department(text) to authenticated;"
+        },
+        {
+          "line": 73,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.can_access_order(uuid) to authenticated;"
+        },
+        {
+          "line": 74,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.can_edit_order_lines(uuid) to authenticated;"
+        },
+        {
+          "line": 76,
+          "kind": "create function",
+          "object": "private.stopflow_060_apply_article_department",
+          "header": "create or replace function private.stopflow_060_apply_article_department() returns trigger language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 112,
+          "kind": "create function",
+          "object": "private.stopflow_060_apply_order_department",
+          "header": "create or replace function private.stopflow_060_apply_order_department() returns trigger language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 144,
+          "kind": "create function",
+          "object": "private.stopflow_060_cascade_supplier_department",
+          "header": "create or replace function private.stopflow_060_cascade_supplier_department() returns trigger language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 168,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists stopflow_060_article_department on public.articles;"
+        },
+        {
+          "line": 169,
+          "kind": "create trigger",
+          "definition": "create trigger stopflow_060_article_department before insert or update of supplier_id, supplier, department on public.articles for each row execute function private.stopflow_060_apply_article_department();"
+        },
+        {
+          "line": 174,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists stopflow_060_order_department on public.orders;"
+        },
+        {
+          "line": 175,
+          "kind": "create trigger",
+          "definition": "create trigger stopflow_060_order_department before insert or update of supplier, department on public.orders for each row execute function private.stopflow_060_apply_order_department();"
+        },
+        {
+          "line": 180,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists stopflow_060_supplier_department_cascade on public.suppliers;"
+        },
+        {
+          "line": 181,
+          "kind": "create trigger",
+          "definition": "create trigger stopflow_060_supplier_department_cascade after update of name, department on public.suppliers for each row execute function private.stopflow_060_cascade_supplier_department();"
+        },
+        {
+          "line": 186,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 222,
+          "kind": "alter table",
+          "definition": "alter table public.suppliers validate constraint suppliers_department_operational_check;"
+        },
+        {
+          "line": 223,
+          "kind": "alter table",
+          "definition": "alter table public.articles validate constraint articles_department_operational_check;"
+        },
+        {
+          "line": 224,
+          "kind": "alter table",
+          "definition": "alter table public.orders validate constraint orders_department_operational_check;"
+        },
+        {
+          "line": 225,
+          "kind": "alter table",
+          "definition": "alter table public.profiles validate constraint profiles_department_known_check;"
+        },
+        {
+          "line": 227,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_select_active_users on public.suppliers;"
+        },
+        {
+          "line": 228,
+          "kind": "create policy",
+          "definition": "create policy suppliers_select_active_users on public.suppliers for select to authenticated using ( private.can_access_department(department) and (active = true or private.is_admin()) );"
+        },
+        {
+          "line": 237,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_insert_admin on public.suppliers;"
+        },
+        {
+          "line": 238,
+          "kind": "create policy",
+          "definition": "create policy suppliers_insert_admin on public.suppliers for insert to authenticated with check ( private.is_admin() and private.is_operational_department(department) );"
+        },
+        {
+          "line": 247,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_update_admin on public.suppliers;"
+        },
+        {
+          "line": 248,
+          "kind": "create policy",
+          "definition": "create policy suppliers_update_admin on public.suppliers for update to authenticated using (private.is_admin()) with check ( private.is_admin() and private.is_operational_department(department) );"
+        },
+        {
+          "line": 258,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_select_active_users on public.articles;"
+        },
+        {
+          "line": 259,
+          "kind": "create policy",
+          "definition": "create policy articles_select_active_users on public.articles for select to authenticated using ( private.can_access_department(department) and (active = true or private.is_responsible_or_admin()) );"
+        },
+        {
+          "line": 268,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_insert_responsible on public.articles;"
+        },
+        {
+          "line": 269,
+          "kind": "create policy",
+          "definition": "create policy articles_insert_responsible on public.articles for insert to authenticated with check ( private.is_responsible_or_admin() and private.is_operational_department(department) );"
+        },
+        {
+          "line": 278,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_update_responsible on public.articles;"
+        },
+        {
+          "line": 279,
+          "kind": "create policy",
+          "definition": "create policy articles_update_responsible on public.articles for update to authenticated using (private.is_responsible_or_admin()) with check ( private.is_responsible_or_admin() and private.is_operational_department(department) );"
+        },
+        {
+          "line": 289,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_select_active on public.orders;"
+        },
+        {
+          "line": 290,
+          "kind": "create policy",
+          "definition": "create policy orders_select_active on public.orders for select to authenticated using (private.can_access_department(department));"
+        },
+        {
+          "line": 296,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_insert_own_draft on public.orders;"
+        },
+        {
+          "line": 297,
+          "kind": "create policy",
+          "definition": "create policy orders_insert_own_draft on public.orders for insert to authenticated with check ( private.is_active_user() and author_id = auth.uid() and status = 'Brouillon' and number is null and validator_id is null and validator_name is null and validated_at is null and private.can_access_department(department) );"
+        },
+        {
+          "line": 312,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_update_own_draft on public.orders;"
+        },
+        {
+          "line": 313,
+          "kind": "create policy",
+          "definition": "create policy orders_update_own_draft on public.orders for update to authenticated using ( private.is_active_user() and author_id = auth.uid() and status = 'Brouillon' and private.can_access_department(department) ) with check ( author_id = auth.uid() and status = 'Brouillon' and number is null and validator_id is null and validator_name is null and validated_at is null and private.can_access_department(department) );"
+        },
+        {
+          "line": 333,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_update_manager on public.orders;"
+        },
+        {
+          "line": 334,
+          "kind": "create policy",
+          "definition": "create policy orders_update_manager on public.orders for update to authenticated using (private.is_responsible_or_admin()) with check ( private.is_responsible_or_admin() and private.is_operational_department(department) );"
+        },
+        {
+          "line": 344,
+          "kind": "drop policy",
+          "definition": "drop policy if exists order_lines_select_active on public.order_lines;"
+        },
+        {
+          "line": 345,
+          "kind": "create policy",
+          "definition": "create policy order_lines_select_active on public.order_lines for select to authenticated using (private.can_access_order(order_id));"
+        },
+        {
+          "line": 351,
+          "kind": "create function",
+          "object": "public.save_order_draft_atomic",
+          "header": "create or replace function public.save_order_draft_atomic( p_order_id uuid, p_supplier text, p_author_name text, p_note text, p_stocks jsonb, p_adjustments jsonb, p_inventory_at timestamptz, p_created_at timestamptz, p_expected_revision bigint, p_lines jsonb ) returns public.orders language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 534,
+          "kind": "create function",
+          "object": "private.submit_order_impl",
+          "header": "create or replace function private.submit_order_impl(p_order_id uuid) returns public.orders language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 567,
+          "kind": "comment on"
+        },
+        {
+          "line": 570,
+          "kind": "comment on"
+        },
+        {
+          "line": 573,
+          "kind": "commit"
+        }
+      ],
+      "relationCandidates": [
+        "public.articles",
+        "public.order_lines",
+        "public.orders",
+        "public.profiles",
+        "public.suppliers"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.can_access_department",
+        "private.can_access_order",
+        "private.can_edit_order_lines",
+        "private.current_department",
+        "private.is_active_user",
+        "private.is_admin",
+        "private.is_operational_department",
+        "private.is_responsible_or_admin",
+        "private.stopflow_060_apply_article_department",
+        "private.stopflow_060_apply_order_department",
+        "private.stopflow_060_cascade_supplier_department",
+        "private.submit_order_impl",
+        "public.save_order_draft_atomic"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260806060200_stopflow_060_password_reset_audit.sql",
+      "sha256": "ec93d141b8f6ccb050eef31c0f9539906c45a61c11a390320c26ccc19892d0c9",
+      "statements": [
+        {
+          "line": 2,
+          "kind": "begin"
+        },
+        {
+          "line": 4,
+          "kind": "alter table",
+          "definition": "alter table public.user_admin_events drop constraint if exists user_admin_events_action_check;"
+        },
+        {
+          "line": 7,
+          "kind": "alter table",
+          "definition": "alter table public.user_admin_events add constraint user_admin_events_action_check check (action in ('create','update','activate','deactivate','delete','reset_password'));"
+        },
+        {
+          "line": 11,
+          "kind": "commit"
+        }
+      ],
+      "relationCandidates": [
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20260809000500_stopflow_060_invite_audit.sql",
+      "sha256": "df90c4fc53cf6ed93ca167494f9697ff667003b5f9b11f7e074cf00043f3e6de",
+      "statements": [
+        {
+          "line": 1,
+          "kind": "alter table",
+          "definition": "alter table public.user_admin_events drop constraint if exists user_admin_events_action_check;"
+        },
+        {
+          "line": 4,
+          "kind": "alter table",
+          "definition": "alter table public.user_admin_events add constraint user_admin_events_action_check check ( action = any ( array[ 'create'::text, 'update'::text, 'activate'::text, 'deactivate'::text, 'delete'::text, 'reset_password'::text, 'invite'::text ] ) );"
+        }
+      ],
+      "relationCandidates": [
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20260809071500_stopflow_060_complete_user_admin_audit.sql",
+      "sha256": "0a04f78ec7e7e57b3d4ea7c7d9a50c761212c27c9875d6be9a02f48f3733f788",
+      "statements": [
+        {
+          "line": 1,
+          "kind": "create function",
+          "object": "public.admin_set_user_access",
+          "header": "create or replace function public.admin_set_user_access( p_profile_id uuid, p_prenom text, p_nom text, p_role text, p_actif boolean, p_primary_department text, p_departments text[] ) returns public.profiles language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 132,
+          "kind": "create function",
+          "object": "private.stopflow_060_audit_profile_delete",
+          "header": "create or replace function private.stopflow_060_audit_profile_delete() returns trigger language plpgsql security definer set search_path to ''"
+        },
+        {
+          "line": 169,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists stopflow_060_audit_profile_delete on public.profiles;"
+        },
+        {
+          "line": 170,
+          "kind": "create trigger",
+          "definition": "create trigger stopflow_060_audit_profile_delete after delete on public.profiles for each row execute function private.stopflow_060_audit_profile_delete();"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.deleted_user_identities",
+        "public.profile_departments",
+        "public.profiles",
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.is_admin",
+        "private.is_operational_department",
+        "private.stopflow_060_audit_profile_delete",
+        "public.admin_set_user_access"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260809074438_stopflow_070_profile_permissions_foundation.sql",
+      "sha256": "c4be9af5cbf4371ceb83c22dfdb493be25e43f466162764a3dad5f5ebce1f39c",
+      "statements": [
+        {
+          "line": 1,
+          "kind": "create table",
+          "object": "public.profile_permissions",
+          "columnsAndConstraints": [
+            "profile_id uuid not null references public.profiles(id) on delete cascade",
+            "permission_key text not null",
+            "scope text not null",
+            "created_at timestamptz not null default now()",
+            "created_by uuid null references auth.users(id) on delete set null",
+            "constraint profile_permissions_pkey primary key (profile_id, permission_key, scope)",
+            "constraint profile_permissions_scope_check check (scope in ('global','cuisine','salle','nettoyage'))",
+            "constraint profile_permissions_key_scope_check check ( (permission_key in ('ideas.share','banners.manage','settings.manage') and scope='global') or (permission_key in ('temperatures.use','lunchs.view','lunchs.manage','monthly_suggestions.view','monthly_suggestions.manage') and scope='cuisine') or (permission_key in ('inventory.use','history.view','checklists.run','orders.manage','checklists.review','checklists.templates.manage','alerts.view','suppliers.manage','articles.manage') and scope in ('cuisine','salle','nettoyage')) )"
+          ]
+        },
+        {
+          "line": 18,
+          "kind": "create index",
+          "definition": "create index if not exists profile_permissions_key_scope_idx on public.profile_permissions(permission_key, scope, profile_id);"
+        },
+        {
+          "line": 21,
+          "kind": "alter table",
+          "definition": "alter table public.profile_permissions enable row level security;"
+        },
+        {
+          "line": 23,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_permissions_read on public.profile_permissions;"
+        },
+        {
+          "line": 24,
+          "kind": "create policy",
+          "definition": "create policy profile_permissions_read on public.profile_permissions for select to authenticated using (profile_id=auth.uid() or private.is_admin());"
+        },
+        {
+          "line": 28,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_permissions_manage on public.profile_permissions;"
+        },
+        {
+          "line": 29,
+          "kind": "create policy",
+          "definition": "create policy profile_permissions_manage on public.profile_permissions for all to authenticated using (private.is_admin()) with check (private.is_admin());"
+        },
+        {
+          "line": 34,
+          "kind": "create function",
+          "object": "private.is_known_permission_key",
+          "header": "create or replace function private.is_known_permission_key(p_permission_key text) returns boolean language sql immutable set search_path=''"
+        },
+        {
+          "line": 48,
+          "kind": "create function",
+          "object": "private.is_valid_permission_scope",
+          "header": "create or replace function private.is_valid_permission_scope(p_permission_key text,p_scope text) returns boolean language sql immutable set search_path=''"
+        },
+        {
+          "line": 62,
+          "kind": "create function",
+          "object": "private.has_permission_for_user",
+          "header": "create or replace function private.has_permission_for_user(p_user_id uuid,p_permission_key text,p_scope text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 83,
+          "kind": "create function",
+          "object": "private.has_permission",
+          "header": "create or replace function private.has_permission(p_permission_key text,p_scope text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 93,
+          "kind": "create function",
+          "object": "private.has_any_permission",
+          "header": "create or replace function private.has_any_permission(p_permission_key text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 111,
+          "kind": "create function",
+          "object": "private.has_any_scope_permission",
+          "header": "create or replace function private.has_any_scope_permission(p_scope text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 129,
+          "kind": "create function",
+          "object": "private.can_access_department",
+          "header": "create or replace function private.can_access_department(p_department text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 148,
+          "kind": "create function",
+          "object": "public.admin_set_profile_permissions",
+          "header": "create or replace function public.admin_set_profile_permissions(p_profile_id uuid,p_permissions jsonb) returns jsonb language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 181,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.admin_set_profile_permissions(uuid,jsonb) from public;"
+        },
+        {
+          "line": 182,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.admin_set_profile_permissions(uuid,jsonb) to authenticated;"
+        },
+        {
+          "line": 184,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 189,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 197,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 205,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 216,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 226,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.profile_departments",
+        "public.profile_permissions",
+        "public.profiles",
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.can_access_department",
+        "private.has_any_permission",
+        "private.has_any_scope_permission",
+        "private.has_permission",
+        "private.has_permission_for_user",
+        "private.is_active_user",
+        "private.is_admin",
+        "private.is_known_permission_key",
+        "private.is_operational_department",
+        "private.is_valid_permission_scope",
+        "private.user_has_department",
+        "public.admin_set_profile_permissions",
+        "public.profile_permissions"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260809074647_stopflow_070_permission_rls.sql",
+      "sha256": "8ba299fed9ebd4d8fb11da2aad1d59e03498d3b1237bbaa834c4051a9a143ce3",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "create function",
+          "object": "private.can_read_catalog_department",
+          "header": "create or replace function private.can_read_catalog_department(p_department text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 12,
+          "kind": "create function",
+          "object": "private.can_access_order",
+          "header": "create or replace function private.can_access_order(p_order_id uuid) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 26,
+          "kind": "create function",
+          "object": "private.can_edit_order_lines",
+          "header": "create or replace function private.can_edit_order_lines(p_order_id uuid) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 39,
+          "kind": "create function",
+          "object": "private.can_read_checklist_run",
+          "header": "create or replace function private.can_read_checklist_run(p_run_id uuid) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 53,
+          "kind": "create function",
+          "object": "private.can_write_checklist_run",
+          "header": "create or replace function private.can_write_checklist_run(p_run_id uuid) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 66,
+          "kind": "create function",
+          "object": "private.can_read_department_content",
+          "header": "create or replace function private.can_read_department_content(p_department text,p_content_type text,p_active boolean) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 81,
+          "kind": "create function",
+          "object": "private.can_manage_department_content",
+          "header": "create or replace function private.can_manage_department_content(p_department text,p_content_type text) returns boolean language sql stable security definer set search_path=''"
+        },
+        {
+          "line": 92,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_select_active_users on public.suppliers;"
+        },
+        {
+          "line": 93,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_insert_admin on public.suppliers;"
+        },
+        {
+          "line": 94,
+          "kind": "drop policy",
+          "definition": "drop policy if exists suppliers_update_admin on public.suppliers;"
+        },
+        {
+          "line": 95,
+          "kind": "create policy",
+          "definition": "create policy suppliers_select_permissions on public.suppliers for select to authenticated using ( private.can_read_catalog_department(department) and (active=true or private.has_permission('suppliers.manage',department) or private.has_permission('articles.manage',department)) );"
+        },
+        {
+          "line": 100,
+          "kind": "create policy",
+          "definition": "create policy suppliers_insert_permissions on public.suppliers for insert to authenticated with check (private.has_permission('suppliers.manage',department) and private.is_operational_department(department));"
+        },
+        {
+          "line": 102,
+          "kind": "create policy",
+          "definition": "create policy suppliers_update_permissions on public.suppliers for update to authenticated using (private.has_permission('suppliers.manage',department)) with check (private.has_permission('suppliers.manage',department) and private.is_operational_department(department));"
+        },
+        {
+          "line": 107,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_select_active_users on public.articles;"
+        },
+        {
+          "line": 108,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_insert_responsible on public.articles;"
+        },
+        {
+          "line": 109,
+          "kind": "drop policy",
+          "definition": "drop policy if exists articles_update_responsible on public.articles;"
+        },
+        {
+          "line": 110,
+          "kind": "create policy",
+          "definition": "create policy articles_select_permissions on public.articles for select to authenticated using ( private.can_read_catalog_department(department) and (active=true or private.has_permission('articles.manage',department)) );"
+        },
+        {
+          "line": 115,
+          "kind": "create policy",
+          "definition": "create policy articles_insert_permissions on public.articles for insert to authenticated with check (private.has_permission('articles.manage',department) and private.is_operational_department(department));"
+        },
+        {
+          "line": 117,
+          "kind": "create policy",
+          "definition": "create policy articles_update_permissions on public.articles for update to authenticated using (private.has_permission('articles.manage',department)) with check (private.has_permission('articles.manage',department) and private.is_operational_department(department));"
+        },
+        {
+          "line": 122,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_select_active on public.orders;"
+        },
+        {
+          "line": 123,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_insert_own_draft on public.orders;"
+        },
+        {
+          "line": 124,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_update_manager on public.orders;"
+        },
+        {
+          "line": 125,
+          "kind": "drop policy",
+          "definition": "drop policy if exists orders_update_own_draft on public.orders;"
+        },
+        {
+          "line": 126,
+          "kind": "create policy",
+          "definition": "create policy orders_select_permissions on public.orders for select to authenticated using ( private.has_permission('history.view',department) or private.has_permission('orders.manage',department) or (author_id=auth.uid() and private.has_permission('inventory.use',department)) );"
+        },
+        {
+          "line": 132,
+          "kind": "create policy",
+          "definition": "create policy orders_insert_inventory on public.orders for insert to authenticated with check ( private.is_active_user() and author_id=auth.uid() and status='Brouillon' and number is null and validator_id is null and validator_name is null and validated_at is null and private.has_permission('inventory.use',department) );"
+        },
+        {
+          "line": 138,
+          "kind": "create policy",
+          "definition": "create policy orders_update_own_inventory_draft on public.orders for update to authenticated using (author_id=auth.uid() and status='Brouillon' and private.has_permission('inventory.use',department)) with check ( author_id=auth.uid() and status='Brouillon' and number is null and validator_id is null and validator_name is null and validated_at is null and private.has_permission('inventory.use',department) );"
+        },
+        {
+          "line": 145,
+          "kind": "create policy",
+          "definition": "create policy orders_update_management on public.orders for update to authenticated using (private.has_permission('orders.manage',department)) with check (private.has_permission('orders.manage',department) and private.is_operational_department(department));"
+        },
+        {
+          "line": 150,
+          "kind": "drop policy",
+          "definition": "drop policy if exists order_lines_select_active on public.order_lines;"
+        },
+        {
+          "line": 151,
+          "kind": "drop policy",
+          "definition": "drop policy if exists order_lines_insert_editable_order on public.order_lines;"
+        },
+        {
+          "line": 152,
+          "kind": "drop policy",
+          "definition": "drop policy if exists order_lines_update_editable_order on public.order_lines;"
+        },
+        {
+          "line": 153,
+          "kind": "drop policy",
+          "definition": "drop policy if exists order_lines_delete_editable_order on public.order_lines;"
+        },
+        {
+          "line": 154,
+          "kind": "create policy",
+          "definition": "create policy order_lines_select_permissions on public.order_lines for select to authenticated using (private.can_access_order(order_id));"
+        },
+        {
+          "line": 156,
+          "kind": "create policy",
+          "definition": "create policy order_lines_insert_permissions on public.order_lines for insert to authenticated with check (private.can_edit_order_lines(order_id));"
+        },
+        {
+          "line": 158,
+          "kind": "create policy",
+          "definition": "create policy order_lines_update_permissions on public.order_lines for update to authenticated using (private.can_edit_order_lines(order_id)) with check (private.can_edit_order_lines(order_id));"
+        },
+        {
+          "line": 160,
+          "kind": "create policy",
+          "definition": "create policy order_lines_delete_permissions on public.order_lines for delete to authenticated using (private.can_edit_order_lines(order_id));"
+        },
+        {
+          "line": 164,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_templates_read on public.checklist_templates;"
+        },
+        {
+          "line": 165,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_templates_manage on public.checklist_templates;"
+        },
+        {
+          "line": 166,
+          "kind": "create policy",
+          "definition": "create policy checklist_templates_read_permissions on public.checklist_templates for select to authenticated using ( (active=true and private.has_permission('checklists.run',department)) or private.has_permission('checklists.review',department) or private.has_permission('checklists.templates.manage',department) or private.has_permission('alerts.view',department) );"
+        },
+        {
+          "line": 173,
+          "kind": "create policy",
+          "definition": "create policy checklist_templates_manage_permissions on public.checklist_templates for all to authenticated using (private.has_permission('checklists.templates.manage',department)) with check (private.has_permission('checklists.templates.manage',department));"
+        },
+        {
+          "line": 178,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_items_read on public.checklist_template_items;"
+        },
+        {
+          "line": 179,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_items_manage on public.checklist_template_items;"
+        },
+        {
+          "line": 180,
+          "kind": "create policy",
+          "definition": "create policy checklist_items_read_permissions on public.checklist_template_items for select to authenticated using (exists( select 1 from public.checklist_templates t where t.id=checklist_template_items.template_id and ( (t.active=true and private.has_permission('checklists.run',t.department)) or private.has_permission('checklists.review',t.department) or private.has_permission('checklists.templates.manage',t.department) or private.has_permission('alerts.view',t.department) ) ));"
+        },
+        {
+          "line": 191,
+          "kind": "create policy",
+          "definition": "create policy checklist_items_manage_permissions on public.checklist_template_items for all to authenticated using (exists(select 1 from public.checklist_templates t where t.id=checklist_template_items.template_id and private.has_permission('checklists.templates.manage',t.department))) with check (exists(select 1 from public.checklist_templates t where t.id=checklist_template_items.template_id and private.has_permission('checklists.templates.manage',t.department)));"
+        },
+        {
+          "line": 196,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_runs_insert on public.checklist_runs;"
+        },
+        {
+          "line": 197,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_runs_read on public.checklist_runs;"
+        },
+        {
+          "line": 198,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_runs_update on public.checklist_runs;"
+        },
+        {
+          "line": 199,
+          "kind": "create policy",
+          "definition": "create policy checklist_runs_insert_permissions on public.checklist_runs for insert to authenticated with check (performed_by=auth.uid() and private.has_permission('checklists.run',department));"
+        },
+        {
+          "line": 201,
+          "kind": "create policy",
+          "definition": "create policy checklist_runs_read_permissions on public.checklist_runs for select to authenticated using ( private.has_permission('checklists.review',department) or private.has_permission('alerts.view',department) or (performed_by=auth.uid() and private.has_permission('checklists.run',department)) );"
+        },
+        {
+          "line": 207,
+          "kind": "create policy",
+          "definition": "create policy checklist_runs_update_permissions on public.checklist_runs for update to authenticated using ( private.has_permission('checklists.review',department) or (performed_by=auth.uid() and private.has_permission('checklists.run',department)) ) with check ( private.has_permission('checklists.review',department) or (performed_by=auth.uid() and private.has_permission('checklists.run',department)) );"
+        },
+        {
+          "line": 218,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_run_items_read on public.checklist_run_items;"
+        },
+        {
+          "line": 219,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_run_items_write on public.checklist_run_items;"
+        },
+        {
+          "line": 220,
+          "kind": "create policy",
+          "definition": "create policy checklist_run_items_read_permissions on public.checklist_run_items for select to authenticated using (private.can_read_checklist_run(run_id));"
+        },
+        {
+          "line": 222,
+          "kind": "create policy",
+          "definition": "create policy checklist_run_items_write_permissions on public.checklist_run_items for all to authenticated using (private.can_write_checklist_run(run_id)) with check (private.can_write_checklist_run(run_id));"
+        },
+        {
+          "line": 227,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_suggestions_insert on public.checklist_suggestions;"
+        },
+        {
+          "line": 228,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_suggestions_read on public.checklist_suggestions;"
+        },
+        {
+          "line": 229,
+          "kind": "drop policy",
+          "definition": "drop policy if exists checklist_suggestions_update on public.checklist_suggestions;"
+        },
+        {
+          "line": 230,
+          "kind": "create policy",
+          "definition": "create policy checklist_suggestions_insert_permissions on public.checklist_suggestions for insert to authenticated with check ( proposed_by=auth.uid() and private.has_permission('checklists.run',department) and exists(select 1 from public.checklist_templates t where t.id=template_id and t.department=checklist_suggestions.department) );"
+        },
+        {
+          "line": 235,
+          "kind": "create policy",
+          "definition": "create policy checklist_suggestions_read_permissions on public.checklist_suggestions for select to authenticated using (proposed_by=auth.uid() or private.has_permission('checklists.templates.manage',department));"
+        },
+        {
+          "line": 237,
+          "kind": "create policy",
+          "definition": "create policy checklist_suggestions_update_permissions on public.checklist_suggestions for update to authenticated using (private.has_permission('checklists.templates.manage',department)) with check (private.has_permission('checklists.templates.manage',department));"
+        },
+        {
+          "line": 242,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_read on public.temperature_readings;"
+        },
+        {
+          "line": 243,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_insert on public.temperature_readings;"
+        },
+        {
+          "line": 244,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_manage on public.temperature_readings;"
+        },
+        {
+          "line": 245,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_delete on public.temperature_readings;"
+        },
+        {
+          "line": 246,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_read_permissions on public.temperature_readings for select to authenticated using (private.has_permission('temperatures.use',department) or private.has_permission('alerts.view',department));"
+        },
+        {
+          "line": 248,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_insert_permissions on public.temperature_readings for insert to authenticated with check (recorded_by=auth.uid() and private.has_permission('temperatures.use',department));"
+        },
+        {
+          "line": 250,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_update_admin on public.temperature_readings for update to authenticated using (private.is_admin()) with check (private.is_admin());"
+        },
+        {
+          "line": 252,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_delete_admin on public.temperature_readings for delete to authenticated using (private.is_admin());"
+        },
+        {
+          "line": 256,
+          "kind": "drop policy",
+          "definition": "drop policy if exists department_content_read on public.department_content;"
+        },
+        {
+          "line": 257,
+          "kind": "drop policy",
+          "definition": "drop policy if exists department_content_manage on public.department_content;"
+        },
+        {
+          "line": 258,
+          "kind": "create policy",
+          "definition": "create policy department_content_read_permissions on public.department_content for select to authenticated using (private.can_read_department_content(department,content_type,active));"
+        },
+        {
+          "line": 260,
+          "kind": "create policy",
+          "definition": "create policy department_content_manage_permissions on public.department_content for all to authenticated using (private.can_manage_department_content(department,content_type)) with check (private.can_manage_department_content(department,content_type));"
+        },
+        {
+          "line": 265,
+          "kind": "drop policy",
+          "definition": "drop policy if exists team_banners_read on public.team_banners;"
+        },
+        {
+          "line": 266,
+          "kind": "drop policy",
+          "definition": "drop policy if exists team_banners_manage on public.team_banners;"
+        },
+        {
+          "line": 267,
+          "kind": "create policy",
+          "definition": "create policy team_banners_read_permissions on public.team_banners for select to authenticated using ( private.is_active_user() and (audience='all' or private.has_any_scope_permission(audience)) );"
+        },
+        {
+          "line": 272,
+          "kind": "create policy",
+          "definition": "create policy team_banners_manage_permissions on public.team_banners for all to authenticated using (private.has_permission('banners.manage','global')) with check (private.has_permission('banners.manage','global'));"
+        },
+        {
+          "line": 277,
+          "kind": "drop policy",
+          "definition": "drop policy if exists app_settings_update_responsible on public.app_settings;"
+        },
+        {
+          "line": 278,
+          "kind": "create policy",
+          "definition": "create policy app_settings_update_permissions on public.app_settings for update to authenticated using (private.has_permission('settings.manage','global')) with check (private.has_permission('settings.manage','global'));"
+        },
+        {
+          "line": 282,
+          "kind": "drop policy",
+          "definition": "drop policy if exists activity_events_read_managers on public.activity_events;"
+        },
+        {
+          "line": 283,
+          "kind": "create policy",
+          "definition": "create policy activity_events_read_permissions on public.activity_events for select to authenticated using (private.is_admin() or private.has_any_permission('orders.manage'));"
+        },
+        {
+          "line": 287,
+          "kind": "create function",
+          "object": "private.submit_order_impl",
+          "header": "create or replace function private.submit_order_impl(p_order_id uuid) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 305,
+          "kind": "create function",
+          "object": "private.validate_order_impl",
+          "header": "create or replace function private.validate_order_impl(p_order_id uuid) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 323,
+          "kind": "create function",
+          "object": "private.mark_ordered_impl",
+          "header": "create or replace function private.mark_ordered_impl(p_order_id uuid) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 337,
+          "kind": "create function",
+          "object": "private.cancel_order_impl",
+          "header": "create or replace function private.cancel_order_impl(p_order_id uuid) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 351,
+          "kind": "create function",
+          "object": "public.mark_order_sent",
+          "header": "create or replace function public.mark_order_sent(p_order_id uuid,p_supplier_email text default null,p_estimated_total numeric default null) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 365,
+          "kind": "create function",
+          "object": "public.mark_order_delivered",
+          "header": "create or replace function public.mark_order_delivered(p_order_id uuid,p_note text default null) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 379,
+          "kind": "create function",
+          "object": "public.resolve_checklist_anomaly",
+          "header": "create or replace function public.resolve_checklist_anomaly(p_item_id uuid,p_resolution_note text default '') returns table(run_id uuid,run_status text,remaining_anomalies bigint) language plpgsql security definer set search_path='public','private','auth'"
+        },
+        {
+          "line": 402,
+          "kind": "create function",
+          "object": "public.save_order_draft_atomic",
+          "header": "create or replace function public.save_order_draft_atomic( p_order_id uuid,p_supplier text,p_author_name text,p_note text,p_stocks jsonb,p_adjustments jsonb, p_inventory_at timestamptz,p_created_at timestamptz,p_expected_revision bigint,p_lines jsonb ) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 444,
+          "kind": "create function",
+          "object": "public.save_order_draft_atomic_v054",
+          "header": "create or replace function public.save_order_draft_atomic_v054( p_order_id uuid,p_supplier text,p_department text,p_author_name text,p_note text,p_stocks jsonb,p_adjustments jsonb, p_inventory_at timestamptz,p_created_at timestamptz,p_expected_revision bigint,p_lines jsonb ) returns public.orders language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 461,
+          "kind": "create function",
+          "object": "private.sync_legacy_profile_permissions",
+          "header": "create or replace function private.sync_legacy_profile_permissions(p_profile_id uuid) returns void language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 498,
+          "kind": "create function",
+          "object": "public.admin_set_user_access",
+          "header": "create or replace function public.admin_set_user_access(p_profile_id uuid,p_prenom text,p_nom text,p_role text,p_actif boolean,p_primary_department text,p_departments text[]) returns public.profiles language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 535,
+          "kind": "revoke insert",
+          "definition": "revoke insert,update,delete on public.profile_permissions from authenticated,anon;"
+        },
+        {
+          "line": 536,
+          "kind": "grant select",
+          "definition": "grant select on public.profile_permissions to authenticated;"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.activity_events",
+        "public.articles",
+        "public.checklist_run_items",
+        "public.checklist_runs",
+        "public.checklist_templates",
+        "public.order_lines",
+        "public.orders",
+        "public.profile_departments",
+        "public.profile_permissions",
+        "public.profiles",
+        "public.suppliers",
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.can_access_order",
+        "private.can_edit_order_lines",
+        "private.can_manage_department_content",
+        "private.can_read_catalog_department",
+        "private.can_read_checklist_run",
+        "private.can_read_department_content",
+        "private.can_write_checklist_run",
+        "private.cancel_order_impl",
+        "private.has_any_permission",
+        "private.has_any_scope_permission",
+        "private.has_permission",
+        "private.is_active_user",
+        "private.is_admin",
+        "private.is_operational_department",
+        "private.mark_ordered_impl",
+        "private.submit_order_impl",
+        "private.sync_legacy_profile_permissions",
+        "private.validate_order_impl",
+        "public.admin_set_user_access",
+        "public.mark_order_delivered",
+        "public.mark_order_sent",
+        "public.resolve_checklist_anomaly",
+        "public.save_order_draft_atomic",
+        "public.save_order_draft_atomic_v054"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260809095500_stopflow_070_user_profile_permissions_rpc.sql",
+      "sha256": "89b96c229470c77aa8e561bce8b38e30c775030f958e69cb0791f83e64a84417",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "create function",
+          "object": "public.admin_set_user_profile_permissions_070",
+          "header": "create or replace function public.admin_set_user_profile_permissions_070( p_profile_id uuid, p_prenom text, p_nom text, p_role text, p_actif boolean, p_permissions jsonb, p_audit_action text default 'update' ) returns jsonb language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 155,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) from public;"
+        },
+        {
+          "line": 156,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) to authenticated;"
+        }
+      ],
+      "relationCandidates": [
+        "public.profile_departments",
+        "public.profile_permissions",
+        "public.profiles",
+        "public.user_admin_events"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.is_admin",
+        "public.admin_set_user_profile_permissions_070"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260809235000_stopflow_070_card_preferences.sql",
+      "sha256": "02eb6f00c17d3a1463e438c301680be86dca778b565f6b37e52f6df9b4ebae08",
+      "statements": [
+        {
+          "line": 1,
+          "kind": "create table",
+          "object": "public.profile_card_preferences",
+          "columnsAndConstraints": [
+            "profile_id uuid not null references public.profiles(id) on delete cascade",
+            "zone text not null check (zone in ('home','cuisine','salle','nettoyage','general'))",
+            "card_key text not null check (char_length(card_key) between 1 and 120)",
+            "position integer not null default 0 check (position >= 0)",
+            "hidden boolean not null default false",
+            "settings jsonb not null default '{}'::jsonb",
+            "updated_at timestamptz not null default now()",
+            "primary key (profile_id, zone, card_key)"
+          ]
+        },
+        {
+          "line": 12,
+          "kind": "create index",
+          "definition": "create index if not exists profile_card_preferences_profile_zone_idx on public.profile_card_preferences(profile_id, zone, position, card_key);"
+        },
+        {
+          "line": 15,
+          "kind": "alter table",
+          "definition": "alter table public.profile_card_preferences enable row level security;"
+        },
+        {
+          "line": 17,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_card_preferences_select_own on public.profile_card_preferences;"
+        },
+        {
+          "line": 18,
+          "kind": "create policy",
+          "definition": "create policy profile_card_preferences_select_own on public.profile_card_preferences for select to authenticated using (profile_id = auth.uid());"
+        },
+        {
+          "line": 24,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_card_preferences_insert_own on public.profile_card_preferences;"
+        },
+        {
+          "line": 25,
+          "kind": "create policy",
+          "definition": "create policy profile_card_preferences_insert_own on public.profile_card_preferences for insert to authenticated with check (profile_id = auth.uid());"
+        },
+        {
+          "line": 31,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_card_preferences_update_own on public.profile_card_preferences;"
+        },
+        {
+          "line": 32,
+          "kind": "create policy",
+          "definition": "create policy profile_card_preferences_update_own on public.profile_card_preferences for update to authenticated using (profile_id = auth.uid()) with check (profile_id = auth.uid());"
+        },
+        {
+          "line": 39,
+          "kind": "drop policy",
+          "definition": "drop policy if exists profile_card_preferences_delete_own on public.profile_card_preferences;"
+        },
+        {
+          "line": 40,
+          "kind": "create policy",
+          "definition": "create policy profile_card_preferences_delete_own on public.profile_card_preferences for delete to authenticated using (profile_id = auth.uid());"
+        },
+        {
+          "line": 46,
+          "kind": "grant select",
+          "definition": "grant select, insert, update, delete on public.profile_card_preferences to authenticated;"
+        },
+        {
+          "line": 48,
+          "kind": "comment on"
+        },
+        {
+          "line": 49,
+          "kind": "comment on"
+        }
+      ],
+      "relationCandidates": [
+        "public.profile_card_preferences",
+        "public.profiles"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "public.profile_card_preferences"
+      ],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20260810221000_stopflow_070_temperature_refactor.sql",
+      "sha256": "8f850ef070f729d3bc483329a3209faf8c06db9535f97229e47ddbc6f5cf2fe8",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "alter table",
+          "definition": "alter table public.profile_permissions drop constraint if exists profile_permissions_key_scope_check;"
+        },
+        {
+          "line": 4,
+          "kind": "alter table",
+          "definition": "alter table public.profile_permissions add constraint profile_permissions_key_scope_check check ( (permission_key in ('ideas.share','banners.manage','settings.manage') and scope='global') or (permission_key in ('temperatures.use','temperatures.readings.use','temperatures.equipment.manage','lunchs.view','lunchs.manage','monthly_suggestions.view','monthly_suggestions.manage') and scope='cuisine') or (permission_key in ('inventory.use','history.view','checklists.run','orders.manage','checklists.review','checklists.templates.manage','alerts.view','suppliers.manage','articles.manage') and scope in ('cuisine','salle','nettoyage')) );"
+        },
+        {
+          "line": 12,
+          "kind": "create function",
+          "object": "private.is_known_permission_key",
+          "header": "create or replace function private.is_known_permission_key(p_permission_key text) returns boolean language sql immutable set search_path=''"
+        },
+        {
+          "line": 22,
+          "kind": "create function",
+          "object": "private.is_valid_permission_scope",
+          "header": "create or replace function private.is_valid_permission_scope(p_permission_key text,p_scope text) returns boolean language sql immutable set search_path=''"
+        },
+        {
+          "line": 33,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 38,
+          "kind": "insert into",
+          "dataMutation": true,
+          "target": "public.profile_permissions"
+        },
+        {
+          "line": 45,
+          "kind": "create table",
+          "object": "public.temperature_equipment",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "department text not null default 'cuisine' check (department='cuisine')",
+            "name text not null check (char_length(btrim(name)) between 1 and 120)",
+            "location text not null default ''",
+            "equipment_type text not null default 'fridge' check (equipment_type in ('fridge','freezer','cold_room','display','other'))",
+            "min_allowed numeric not null default 0",
+            "max_allowed numeric not null default 4",
+            "active boolean not null default true",
+            "activated_at timestamptz not null default now()",
+            "deactivated_at timestamptz null",
+            "created_by uuid null references auth.users(id) on delete set null",
+            "created_by_name text not null default ''",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "constraint temperature_equipment_limits_check check (max_allowed >= min_allowed)"
+          ]
+        },
+        {
+          "line": 63,
+          "kind": "create unique index",
+          "definition": "create unique index if not exists temperature_equipment_active_name_unique on public.temperature_equipment(department,lower(btrim(name))) where active=true;"
+        },
+        {
+          "line": 64,
+          "kind": "create index",
+          "definition": "create index if not exists temperature_equipment_active_idx on public.temperature_equipment(department,active,name);"
+        },
+        {
+          "line": 66,
+          "kind": "create function",
+          "object": "public.stopflow_temperature_equipment_touch",
+          "header": "create or replace function public.stopflow_temperature_equipment_touch() returns trigger language plpgsql set search_path=''"
+        },
+        {
+          "line": 78,
+          "kind": "drop trigger",
+          "definition": "drop trigger if exists temperature_equipment_touch on public.temperature_equipment;"
+        },
+        {
+          "line": 79,
+          "kind": "create trigger",
+          "definition": "create trigger temperature_equipment_touch before update on public.temperature_equipment for each row execute function public.stopflow_temperature_equipment_touch();"
+        },
+        {
+          "line": 81,
+          "kind": "alter table",
+          "definition": "alter table public.temperature_equipment enable row level security;"
+        },
+        {
+          "line": 82,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_equipment_read_permissions on public.temperature_equipment;"
+        },
+        {
+          "line": 83,
+          "kind": "create policy",
+          "definition": "create policy temperature_equipment_read_permissions on public.temperature_equipment for select to authenticated using ( department='cuisine' and ( private.has_permission('temperatures.equipment.manage','cuisine') or private.has_permission('alerts.view','cuisine') or (active=true and private.has_permission('temperatures.readings.use','cuisine')) ) );"
+        },
+        {
+          "line": 90,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_equipment_insert_permissions on public.temperature_equipment;"
+        },
+        {
+          "line": 91,
+          "kind": "create policy",
+          "definition": "create policy temperature_equipment_insert_permissions on public.temperature_equipment for insert to authenticated with check ( department='cuisine' and private.has_permission('temperatures.equipment.manage','cuisine') and created_by=auth.uid() );"
+        },
+        {
+          "line": 94,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_equipment_update_permissions on public.temperature_equipment;"
+        },
+        {
+          "line": 95,
+          "kind": "create policy",
+          "definition": "create policy temperature_equipment_update_permissions on public.temperature_equipment for update to authenticated using (department='cuisine' and private.has_permission('temperatures.equipment.manage','cuisine')) with check (department='cuisine' and private.has_permission('temperatures.equipment.manage','cuisine'));"
+        },
+        {
+          "line": 98,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_equipment_delete_admin on public.temperature_equipment;"
+        },
+        {
+          "line": 99,
+          "kind": "create policy",
+          "definition": "create policy temperature_equipment_delete_admin on public.temperature_equipment for delete to authenticated using (private.is_admin());"
+        },
+        {
+          "line": 100,
+          "kind": "grant select",
+          "definition": "grant select,insert,update,delete on public.temperature_equipment to authenticated;"
+        },
+        {
+          "line": 102,
+          "kind": "create table",
+          "object": "public.temperature_rounds",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "department text not null default 'cuisine' check (department='cuisine')",
+            "started_at timestamptz not null default now()",
+            "completed_at timestamptz not null default now()",
+            "performed_by uuid null references auth.users(id) on delete set null",
+            "performed_by_name text not null default ''",
+            "equipment_count integer not null default 0 check (equipment_count >= 0)",
+            "anomaly_count integer not null default 0 check (anomaly_count >= 0)",
+            "created_at timestamptz not null default now()"
+          ]
+        },
+        {
+          "line": 113,
+          "kind": "create index",
+          "definition": "create index if not exists temperature_rounds_completed_idx on public.temperature_rounds(department,completed_at desc);"
+        },
+        {
+          "line": 114,
+          "kind": "alter table",
+          "definition": "alter table public.temperature_rounds enable row level security;"
+        },
+        {
+          "line": 115,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_rounds_read_permissions on public.temperature_rounds;"
+        },
+        {
+          "line": 116,
+          "kind": "create policy",
+          "definition": "create policy temperature_rounds_read_permissions on public.temperature_rounds for select to authenticated using (private.has_permission('temperatures.readings.use',department) or private.has_permission('alerts.view',department));"
+        },
+        {
+          "line": 118,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_rounds_insert_permissions on public.temperature_rounds;"
+        },
+        {
+          "line": 119,
+          "kind": "create policy",
+          "definition": "create policy temperature_rounds_insert_permissions on public.temperature_rounds for insert to authenticated with check (performed_by=auth.uid() and private.has_permission('temperatures.readings.use',department));"
+        },
+        {
+          "line": 121,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_rounds_update_admin on public.temperature_rounds;"
+        },
+        {
+          "line": 122,
+          "kind": "create policy",
+          "definition": "create policy temperature_rounds_update_admin on public.temperature_rounds for update to authenticated using (private.is_admin()) with check (private.is_admin());"
+        },
+        {
+          "line": 123,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_rounds_delete_admin on public.temperature_rounds;"
+        },
+        {
+          "line": 124,
+          "kind": "create policy",
+          "definition": "create policy temperature_rounds_delete_admin on public.temperature_rounds for delete to authenticated using (private.is_admin());"
+        },
+        {
+          "line": 125,
+          "kind": "grant select",
+          "definition": "grant select,insert,update,delete on public.temperature_rounds to authenticated;"
+        },
+        {
+          "line": 127,
+          "kind": "alter table",
+          "definition": "alter table public.temperature_readings add column if not exists round_id uuid null references public.temperature_rounds(id) on delete set null, add column if not exists equipment_id uuid null references public.temperature_equipment(id) on delete set null, add column if not exists equipment_location text not null default '', add column if not exists equipment_type text not null default '';"
+        },
+        {
+          "line": 132,
+          "kind": "create index",
+          "definition": "create index if not exists temperature_readings_round_idx on public.temperature_readings(round_id,recorded_at);"
+        },
+        {
+          "line": 133,
+          "kind": "create index",
+          "definition": "create index if not exists temperature_readings_equipment_idx on public.temperature_readings(equipment_id,recorded_at desc);"
+        },
+        {
+          "line": 135,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_read_permissions on public.temperature_readings;"
+        },
+        {
+          "line": 136,
+          "kind": "drop policy",
+          "definition": "drop policy if exists temperature_readings_insert_permissions on public.temperature_readings;"
+        },
+        {
+          "line": 137,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_read_permissions on public.temperature_readings for select to authenticated using (private.has_permission('temperatures.readings.use',department) or private.has_permission('alerts.view',department));"
+        },
+        {
+          "line": 139,
+          "kind": "create policy",
+          "definition": "create policy temperature_readings_insert_permissions on public.temperature_readings for insert to authenticated with check (recorded_by=auth.uid() and private.has_permission('temperatures.readings.use',department));"
+        },
+        {
+          "line": 142,
+          "kind": "create function",
+          "object": "public.save_temperature_round_070",
+          "header": "create or replace function public.save_temperature_round_070(p_readings jsonb) returns jsonb language plpgsql security definer set search_path=''"
+        },
+        {
+          "line": 173,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.save_temperature_round_070(jsonb) from public;"
+        },
+        {
+          "line": 174,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.save_temperature_round_070(jsonb) to authenticated;"
+        },
+        {
+          "line": 176,
+          "kind": "comment on"
+        },
+        {
+          "line": 177,
+          "kind": "comment on"
+        },
+        {
+          "line": 178,
+          "kind": "comment on"
+        },
+        {
+          "line": 179,
+          "kind": "comment on"
+        },
+        {
+          "line": 180,
+          "kind": "comment on"
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.profile_permissions",
+        "public.profiles",
+        "public.temperature_equipment",
+        "public.temperature_readings",
+        "public.temperature_rounds"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.has_permission",
+        "private.is_admin",
+        "private.is_known_permission_key",
+        "private.is_operational_department",
+        "private.is_valid_permission_scope",
+        "public.save_temperature_round_070",
+        "public.stopflow_temperature_equipment_touch",
+        "public.temperature_equipment",
+        "public.temperature_readings",
+        "public.temperature_rounds"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260810225500_stopflow_070_temperature_dashboard_rpc.sql",
+      "sha256": "8b6d48a62127581fcf77bd6337ff141f9b2a865ac36870caac841b5b04fd7170",
+      "statements": [
+        {
+          "line": 2,
+          "kind": "create function",
+          "object": "public.load_temperature_dashboard_070",
+          "header": "create or replace function public.load_temperature_dashboard_070() returns jsonb language plpgsql security definer set search_path = public, pg_temp"
+        },
+        {
+          "line": 37,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.load_temperature_dashboard_070() from public;"
+        },
+        {
+          "line": 38,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.load_temperature_dashboard_070() to authenticated;"
+        }
+      ],
+      "relationCandidates": [
+        "public.temperature_equipment",
+        "public.temperature_readings",
+        "public.temperature_rounds"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.has_permission",
+        "public.load_temperature_dashboard_070"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260825120500_stopflow_080_article_categories_permission_alignment.sql",
+      "sha256": "f1866bc3a34f7ed8cdded45e235791b4622ca5606415b7661d96fb6ed3dc6f10",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "drop policy",
+          "definition": "drop policy if exists article_categories_insert_managers on public.article_categories;"
+        },
+        {
+          "line": 4,
+          "kind": "drop policy",
+          "definition": "drop policy if exists article_categories_update_managers on public.article_categories;"
+        },
+        {
+          "line": 5,
+          "kind": "drop policy",
+          "definition": "drop policy if exists article_categories_select_active_users on public.article_categories;"
+        },
+        {
+          "line": 7,
+          "kind": "create policy",
+          "definition": "create policy article_categories_insert_article_managers on public.article_categories for insert to authenticated with check ( private.has_permission('articles.manage','cuisine') or private.has_permission('articles.manage','salle') or private.has_permission('articles.manage','nettoyage') );"
+        },
+        {
+          "line": 17,
+          "kind": "create policy",
+          "definition": "create policy article_categories_update_article_managers on public.article_categories for update to authenticated using ( private.has_permission('articles.manage','cuisine') or private.has_permission('articles.manage','salle') or private.has_permission('articles.manage','nettoyage') ) with check ( private.has_permission('articles.manage','cuisine') or private.has_permission('articles.manage','salle') or private.has_permission('articles.manage','nettoyage') );"
+        },
+        {
+          "line": 32,
+          "kind": "create policy",
+          "definition": "create policy article_categories_select_active_users on public.article_categories for select to authenticated using ( private.is_active_user() and ( active = true or private.has_permission('articles.manage','cuisine') or private.has_permission('articles.manage','salle') or private.has_permission('articles.manage','nettoyage') ) );"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "private.has_permission",
+        "private.is_active_user"
+      ],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20260829065738_stopflow_090_harden_security_definer_rpc_access.sql",
+      "sha256": "38ee25c35b152cf34256e136685d5ca6a44ec1659a1a0d98a2a2278f2d5369e6",
+      "statements": [
+        {
+          "line": 5,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.admin_set_profile_permissions(uuid,jsonb) from public, anon;"
+        },
+        {
+          "line": 6,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.admin_set_user_access(uuid,text,text,text,boolean,text,text[]) from public, anon;"
+        },
+        {
+          "line": 7,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) from public, anon;"
+        },
+        {
+          "line": 8,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.load_temperature_dashboard_070() from public, anon;"
+        },
+        {
+          "line": 9,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.log_stopflow_event(text,text,text,text,jsonb) from public, anon;"
+        },
+        {
+          "line": 10,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.mark_order_delivered(uuid,text) from public, anon;"
+        },
+        {
+          "line": 11,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.mark_order_sent(uuid,text,numeric) from public, anon;"
+        },
+        {
+          "line": 12,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.resolve_checklist_anomaly(uuid,text) from public, anon;"
+        },
+        {
+          "line": 13,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.save_order_draft_atomic(uuid,text,text,text,jsonb,jsonb,timestamp with time zone,timestamp with time zone,bigint,jsonb) from public, anon;"
+        },
+        {
+          "line": 14,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.save_order_draft_atomic_v054(uuid,text,text,text,text,jsonb,jsonb,timestamp with time zone,timestamp with time zone,bigint,jsonb) from public, anon;"
+        },
+        {
+          "line": 15,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.save_temperature_round_070(jsonb) from public, anon;"
+        },
+        {
+          "line": 17,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.admin_set_profile_permissions(uuid,jsonb) to authenticated, service_role;"
+        },
+        {
+          "line": 18,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.admin_set_user_access(uuid,text,text,text,boolean,text,text[]) to authenticated, service_role;"
+        },
+        {
+          "line": 19,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.admin_set_user_profile_permissions_070(uuid,text,text,text,boolean,jsonb,text) to authenticated, service_role;"
+        },
+        {
+          "line": 20,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.load_temperature_dashboard_070() to authenticated, service_role;"
+        },
+        {
+          "line": 21,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.log_stopflow_event(text,text,text,text,jsonb) to authenticated, service_role;"
+        },
+        {
+          "line": 22,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.mark_order_delivered(uuid,text) to authenticated, service_role;"
+        },
+        {
+          "line": 23,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.mark_order_sent(uuid,text,numeric) to authenticated, service_role;"
+        },
+        {
+          "line": 24,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.resolve_checklist_anomaly(uuid,text) to authenticated, service_role;"
+        },
+        {
+          "line": 25,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.save_order_draft_atomic(uuid,text,text,text,jsonb,jsonb,timestamp with time zone,timestamp with time zone,bigint,jsonb) to authenticated, service_role;"
+        },
+        {
+          "line": 26,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.save_order_draft_atomic_v054(uuid,text,text,text,text,jsonb,jsonb,timestamp with time zone,timestamp with time zone,bigint,jsonb) to authenticated, service_role;"
+        },
+        {
+          "line": 27,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.save_temperature_round_070(jsonb) to authenticated, service_role;"
+        },
+        {
+          "line": 29,
+          "kind": "alter function",
+          "definition": "alter function public.load_temperature_dashboard_070() set search_path = '';"
+        },
+        {
+          "line": 30,
+          "kind": "alter function",
+          "definition": "alter function public.resolve_checklist_anomaly(uuid,text) set search_path = '';"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "public.admin_set_profile_permissions",
+        "public.admin_set_user_access",
+        "public.admin_set_user_profile_permissions_070",
+        "public.load_temperature_dashboard_070",
+        "public.log_stopflow_event",
+        "public.mark_order_delivered",
+        "public.mark_order_sent",
+        "public.resolve_checklist_anomaly",
+        "public.save_order_draft_atomic",
+        "public.save_order_draft_atomic_v054",
+        "public.save_temperature_round_070"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260829070049_stopflow_090_revoke_anonymous_data_access.sql",
+      "sha256": "1274a76f21df7118b45a84e1a4734a7e5220d4f02e14a44d45ed0dc293fc91fc",
+      "statements": [
+        {
+          "line": 4,
+          "kind": "revoke all",
+          "definition": "revoke all privileges on all tables in schema public from anon;"
+        },
+        {
+          "line": 5,
+          "kind": "revoke all",
+          "definition": "revoke all privileges on all sequences in schema public from anon;"
+        },
+        {
+          "line": 8,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.stopflow_prepare_checklist_anomaly() from public, anon;"
+        },
+        {
+          "line": 9,
+          "kind": "revoke execute",
+          "definition": "revoke execute on function public.stopflow_temperature_equipment_touch() from public, anon;"
+        },
+        {
+          "line": 12,
+          "kind": "alter function",
+          "definition": "alter function public.stopflow_prepare_checklist_anomaly() set search_path = '';"
+        },
+        {
+          "line": 15,
+          "kind": "alter default",
+          "definition": "alter default privileges for role postgres in schema public revoke all on tables from anon;"
+        },
+        {
+          "line": 16,
+          "kind": "alter default",
+          "definition": "alter default privileges for role postgres in schema public revoke all on sequences from anon;"
+        },
+        {
+          "line": 17,
+          "kind": "alter default",
+          "definition": "alter default privileges for role postgres in schema public revoke execute on functions from anon;"
+        },
+        {
+          "line": 18,
+          "kind": "alter default",
+          "definition": "alter default privileges for role postgres in schema public revoke execute on functions from public;"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "public.stopflow_prepare_checklist_anomaly",
+        "public.stopflow_temperature_equipment_touch"
+      ],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "supabase/migrations/20260829070330_stopflow_090_harden_private_permission_helpers.sql",
+      "sha256": "465462d55a5fbd4ccf3428dc9e85e88f3ff6bc6f991798ea2422fb4ca7c4f344",
+      "statements": [
+        {
+          "line": 2,
+          "kind": "alter function",
+          "definition": "alter function private.current_department() set search_path = '';"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "private.current_department"
+      ],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/migrations/20261017120000_stopflow_reservations_foundation.sql",
+      "sha256": "236de5f321c40d7311c8685f8354c495b3e54728434a83e3fdd1cb1ce22eaf86",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "begin"
+        },
+        {
+          "line": 5,
+          "kind": "create table",
+          "object": "public.reservation_establishments",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "name text not null check (length(btrim(name)) between 1 and 120)",
+            "active boolean not null default true",
+            "created_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null"
+          ]
+        },
+        {
+          "line": 13,
+          "kind": "create table",
+          "object": "public.reservation_memberships",
+          "columnsAndConstraints": [
+            "establishment_id uuid not null references public.reservation_establishments(id) on delete restrict",
+            "profile_id uuid not null references public.profiles(id) on delete cascade",
+            "active boolean not null default true",
+            "can_view boolean not null default false",
+            "can_manage_rooms boolean not null default false",
+            "can_manage_tables boolean not null default false",
+            "can_manage_layouts boolean not null default false",
+            "created_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null",
+            "primary key (establishment_id, profile_id)",
+            "check (can_view or not (can_manage_rooms or can_manage_tables or can_manage_layouts))"
+          ]
+        },
+        {
+          "line": 26,
+          "kind": "create index",
+          "definition": "create index reservation_memberships_profile_idx on public.reservation_memberships(profile_id, establishment_id);"
+        },
+        {
+          "line": 30,
+          "kind": "create function",
+          "object": "private.reservations_can",
+          "header": "create function private.reservations_can(p_establishment_id uuid, p_action text) returns boolean language sql stable security definer set search_path = ''"
+        },
+        {
+          "line": 45,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.reservations_can(uuid,text) from public, anon;"
+        },
+        {
+          "line": 46,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.reservations_can(uuid,text) to authenticated, service_role;"
+        },
+        {
+          "line": 48,
+          "kind": "create table",
+          "object": "public.reservation_rooms",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null references public.reservation_establishments(id) on delete restrict",
+            "name text not null check (length(btrim(name)) between 1 and 120)",
+            "description text not null default '' check (length(description)<=2000)",
+            "sort_order integer not null default 0 check (sort_order between 0 and 10000)",
+            "active boolean not null default true",
+            "version bigint not null default 1 check (version>0)",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null",
+            "updated_by uuid references public.profiles(id) on delete set null",
+            "unique (establishment_id,id)"
+          ]
+        },
+        {
+          "line": 62,
+          "kind": "create unique index",
+          "definition": "create unique index reservation_rooms_name_idx on public.reservation_rooms(establishment_id,lower(btrim(name))) where active;"
+        },
+        {
+          "line": 64,
+          "kind": "create table",
+          "object": "public.reservation_tables",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null",
+            "room_id uuid not null",
+            "label text not null check (length(btrim(label)) between 1 and 40)",
+            "capacity integer not null check (capacity between 1 and 1000)",
+            "shape text not null check (shape in ('round','square','rectangle'))",
+            "active boolean not null default true",
+            "version bigint not null default 1 check (version>0)",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null",
+            "updated_by uuid references public.profiles(id) on delete set null",
+            "foreign key (establishment_id,room_id) references public.reservation_rooms(establishment_id,id) on delete restrict",
+            "unique (establishment_id,room_id,id)"
+          ]
+        },
+        {
+          "line": 80,
+          "kind": "create unique index",
+          "definition": "create unique index reservation_tables_label_idx on public.reservation_tables(establishment_id,room_id,lower(btrim(label))) where active;"
+        },
+        {
+          "line": 82,
+          "kind": "create table",
+          "object": "public.reservation_layouts",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null",
+            "room_id uuid not null",
+            "name text not null check (length(btrim(name)) between 1 and 120)",
+            "width integer not null default 1000 check (width between 100 and 10000)",
+            "height integer not null default 700 check (height between 100 and 10000)",
+            "status text not null default 'active' check (status in ('active','draft','archived'))",
+            "version bigint not null default 1 check (version>0)",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null",
+            "updated_by uuid references public.profiles(id) on delete set null",
+            "foreign key (establishment_id,room_id) references public.reservation_rooms(establishment_id,id) on delete restrict",
+            "unique (establishment_id,room_id,id)"
+          ]
+        },
+        {
+          "line": 98,
+          "kind": "create unique index",
+          "definition": "create unique index reservation_layouts_active_idx on public.reservation_layouts(establishment_id,room_id) where status='active';"
+        },
+        {
+          "line": 100,
+          "kind": "create function",
+          "object": "private.reservation_properties_valid",
+          "header": "create function private.reservation_properties_valid(p jsonb) returns boolean language sql immutable set search_path = ''"
+        },
+        {
+          "line": 109,
+          "kind": "create table",
+          "object": "public.reservation_layout_elements",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null",
+            "room_id uuid not null",
+            "layout_id uuid not null",
+            "table_id uuid",
+            "kind text not null check (kind in ('table','wall','door','window','bar','stairs','plant','label'))",
+            "x numeric",
+            "y numeric",
+            "width numeric not null default 80 check (width>0 and width<=10000)",
+            "height numeric not null default 80 check (height>0 and height<=10000)",
+            "rotation numeric not null default 0 check (rotation>=0 and rotation<360)",
+            "z_index integer not null default 0 check (z_index between -10000 and 10000)",
+            "properties jsonb not null default '{}'::jsonb check (private.reservation_properties_valid(properties))",
+            "version bigint not null default 1 check (version>0)",
+            "created_at timestamptz not null default now()",
+            "updated_at timestamptz not null default now()",
+            "created_by uuid references public.profiles(id) on delete set null",
+            "updated_by uuid references public.profiles(id) on delete set null",
+            "check ((kind='table')=(table_id is not null))",
+            "check ((x is null and y is null) or (x is not null and y is not null and x between 0 and 100000 and y between 0 and 100000))",
+            "foreign key (establishment_id,room_id,layout_id) references public.reservation_layouts(establishment_id,room_id,id) on delete restrict",
+            "foreign key (establishment_id,room_id,table_id) references public.reservation_tables(establishment_id,room_id,id) on delete restrict"
+          ]
+        },
+        {
+          "line": 132,
+          "kind": "create unique index",
+          "definition": "create unique index reservation_elements_table_idx on public.reservation_layout_elements(layout_id,table_id) where table_id is not null;"
+        },
+        {
+          "line": 133,
+          "kind": "create index",
+          "definition": "create index reservation_elements_tenant_idx on public.reservation_layout_elements(establishment_id,room_id,layout_id);"
+        },
+        {
+          "line": 135,
+          "kind": "create table",
+          "object": "public.reservation_audit",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null references public.reservation_establishments(id) on delete restrict",
+            "resource_type text not null",
+            "resource_id uuid not null",
+            "action text not null check (action in ('INSERT','UPDATE'))",
+            "before_value jsonb",
+            "after_value jsonb not null",
+            "actor_id uuid references public.profiles(id) on delete set null",
+            "occurred_at timestamptz not null default now()"
+          ]
+        },
+        {
+          "line": 145,
+          "kind": "create index",
+          "definition": "create index reservation_audit_tenant_idx on public.reservation_audit(establishment_id,occurred_at);"
+        },
+        {
+          "line": 147,
+          "kind": "create function",
+          "object": "private.reservation_stamp",
+          "header": "create function private.reservation_stamp() returns trigger language plpgsql set search_path = ''"
+        },
+        {
+          "line": 165,
+          "kind": "create function",
+          "object": "private.reservation_audit_change",
+          "header": "create function private.reservation_audit_change() returns trigger language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 173,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.reservation_stamp(), private.reservation_audit_change() from public, anon, authenticated;"
+        },
+        {
+          "line": 175,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 191,
+          "kind": "create policy",
+          "definition": "create policy reservation_establishments_read on public.reservation_establishments for select to authenticated using (private.reservations_can(id,'view'));"
+        },
+        {
+          "line": 192,
+          "kind": "create policy",
+          "definition": "create policy reservation_memberships_read on public.reservation_memberships for select to authenticated using (profile_id=auth.uid() and private.reservations_can(establishment_id,'view'));"
+        },
+        {
+          "line": 193,
+          "kind": "create policy",
+          "definition": "create policy reservation_rooms_read on public.reservation_rooms for select to authenticated using (private.reservations_can(establishment_id,'view'));"
+        },
+        {
+          "line": 194,
+          "kind": "create policy",
+          "definition": "create policy reservation_tables_read on public.reservation_tables for select to authenticated using (private.reservations_can(establishment_id,'view'));"
+        },
+        {
+          "line": 195,
+          "kind": "create policy",
+          "definition": "create policy reservation_layouts_read on public.reservation_layouts for select to authenticated using (private.reservations_can(establishment_id,'view'));"
+        },
+        {
+          "line": 196,
+          "kind": "create policy",
+          "definition": "create policy reservation_elements_read on public.reservation_layout_elements for select to authenticated using (private.reservations_can(establishment_id,'view'));"
+        },
+        {
+          "line": 197,
+          "kind": "create policy",
+          "definition": "create policy reservation_audit_read on public.reservation_audit for select to authenticated using (private.reservations_can(establishment_id,'rooms.manage') or private.reservations_can(establishment_id,'tables.manage') or private.reservations_can(establishment_id,'layouts.manage'));"
+        },
+        {
+          "line": 199,
+          "kind": "create function",
+          "object": "public.reservations_context",
+          "header": "create function public.reservations_context() returns jsonb language plpgsql stable security definer set search_path = ''"
+        },
+        {
+          "line": 213,
+          "kind": "create function",
+          "object": "public.reservations_read",
+          "header": "create function public.reservations_read(p_establishment_id uuid) returns jsonb language plpgsql stable security definer set search_path = ''"
+        },
+        {
+          "line": 228,
+          "kind": "create function",
+          "object": "public.reservations_save_room",
+          "header": "create function public.reservations_save_room(p_establishment_id uuid,p_id uuid,p_expected_version bigint,p_name text,p_description text,p_sort_order integer,p_active boolean) returns jsonb language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 250,
+          "kind": "create function",
+          "object": "public.reservations_save_table",
+          "header": "create function public.reservations_save_table(p_establishment_id uuid,p_room_id uuid,p_id uuid,p_expected_version bigint,p_label text,p_capacity integer,p_shape text,p_active boolean) returns jsonb language plpgsql security definer set search_path = ''"
+        },
+        {
+          "line": 279,
+          "kind": "revoke all",
+          "definition": "revoke all on function public.reservations_context(), public.reservations_read(uuid), public.reservations_save_room(uuid,uuid,bigint,text,text,integer,boolean), public.reservations_save_table(uuid,uuid,uuid,bigint,text,integer,text,boolean) from public, anon;"
+        },
+        {
+          "line": 280,
+          "kind": "grant execute",
+          "definition": "grant execute on function public.reservations_context(), public.reservations_read(uuid), public.reservations_save_room(uuid,uuid,bigint,text,text,integer,boolean), public.reservations_save_table(uuid,uuid,uuid,bigint,text,integer,text,boolean) to authenticated, service_role;"
+        },
+        {
+          "line": 281,
+          "kind": "comment on"
+        },
+        {
+          "line": 282,
+          "kind": "comment on"
+        },
+        {
+          "line": 283,
+          "kind": "comment on"
+        },
+        {
+          "line": 284,
+          "kind": "revoke all",
+          "definition": "revoke all on function private.reservation_properties_valid(jsonb) from public, anon, authenticated;"
+        },
+        {
+          "line": 285,
+          "kind": "grant execute",
+          "definition": "grant execute on function private.reservation_properties_valid(jsonb) to service_role;"
+        },
+        {
+          "line": 286,
+          "kind": "commit"
+        }
+      ],
+      "relationCandidates": [
+        "public.profiles",
+        "public.reservation_audit",
+        "public.reservation_establishments",
+        "public.reservation_layout_elements",
+        "public.reservation_layouts",
+        "public.reservation_memberships",
+        "public.reservation_rooms",
+        "public.reservation_tables"
+      ],
+      "functionCandidates": [
+        "auth.uid",
+        "private.reservation_audit_change",
+        "private.reservation_properties_valid",
+        "private.reservation_stamp",
+        "private.reservations_can",
+        "public.reservation_audit",
+        "public.reservation_establishments",
+        "public.reservation_layout_elements",
+        "public.reservation_layouts",
+        "public.reservation_memberships",
+        "public.reservation_rooms",
+        "public.reservation_tables",
+        "public.reservations_context",
+        "public.reservations_read",
+        "public.reservations_save_room",
+        "public.reservations_save_table"
+      ],
+      "requiresBodyReview": true
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "supabase/development/10-check-base.sql",
+      "sha256": "5105a900917950035ce85dcdb905d1dea51a300afe2f3033cf49d1cc8bbdd573",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "begin read"
+        },
+        {
+          "line": 4,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 34,
+          "kind": "commit"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "auth.uid"
+      ],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/development/30-check-reservations.sql",
+      "sha256": "142d9bdca86fce55ec8e8c739f0641bd74bec78287f2e069e3bea53d5c88a80c",
+      "statements": [
+        {
+          "line": 2,
+          "kind": "begin read"
+        },
+        {
+          "line": 3,
+          "kind": "do",
+          "dynamicReview": true
+        },
+        {
+          "line": 24,
+          "kind": "commit"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [
+        "public.reservations_context",
+        "public.reservations_read",
+        "public.reservations_save_room",
+        "public.reservations_save_table"
+      ],
+      "requiresBodyReview": false
+    },
+    {
+      "path": "supabase/development/40-inspect-schema-metadata.sql",
+      "sha256": "fef8e704c81b345090be3772cc5dfb8e2e8a06676e0ca90d6bafcca5175538e5",
+      "statements": [
+        {
+          "line": 3,
+          "kind": "begin read"
+        },
+        {
+          "line": 4,
+          "kind": "select jsonb"
+        },
+        {
+          "line": 16,
+          "kind": "rollback"
+        }
+      ],
+      "relationCandidates": [],
+      "functionCandidates": [],
+      "requiresBodyReview": true
+    },
+    {
+      "path": "future-online/supabase/schema-propose.sql",
+      "sha256": "c626911add7855352097af9a4b93a353f435f12d3787dbdb68894e1001d8ea79",
+      "statements": [
+        {
+          "line": 2,
+          "kind": "create extension",
+          "object": "pgcrypto"
+        },
+        {
+          "line": 4,
+          "kind": "create type",
+          "object": "public.user_role"
+        },
+        {
+          "line": 5,
+          "kind": "create type",
+          "object": "public.document_status"
+        },
+        {
+          "line": 8,
+          "kind": "create table",
+          "object": "public.establishments",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "name text not null",
+            "created_at timestamptz not null default now()"
+          ]
+        },
+        {
+          "line": 14,
+          "kind": "create table",
+          "object": "public.profiles",
+          "columnsAndConstraints": [
+            "id uuid primary key references auth.users(id) on delete cascade",
+            "establishment_id uuid not null references public.establishments(id)",
+            "full_name text not null",
+            "role public.user_role not null default 'employe'"
+          ]
+        },
+        {
+          "line": 21,
+          "kind": "create table",
+          "object": "public.suppliers",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null references public.establishments(id)",
+            "name text not null",
+            "active boolean not null default true"
+          ]
+        },
+        {
+          "line": 28,
+          "kind": "create table",
+          "object": "public.articles",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "supplier_id uuid not null references public.suppliers(id) on delete cascade",
+            "name text not null",
+            "category text",
+            "unit text not null",
+            "target numeric not null default 0",
+            "active boolean not null default true"
+          ]
+        },
+        {
+          "line": 38,
+          "kind": "create table",
+          "object": "public.orders",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "establishment_id uuid not null references public.establishments(id)",
+            "supplier_id uuid not null references public.suppliers(id)",
+            "number text",
+            "status public.document_status not null default 'brouillon'",
+            "author_id uuid not null references public.profiles(id)",
+            "validator_id uuid references public.profiles(id)",
+            "note text",
+            "inventory_at timestamptz not null default now()",
+            "validated_at timestamptz",
+            "created_at timestamptz not null default now()"
+          ]
+        },
+        {
+          "line": 52,
+          "kind": "create table",
+          "object": "public.order_lines",
+          "columnsAndConstraints": [
+            "id uuid primary key default gen_random_uuid()",
+            "order_id uuid not null references public.orders(id) on delete cascade",
+            "article_id uuid not null references public.articles(id)",
+            "stock numeric not null default 0",
+            "target numeric not null default 0",
+            "quantity numeric not null default 0"
+          ]
+        }
+      ],
+      "relationCandidates": [
+        "auth.users",
+        "public.articles",
+        "public.establishments",
+        "public.orders",
+        "public.profiles",
+        "public.suppliers"
+      ],
+      "functionCandidates": [
+        "public.articles",
+        "public.establishments",
+        "public.order_lines",
+        "public.orders",
+        "public.profiles",
+        "public.suppliers"
+      ],
+      "requiresBodyReview": false
+    }
+  ],
+  "relationsWithoutCreate": [
+    "public.activity_events",
+    "public.articles",
+    "public.checklist_run_items",
+    "public.checklist_runs",
+    "public.checklist_template_items",
+    "public.checklist_templates",
+    "public.deleted_user_identities",
+    "public.order_lines",
+    "public.orders",
+    "public.profile_departments",
+    "public.profiles",
+    "public.temperature_readings",
+    "public.user_admin_events"
+  ],
+  "frontendRelations": [
+    "public.app_settings",
+    "public.article_categories",
+    "public.articles",
+    "public.checklist_run_items",
+    "public.checklist_runs",
+    "public.checklist_suggestions",
+    "public.checklist_template_items",
+    "public.checklist_templates",
+    "public.department_content",
+    "public.orders",
+    "public.profile_card_preferences",
+    "public.profile_departments",
+    "public.profile_permissions",
+    "public.profiles",
+    "public.proposal_notifications",
+    "public.suppliers",
+    "public.team_banners",
+    "public.temperature_equipment",
+    "public.temperature_readings"
+  ],
+  "frontendRpc": [
+    "public.admin_set_user_profile_permissions_070",
+    "public.load_temperature_dashboard_070",
+    "public.reservations_context",
+    "public.reservations_read",
+    "public.resolve_checklist_anomaly",
+    "public.save_order_draft_atomic",
+    "public.save_temperature_round_070",
+    "public.submit_order",
+    "public.validate_order"
+  ],
+  "functionsWithoutStaticCreate": [
+    "auth.uid",
+    "private.is_active_user",
+    "private.is_admin",
+    "private.is_responsible_or_admin",
+    "private.set_catalog_audit",
+    "private.user_has_department",
+    "public.log_stopflow_event",
+    "public.submit_order",
+    "public.validate_order"
+  ],
+  "createdRelations": [
+    "public.profile_card_preferences",
+    "public.profile_permissions",
+    "public.reservation_audit",
+    "public.reservation_establishments",
+    "public.reservation_layout_elements",
+    "public.reservation_layouts",
+    "public.reservation_memberships",
+    "public.reservation_rooms",
+    "public.reservation_tables",
+    "public.suppliers",
+    "public.temperature_equipment",
+    "public.temperature_rounds"
+  ],
+  "createdFunctions": [
+    "private.can_access_department",
+    "private.can_access_order",
+    "private.can_edit_order_lines",
+    "private.can_manage_department_content",
+    "private.can_read_catalog_department",
+    "private.can_read_checklist_run",
+    "private.can_read_department_content",
+    "private.can_write_checklist_run",
+    "private.cancel_order_impl",
+    "private.current_department",
+    "private.has_any_permission",
+    "private.has_any_scope_permission",
+    "private.has_permission",
+    "private.has_permission_for_user",
+    "private.is_known_permission_key",
+    "private.is_operational_department",
+    "private.is_valid_permission_scope",
+    "private.mark_ordered_impl",
+    "private.reservation_audit_change",
+    "private.reservation_properties_valid",
+    "private.reservation_stamp",
+    "private.reservations_can",
+    "private.stopflow_060_apply_article_department",
+    "private.stopflow_060_apply_order_department",
+    "private.stopflow_060_audit_profile_delete",
+    "private.stopflow_060_cascade_supplier_department",
+    "private.submit_order_impl",
+    "private.sync_article_supplier",
+    "private.sync_legacy_profile_permissions",
+    "private.sync_supplier_name_to_articles",
+    "private.validate_order_impl",
+    "public.admin_set_profile_permissions",
+    "public.admin_set_user_access",
+    "public.admin_set_user_profile_permissions_070",
+    "public.load_temperature_dashboard_070",
+    "public.mark_order_delivered",
+    "public.mark_order_sent",
+    "public.reservations_context",
+    "public.reservations_read",
+    "public.reservations_save_room",
+    "public.reservations_save_table",
+    "public.resolve_checklist_anomaly",
+    "public.save_order_draft_atomic",
+    "public.save_order_draft_atomic_v054",
+    "public.save_temperature_round_070",
+    "public.stopflow_prepare_checklist_anomaly",
+    "public.stopflow_temperature_equipment_touch"
+  ]
+}
