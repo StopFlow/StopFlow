@@ -363,21 +363,35 @@
     document.getElementById("sf52DrawerClose")?.click();
   }
 
+  function syncMenuButtons(nav,mobile){
+    const entries=navEntries();
+    const wanted=new Set(entries.map(entry=>entry.id));
+    const existing=new Map();
+    Array.from(nav.children).forEach(node=>{
+      const id=node.dataset.sf70Zone;
+      if(node.tagName==="BUTTON"&&wanted.has(id)&&!existing.has(id))existing.set(id,node);
+      else node.remove();
+    });
+    entries.forEach((entry,index)=>{
+      const button=existing.get(entry.id)||document.createElement("button");
+      button.type="button";
+      button.dataset.sf70Zone=entry.id;
+      button.className=mobile?"sf52-nav-home":"sf53-home"+(runtime.currentZone===entry.id?" active":"");
+      if(!mobile)button.title=entry.label;
+      const html=mobile?`<span>${entry.icon}</span><span>${esc(entry.label)}</span>`:`<span class="sf53-icon">${entry.icon}</span><span class="sf53-label">${esc(entry.label)}</span>`;
+      if(button.innerHTML!==html)button.innerHTML=html;
+      button.onclick=()=>navClick(entry.id);
+      // Do not reinsert unchanged nodes: even moving a focused button can
+      // interrupt native keyboard/click activation during a scheduled refresh.
+      if(nav.children[index]!==button)nav.insertBefore(button,nav.children[index]||null);
+    });
+  }
+
   function renderDesktopMenu(){
     const nav=document.getElementById("sf53DesktopNav");
     if(!nav)return;
     nav.classList.add("sf70-simple-nav");
-    nav.innerHTML="";
-    navEntries().forEach(entry=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="sf53-home"+(runtime.currentZone===entry.id?" active":"");
-      button.dataset.sf70Zone=entry.id;
-      button.title=entry.label;
-      button.innerHTML=`<span class="sf53-icon">${entry.icon}</span><span class="sf53-label">${esc(entry.label)}</span>`;
-      button.onclick=()=>navClick(entry.id);
-      nav.appendChild(button);
-    });
+    syncMenuButtons(nav,false);
     localStorage.removeItem("stopflow-053-desktop-open-group");
   }
 
@@ -385,16 +399,7 @@
     const content=document.getElementById("sf52DrawerContent");
     if(!content)return;
     content.classList.add("sf70-simple-mobile");
-    content.innerHTML="";
-    navEntries().forEach(entry=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="sf52-nav-home"+(runtime.currentZone===entry.id?" active":"");
-      button.dataset.sf70Zone=entry.id;
-      button.innerHTML=`<span>${entry.icon}</span><span>${esc(entry.label)}</span>`;
-      button.onclick=()=>navClick(entry.id);
-      content.appendChild(button);
-    });
+    syncMenuButtons(content,true);
     const subtitle=document.querySelector(".sf52-drawer-subtitle");
     if(subtitle)subtitle.textContent="Navigation par objectifs";
     localStorage.removeItem("stopflow-052-open-group");
@@ -430,6 +435,11 @@
       page=function(id){
         const target=id==="dashboard"?"sf70Home":id;
         const result=previousPage(target);
+        // Reservations has no historical [data-page] button. Remember entering
+        // or leaving it, without changing other modules' restoration behavior.
+        if(typeof rememberStopFlowPage==="function"&&(target==="sf91Reservations"||rememberedStopFlowPage()==="sf91Reservations")){
+          rememberStopFlowPage(target==="sf70Home"?"dashboard":target);
+        }
         if(target==="sf70Home"){runtime.currentZone="home";renderHome();setTitle("Accueil")}
         scheduleMenuRefresh();
         return result;

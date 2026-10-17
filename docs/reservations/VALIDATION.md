@@ -1,5 +1,9 @@
 # Validation — Réservations, partie 1
 
+Mise à jour : une campagne ultérieure a révélé deux défauts de navigation.
+Leur reproduction, la correction et les nouveaux résultats sont consignés dans
+`NAVIGATION.md`. Les résultats ci-dessous décrivent la campagne initiale.
+
 Exécution du 17 octobre 2026, base Git `c225b020604e73b7bbe4d6fbbcf11bb457301eb6`.
 Les commandes reproductibles et les limites du banc de test sont dans `README.md`.
 

@@ -9,7 +9,7 @@ const {createDb,users,tenants}=require('./helpers/reservations-db.cjs');
 const {roomArgs}=require('./reservations-postgres.cjs');
 const root=path.resolve(__dirname,'..');
 
-async function scenario(browser,mobile){
+async function scenario(browser,mobile,checkNavigation){
   const db=await createDb();
   const context=await browser.newContext(mobile?{...devices['iPhone 13'],serviceWorkers:'block'}:{viewport:{width:1365,height:950},serviceWorkers:'block'});
   let user=users.admin,failNext=false;
@@ -59,7 +59,9 @@ async function scenario(browser,mobile){
   const read=()=>db.rpc(users.admin,'reservations_read',{p_establishment_id:tenants.a});
   const roomName='Salle <svg onload="window.__reservationXss=1"> & équipe';
   try{
-    await boot();await navigate();
+    await boot();
+    if(checkNavigation){await checkNavigation({page,mobile,boot,attach,navigate,press,action,db,setUser:id=>{user=id}});assert.deepEqual(errors,[]);return}
+    await navigate();
     assert((await page.locator('#sf91Reservations h1').textContent()).includes('Réservations — Plan de salle'));
     assert.equal(await action('create-room').count(),1);
     await press(action('create-room'));
@@ -143,7 +145,8 @@ async function scenario(browser,mobile){
   }catch(error){console.error(await page.evaluate(()=>({visible:[...document.querySelectorAll('#app .page:not(.hidden)')].map(n=>n.id),zone:window.stopflow070CardNavigation?.runtime.currentZone,status:document.querySelector('#sf91Status')?.textContent,focus:document.activeElement?.outerHTML.slice(0,150)})));throw error}
   finally{await context.close();db.close()}
 }
-(async()=>{
+module.exports={scenario};
+if(require.main===module)(async()=>{
   const browser=await chromium.launch({headless:true,executablePath:process.env.STOPFLOW_CHROMIUM_PATH||'/usr/bin/chromium'});
   try{await scenario(browser,false);await scenario(browser,true)}finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});

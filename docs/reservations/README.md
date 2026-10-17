@@ -19,6 +19,9 @@ mobile) et une destination dans `openZone()`. Les propriétaires
 tactiles des menus restent inchangés. Le nouveau module utilise des contrôles
 HTML natifs et une délégation click/submit/change limitée à sa propre page.
 Il ne reconstruit pas ses formulaires à chaque frappe.
+Les rafraîchissements des menus conservent les boutons inchangés et leur focus.
+Pour Réservations, la navigation signale aussi la page ouverte au mécanisme historique de
+mémorisation, pour éviter qu'une restauration tardive rejoue un ancien écran.
 La page reconnaît localement le clic natif de compatibilité après le `.click()`
 synthétique du propriétaire tactile historique, même si son bouton a été
 reconstruit. Aucun listener tactile global n'est ajouté ou modifié.
@@ -147,6 +150,7 @@ Les conteneurs créés sont retirés en fin de test. Aucune URL/token cloud n'es
 ```sh
 node tests/reservations-postgres.cjs
 node tests/reservations-browser.cjs
+node tests/reservations-navigation.cjs
 npm exec --yes --cache /tmp/stopflow-npm-cache --package typescript@5.9.3 -- tsc --allowJs --checkJs --noEmit --target ES2022 --lib ES2022,DOM tests/reservations-globals.d.ts stopflow-091-reservations.js
 node tests/order-html-security.cjs
 node tests/article-html-security.cjs
@@ -168,6 +172,7 @@ Le dépôt n'a pas de build frontal existant. Le nouveau JS fait l'objet d'un
 contrôle TypeScript `checkJs/noEmit` avec un contrat de globals historique limité
 (`data` RPC reste JSON dynamique, validé en base), en plus des contrôles de syntaxe.
 Les résultats effectifs et les limites sont consignés dans `VALIDATION.md`.
+Le diagnostic et la correction de navigation sont détaillés dans `NAVIGATION.md`.
 
 ## Passage à la partie 2
 
