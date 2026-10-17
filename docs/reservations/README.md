@@ -1,5 +1,9 @@
 # Réservations — fondations, partie 1
 
+Mise à jour mission 1.5 : la configuration séparée et la procédure d'installation
+isolée sont préparées dans `docs/environments/README.md`. Aucun environnement
+cloud n'a été installé ou validé ; l'audit ci-dessous décrit la base initiale.
+
 ## Périmètre et architecture observée
 
 Base : `stopflow-dev`, commit `c225b020604e73b7bbe4d6fbbcf11bb457301eb6`.

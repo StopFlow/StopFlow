@@ -1,0 +1,6 @@
+.stopflow-dist/
+.env
+.env.*
+!.env.example
+.vercel/
+supabase/.temp/

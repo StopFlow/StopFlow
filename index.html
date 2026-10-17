@@ -239,6 +239,8 @@ Admin : contact@srlreunion.com / stopflow
 <div id="printArea"></div>
 
 
+<script src="stopflow-environment-config.js?v=091-env1"></script>
+<script src="stopflow-environment.js?v=091-env1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-orders.js"></script>
 <script src="supabase-catalog.js"></script>
@@ -314,8 +316,6 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmt=d=>new Intl.DateTimeFormat("fr-BE",{dateStyle:"short",timeStyle:"short"}).format(new Date(d));
 const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="—").length+1)).padStart(6,"0");
 
-const SUPABASE_URL="https://gjwvquhoecfikjorapud.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_z1gJuq-2eggMLbpRVy925A_oyUIkNUs";
 const LOCAL_FALLBACK_ACCOUNTS={
  "contact@srlreunion.com":{name:"Administrateur",role:ROLE.ADMIN},
  "quentin@lunion.be":{name:"Quentin Pollet",role:ROLE.RESPONSABLE},
@@ -324,8 +324,7 @@ const LOCAL_FALLBACK_ACCOUNTS={
 let supabaseClient=null;
 
 function localFallbackAllowed(){
- const host=location.hostname.toLowerCase();
- return location.protocol==="file:"||host==="localhost"||host==="127.0.0.1"||host.includes("git-stopflow-dev");
+ return window.stopflowEnvironment?.allowLocalFallback===true;
 }
 function setLoginMessage(message="",type="info"){
  const box=$("#loginMessage");
@@ -385,9 +384,12 @@ async function loadAuthenticatedProfile(user){
  showApp();
 }
 function initSupabaseClient(){
+ const config=window.stopflowEnvironment;
+ if(!config?.ok||!config.cloud)throw new Error(config?.error||"Configuration StopFlow absente : connexion bloquée.");
  if(!window.supabase||typeof window.supabase.createClient!=="function")return false;
- supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
-   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabasePublicKey,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
+   ...(config.environment==='development'?{global:{fetch:window.stopflowEnvironmentPolicy.guardedFetch(config,window.fetch.bind(window))}}:{})
  });
  return true;
 }
@@ -418,6 +420,10 @@ async function bootstrapAuth(){
  const fallbackAllowed=localFallbackAllowed();
  $("#localFallbackPanel").classList.toggle("hidden",!fallbackAllowed);
  showLogin();
+ if(!window.stopflowEnvironment?.ok){
+   $("#loginButton").disabled=true;
+   return setLoginMessage(window.stopflowEnvironment?.error||"Configuration StopFlow absente : connexion bloquée.","error");
+ }
  let authError="";
  let hadSupabaseSession=false;
  try{

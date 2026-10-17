@@ -1,7 +1,7 @@
 /* StopFlow 0.5.1 — correction iPhone, installation et zone sûre. */
 (function(){
   const DISMISSED_KEY="stopflow-install-card-dismissed-v0511";
-  const PUBLIC_URL="https://stopflow-app.vercel.app/";
+  const PUBLIC_URL=new URL('./',location.href).href;
   const isStandalone=()=>window.matchMedia?.("(display-mode: standalone)").matches||window.navigator.standalone===true;
   const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
   const isAndroid=()=>/android/i.test(navigator.userAgent);
