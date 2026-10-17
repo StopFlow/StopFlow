@@ -1,5 +1,9 @@
 # Suite mission 1.6 — références reçues
 
+État antérieur conservé pour traçabilité. Le ZIP reçu ensuite documente
+current_role(), les colonnes des 19 tables et les 45 migrations ; voir
+[DOSSIER-REPORT.md](DOSSIER-REPORT.md) pour le dernier état et les blocages restants.
+
 Analyse locale du 17 octobre 2026, depuis b1d83c1, sur
 `feat/reservations-foundations`. Les deux fichiers reçus sont conservés à
 l'identique dans `references/`, hors migrations et paquet d'installation.

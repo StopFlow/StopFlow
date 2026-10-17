@@ -1,0 +1,56 @@
+{
+  "source": "User-supplied ZIP; remote facts not independently verified by Codex",
+  "archiveSha256": "5d03350c14ad676e0ac7ebaea945710c8f44dab4f7e84b28a945ce35d7f7298b",
+  "files": [
+    {
+      "archiveName": "19_TABLES_COLONNES_REFERENCE.sql",
+      "localPath": "docs/schema/references/dossier-2026-10-17/19_TABLES_COLONNES_REFERENCE.sql",
+      "sha256": "1904858ee31ee97e06a3411af65557bb8d13d25790d985788fbeb6c87c0955ca"
+    },
+    {
+      "archiveName": "CATALOGUE_VERIFIE.json",
+      "localPath": "docs/schema/references/dossier-2026-10-17/CATALOGUE_VERIFIE.json",
+      "sha256": "71fecaea0018584c457c29dff7103cb942be3fcf98d760790a7cf2af2f1d5791"
+    },
+    {
+      "archiveName": "CURRENT_ROLE_REFERENCE.sql",
+      "localPath": "docs/schema/references/dossier-2026-10-17/CURRENT_ROLE_REFERENCE.sql",
+      "sha256": "55a50bc6a4009329465bdb3f0d59c12858f55a09b6effa5e7b3c42d93285f463"
+    },
+    {
+      "archiveName": "EXTRACTION_CATALOGUES_READONLY.sql",
+      "localPath": "docs/schema/references/dossier-2026-10-17/EXTRACTION_CATALOGUES_READONLY.sql",
+      "sha256": "c58954af2329ef8b13f0fd11e9b740f53541d4d4e0a3721900095f35561be3e1"
+    },
+    {
+      "archiveName": "FONCTIONS_SQL_REFERENCE.sql",
+      "localPath": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "sha256": "ebe9d2e82a16e8f7165928a250011cdef2d3d78d7f06485bb8e6075fbd7459a5"
+    },
+    {
+      "archiveName": "INSTRUCTIONS_CODEX.md",
+      "localPath": "docs/schema/references/dossier-2026-10-17/INSTRUCTIONS_CODEX.md",
+      "sha256": "37380b1d8111aa201e5b8d7bd52f52d2a0057cb910183ccb6adc285855d65d63"
+    },
+    {
+      "archiveName": "INVENTORY_LOCAL_CODEX.json",
+      "localPath": "docs/schema/INVENTORY.json",
+      "sha256": "04cc8ba9d501898b23574e05a2c63e5b5d74d437037efd25d0fa21cf86313e54"
+    },
+    {
+      "archiveName": "RAPPORT_CATALOGUE_DISTANT.md",
+      "localPath": "docs/schema/references/dossier-2026-10-17/RAPPORT_CATALOGUE_DISTANT.md",
+      "sha256": "5087fd82aa7cb3a109c4d9da44a7e3544db85ac00e90efb847f544f421a1a2c7"
+    },
+    {
+      "archiveName": "RAPPORT_COMPARAISON.md",
+      "localPath": "docs/schema/references/stopflow_rapport_rapprochement_schema.md",
+      "sha256": "23722635432c72cdc5d0b610c41730ecbf582634be1525a29fd68cf8e2333e67"
+    },
+    {
+      "archiveName": "README.md",
+      "localPath": "docs/schema/references/dossier-2026-10-17/README.md",
+      "sha256": "24b75378a26a4ed4d56824eda7382573f95fef572240f78cc3c2e149f548b1b5"
+    }
+  ]
+}

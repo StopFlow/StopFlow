@@ -1,0 +1,803 @@
+{
+  "formatVersion": 1,
+  "status": "BLOCKED_INCOMPLETE_FINAL_STATE_DO_NOT_INSTALL",
+  "remoteFactsSource": "Supabase StopFlow's Project, pg_catalog (read-only), 2026-10-17",
+  "remoteVerifiedByCodex": false,
+  "baselineStrategy": "Reviewed final-state baseline, then ONLY Reservations; do not replay historical migrations",
+  "counts": {
+    "remote": {
+      "public_tables": 24,
+      "public_sequences": 5,
+      "public_functions": 18,
+      "private_functions": 38,
+      "public_rls_policies": 63,
+      "public_custom_triggers": 16,
+      "custom_auth_users_triggers": 1,
+      "remote_migrations": 45
+    },
+    "localMigrations": 20,
+    "exactNameCandidates": 18,
+    "unmatchedRemote": 27,
+    "tableColumnReferences": 19,
+    "functionBodyReferences": 9
+  },
+  "localMigrations": [
+    {
+      "file": "supabase/migrations/202608022228_step_033_shared_suppliers.sql",
+      "version": "202608022228",
+      "name": "step_033_shared_suppliers",
+      "sha256": "3d28389c5e5dd342d03ae5c3f9de88793e0977761f9ea6f1c9949f4b5e0f7263",
+      "remoteCandidates": [
+        {
+          "version": "20260802203013",
+          "name": "step_033_shared_suppliers"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/202608022247_step_033_article_purchase_price.sql",
+      "version": "202608022247",
+      "name": "step_033_article_purchase_price",
+      "sha256": "151e28b88f55e035865c697c70ee0b66ce0943785fc3668cd9178dbfcb98c160",
+      "remoteCandidates": [
+        {
+          "version": "20260802205010",
+          "name": "step_033_article_purchase_price"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260803_step_034a_order_revision_and_atomic_save.sql",
+      "version": "20260803",
+      "name": "step_034a_order_revision_and_atomic_save",
+      "sha256": "021dc909fbe41c144e59c8ca21cc236f241458c7edbcf7cf179b9177c77c78e3",
+      "remoteCandidates": [
+        {
+          "version": "20260803095222",
+          "name": "step_034a_order_revision_and_atomic_save"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260804132000_stopflow_050_checklists.sql",
+      "version": "20260804132000",
+      "name": "stopflow_050_checklists",
+      "sha256": "903fe3b14126b925a84717430ce2026662f54e52fc542877fa2a6fcbedf12604",
+      "remoteCandidates": [
+        {
+          "version": "20260804112214",
+          "name": "stopflow_050_checklists"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260804135500_stopflow_050_checklist_history_followup.sql",
+      "version": "20260804135500",
+      "name": "stopflow_050_checklist_history_followup",
+      "sha256": "b86e6c9d9c7ea8f1a16fbae8b81440519e3049a0b0b9f19addf8634e3fed1f6b",
+      "remoteCandidates": [
+        {
+          "version": "20260804115808",
+          "name": "stopflow_050_checklist_history_followup"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260805143900_stopflow_060_department_security.sql",
+      "version": "20260805143900",
+      "name": "stopflow_060_department_security",
+      "sha256": "ebf5c4dfd65b1edbdecd85764edf9588d7c10ec6ba6138c4b8e782d84b78b254",
+      "remoteCandidates": [],
+      "status": "NO_EXACT_NAME_MATCH"
+    },
+    {
+      "file": "supabase/migrations/20260806060200_stopflow_060_password_reset_audit.sql",
+      "version": "20260806060200",
+      "name": "stopflow_060_password_reset_audit",
+      "sha256": "ec93d141b8f6ccb050eef31c0f9539906c45a61c11a390320c26ccc19892d0c9",
+      "remoteCandidates": [
+        {
+          "version": "20260806060528",
+          "name": "stopflow_060_password_reset_audit"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809000500_stopflow_060_invite_audit.sql",
+      "version": "20260809000500",
+      "name": "stopflow_060_invite_audit",
+      "sha256": "df90c4fc53cf6ed93ca167494f9697ff667003b5f9b11f7e074cf00043f3e6de",
+      "remoteCandidates": [
+        {
+          "version": "20260808220625",
+          "name": "stopflow_060_invite_audit"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809071500_stopflow_060_complete_user_admin_audit.sql",
+      "version": "20260809071500",
+      "name": "stopflow_060_complete_user_admin_audit",
+      "sha256": "0a04f78ec7e7e57b3d4ea7c7d9a50c761212c27c9875d6be9a02f48f3733f788",
+      "remoteCandidates": [
+        {
+          "version": "20260809070712",
+          "name": "stopflow_060_complete_user_admin_audit"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809074438_stopflow_070_profile_permissions_foundation.sql",
+      "version": "20260809074438",
+      "name": "stopflow_070_profile_permissions_foundation",
+      "sha256": "c4be9af5cbf4371ceb83c22dfdb493be25e43f466162764a3dad5f5ebce1f39c",
+      "remoteCandidates": [
+        {
+          "version": "20260809074438",
+          "name": "stopflow_070_profile_permissions_foundation"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809074647_stopflow_070_permission_rls.sql",
+      "version": "20260809074647",
+      "name": "stopflow_070_permission_rls",
+      "sha256": "8ba299fed9ebd4d8fb11da2aad1d59e03498d3b1237bbaa834c4051a9a143ce3",
+      "remoteCandidates": [
+        {
+          "version": "20260809074647",
+          "name": "stopflow_070_permission_rls"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809095500_stopflow_070_user_profile_permissions_rpc.sql",
+      "version": "20260809095500",
+      "name": "stopflow_070_user_profile_permissions_rpc",
+      "sha256": "89b96c229470c77aa8e561bce8b38e30c775030f958e69cb0791f83e64a84417",
+      "remoteCandidates": [
+        {
+          "version": "20260809080133",
+          "name": "stopflow_070_user_profile_permissions_rpc"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260809235000_stopflow_070_card_preferences.sql",
+      "version": "20260809235000",
+      "name": "stopflow_070_card_preferences",
+      "sha256": "02eb6f00c17d3a1463e438c301680be86dca778b565f6b37e52f6df9b4ebae08",
+      "remoteCandidates": [
+        {
+          "version": "20260809215236",
+          "name": "stopflow_070_card_preferences"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260810221000_stopflow_070_temperature_refactor.sql",
+      "version": "20260810221000",
+      "name": "stopflow_070_temperature_refactor",
+      "sha256": "8f850ef070f729d3bc483329a3209faf8c06db9535f97229e47ddbc6f5cf2fe8",
+      "remoteCandidates": [
+        {
+          "version": "20260810200920",
+          "name": "stopflow_070_temperature_refactor"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260810225500_stopflow_070_temperature_dashboard_rpc.sql",
+      "version": "20260810225500",
+      "name": "stopflow_070_temperature_dashboard_rpc",
+      "sha256": "8b6d48a62127581fcf77bd6337ff141f9b2a865ac36870caac841b5b04fd7170",
+      "remoteCandidates": [
+        {
+          "version": "20260810205430",
+          "name": "stopflow_070_temperature_dashboard_rpc"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260825120500_stopflow_080_article_categories_permission_alignment.sql",
+      "version": "20260825120500",
+      "name": "stopflow_080_article_categories_permission_alignment",
+      "sha256": "f1866bc3a34f7ed8cdded45e235791b4622ca5606415b7661d96fb6ed3dc6f10",
+      "remoteCandidates": [
+        {
+          "version": "20260825100909",
+          "name": "stopflow_080_article_categories_permission_alignment"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260829065738_stopflow_090_harden_security_definer_rpc_access.sql",
+      "version": "20260829065738",
+      "name": "stopflow_090_harden_security_definer_rpc_access",
+      "sha256": "38ee25c35b152cf34256e136685d5ca6a44ec1659a1a0d98a2a2278f2d5369e6",
+      "remoteCandidates": [
+        {
+          "version": "20260829065738",
+          "name": "stopflow_090_harden_security_definer_rpc_access"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260829070049_stopflow_090_revoke_anonymous_data_access.sql",
+      "version": "20260829070049",
+      "name": "stopflow_090_revoke_anonymous_data_access",
+      "sha256": "1274a76f21df7118b45a84e1a4734a7e5220d4f02e14a44d45ed0dc293fc91fc",
+      "remoteCandidates": [
+        {
+          "version": "20260829070049",
+          "name": "stopflow_090_revoke_anonymous_data_access"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20260829070330_stopflow_090_harden_private_permission_helpers.sql",
+      "version": "20260829070330",
+      "name": "stopflow_090_harden_private_permission_helpers",
+      "sha256": "465462d55a5fbd4ccf3428dc9e85e88f3ff6bc6f991798ea2422fb4ca7c4f344",
+      "remoteCandidates": [
+        {
+          "version": "20260829070330",
+          "name": "stopflow_090_harden_private_permission_helpers"
+        }
+      ],
+      "status": "SAME_NAME_CONTENT_UNVERIFIED"
+    },
+    {
+      "file": "supabase/migrations/20261017120000_stopflow_reservations_foundation.sql",
+      "version": "20261017120000",
+      "name": "stopflow_reservations_foundation",
+      "sha256": "236de5f321c40d7311c8685f8354c495b3e54728434a83e3fdd1cb1ce22eaf86",
+      "remoteCandidates": [],
+      "status": "NEW_RESERVATIONS_NOT_IN_PRODUCTION"
+    }
+  ],
+  "unmatchedRemote": [
+    {
+      "version": "20260801214108",
+      "name": "create_shared_orders_workflow"
+    },
+    {
+      "version": "20260801214144",
+      "name": "harden_shared_order_functions"
+    },
+    {
+      "version": "20260801214629",
+      "name": "allow_managers_to_submit_drafts"
+    },
+    {
+      "version": "20260801221127",
+      "name": "create_shared_articles_and_settings"
+    },
+    {
+      "version": "20260802065745",
+      "name": "protect_responsable_and_audit_user_management"
+    },
+    {
+      "version": "20260802082511",
+      "name": "allow_user_delete_audit"
+    },
+    {
+      "version": "20260802082522",
+      "name": "protect_user_delete_history"
+    },
+    {
+      "version": "20260802082532",
+      "name": "deleted_user_identity_service_access"
+    },
+    {
+      "version": "20260802082543",
+      "name": "deleted_user_identity_email_index"
+    },
+    {
+      "version": "20260802082555",
+      "name": "deleted_user_identity_actor_fk"
+    },
+    {
+      "version": "20260802082605",
+      "name": "deleted_user_identity_unique_event"
+    },
+    {
+      "version": "20260802082619",
+      "name": "deleted_user_identity_rls_insert"
+    },
+    {
+      "version": "20260802082629",
+      "name": "deleted_user_identity_role_check"
+    },
+    {
+      "version": "20260803205225",
+      "name": "stopflow_blocks_b_c_departments_supplier_rules_costs"
+    },
+    {
+      "version": "20260803205911",
+      "name": "stopflow_security_and_indexes_blocks_b_c"
+    },
+    {
+      "version": "20260803211251",
+      "name": "stopflow_blocks_d_e_operations_audit_security_v2"
+    },
+    {
+      "version": "20260803211711",
+      "name": "stopflow_revoke_public_security_definer_access"
+    },
+    {
+      "version": "20260803213107",
+      "name": "stopflow_checklists_v010_v011"
+    },
+    {
+      "version": "20260804205027",
+      "name": "stopflow_054_department_foundation"
+    },
+    {
+      "version": "20260804205216",
+      "name": "stopflow_054_department_order_rpc"
+    },
+    {
+      "version": "20260804205849",
+      "name": "stopflow_054_backward_compatible_order_rpc"
+    },
+    {
+      "version": "20260804211417",
+      "name": "stopflow_054_null_department_compatibility"
+    },
+    {
+      "version": "20260805204405",
+      "name": "stopflow_060_multi_departments"
+    },
+    {
+      "version": "20260817090323",
+      "name": "add_department_content_review_status"
+    },
+    {
+      "version": "20260824102611",
+      "name": "step_080_article_categories_and_review_notes"
+    },
+    {
+      "version": "20260824103743",
+      "name": "step_080_article_category_seed_cleanup"
+    },
+    {
+      "version": "20260824104857",
+      "name": "proposal_review_notifications"
+    }
+  ],
+  "tableReferences": [
+    {
+      "name": "public.activity_events",
+      "columns": [
+        "id bigint GENERATED ALWAYS AS IDENTITY NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "actor_user_id uuid",
+        "actor_name text",
+        "event_type text NOT NULL",
+        "entity_type text NOT NULL",
+        "entity_id text",
+        "label text NOT NULL",
+        "details jsonb DEFAULT '{}'::jsonb NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.app_settings",
+      "columns": [
+        "id smallint DEFAULT 1 NOT NULL",
+        "establishment text DEFAULT 'Brasserie L''Union'::text NOT NULL",
+        "manager text DEFAULT 'Responsable Test'::text NOT NULL",
+        "footer text DEFAULT 'Document préparé par StopFlow — Envoi au fournisseur à effectuer manuellement.'::text NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_by uuid"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.article_categories",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "name text NOT NULL",
+        "active boolean DEFAULT true NOT NULL",
+        "sort_order integer DEFAULT 0 NOT NULL",
+        "created_by uuid",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.articles",
+      "columns": [
+        "id bigint GENERATED BY DEFAULT AS IDENTITY NOT NULL",
+        "name text NOT NULL",
+        "supplier text NOT NULL",
+        "category text DEFAULT ''::text NOT NULL",
+        "unit text DEFAULT ''::text NOT NULL",
+        "target integer DEFAULT 0 NOT NULL",
+        "active boolean DEFAULT true NOT NULL",
+        "sort_order integer DEFAULT 0 NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_by uuid",
+        "supplier_id uuid",
+        "purchase_price numeric(12,2)",
+        "department text DEFAULT 'salle'::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.checklist_run_items",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "run_id uuid NOT NULL",
+        "template_item_id uuid",
+        "item_order integer DEFAULT 0 NOT NULL",
+        "label text NOT NULL",
+        "required boolean DEFAULT true NOT NULL",
+        "input_type text DEFAULT 'checkbox'::text NOT NULL",
+        "checked boolean DEFAULT false NOT NULL",
+        "numeric_value numeric",
+        "text_value text DEFAULT ''::text NOT NULL",
+        "photo_url text",
+        "anomaly boolean DEFAULT false NOT NULL",
+        "note text DEFAULT ''::text NOT NULL",
+        "section_label text DEFAULT ''::text NOT NULL",
+        "anomaly_status text",
+        "anomaly_reported_at timestamp with time zone",
+        "resolved_at timestamp with time zone",
+        "resolved_by uuid",
+        "resolved_by_name text",
+        "resolution_note text DEFAULT ''::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.checklist_runs",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "template_id uuid NOT NULL",
+        "template_name text NOT NULL",
+        "template_version integer NOT NULL",
+        "department text NOT NULL",
+        "status text DEFAULT 'en_cours'::text NOT NULL",
+        "performed_by uuid NOT NULL",
+        "performed_by_name text NOT NULL",
+        "started_at timestamp with time zone DEFAULT now() NOT NULL",
+        "completed_at timestamp with time zone",
+        "validated_by uuid",
+        "validated_by_name text",
+        "validated_at timestamp with time zone",
+        "validator_note text DEFAULT ''::text NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.checklist_suggestions",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "template_id uuid NOT NULL",
+        "run_id uuid",
+        "proposed_by uuid NOT NULL",
+        "proposed_by_name text NOT NULL",
+        "department text NOT NULL",
+        "proposed_label text NOT NULL",
+        "explanation text DEFAULT ''::text NOT NULL",
+        "status text DEFAULT 'en_attente'::text NOT NULL",
+        "reviewed_by uuid",
+        "reviewed_by_name text",
+        "reviewed_at timestamp with time zone",
+        "review_note text DEFAULT ''::text NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.checklist_template_items",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "template_id uuid NOT NULL",
+        "item_order integer DEFAULT 0 NOT NULL",
+        "label text NOT NULL",
+        "required boolean DEFAULT true NOT NULL",
+        "input_type text DEFAULT 'checkbox'::text NOT NULL",
+        "help_text text DEFAULT ''::text NOT NULL",
+        "active boolean DEFAULT true NOT NULL",
+        "section_label text DEFAULT ''::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.checklist_templates",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "name text NOT NULL",
+        "department text NOT NULL",
+        "checklist_type text NOT NULL",
+        "version integer DEFAULT 1 NOT NULL",
+        "active boolean DEFAULT true NOT NULL",
+        "description text DEFAULT ''::text NOT NULL",
+        "created_by uuid",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.deleted_user_identities",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "former_user_id uuid",
+        "email text NOT NULL",
+        "prenom text",
+        "nom text",
+        "role text",
+        "deleted_by uuid",
+        "deleted_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.department_content",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "department text DEFAULT 'cuisine'::text NOT NULL",
+        "content_type text NOT NULL",
+        "title text NOT NULL",
+        "content text DEFAULT ''::text NOT NULL",
+        "period_start date",
+        "period_end date",
+        "active boolean DEFAULT true NOT NULL",
+        "created_by uuid",
+        "created_by_name text DEFAULT ''::text NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "review_status text DEFAULT 'pending'::text NOT NULL",
+        "reviewed_by uuid",
+        "reviewed_by_name text DEFAULT ''::text NOT NULL",
+        "reviewed_at timestamp with time zone",
+        "review_note text DEFAULT ''::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.order_lines",
+      "columns": [
+        "id bigint GENERATED ALWAYS AS IDENTITY NOT NULL",
+        "order_id uuid NOT NULL",
+        "line_position integer NOT NULL",
+        "article_id text",
+        "article_name text NOT NULL",
+        "category text DEFAULT ''::text NOT NULL",
+        "unit text DEFAULT ''::text NOT NULL",
+        "target numeric DEFAULT 0 NOT NULL",
+        "stock numeric DEFAULT 0 NOT NULL",
+        "proposed numeric DEFAULT 0 NOT NULL",
+        "quantity numeric DEFAULT 0 NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "purchase_price numeric",
+        "line_total numeric"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.orders",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "number text",
+        "supplier text NOT NULL",
+        "status stopflow_order_status DEFAULT 'Brouillon'::stopflow_order_status NOT NULL",
+        "author_id uuid",
+        "author_name text NOT NULL",
+        "validator_id uuid",
+        "validator_name text",
+        "note text DEFAULT ''::text NOT NULL",
+        "stocks jsonb DEFAULT '{}'::jsonb NOT NULL",
+        "adjustments jsonb DEFAULT '{}'::jsonb NOT NULL",
+        "inventory_at timestamp with time zone DEFAULT now() NOT NULL",
+        "validated_at timestamp with time zone",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "revision bigint DEFAULT 1 NOT NULL",
+        "last_edited_by uuid",
+        "last_edited_name text",
+        "supplier_email text",
+        "estimated_total numeric",
+        "sent_at timestamp with time zone",
+        "sent_by uuid",
+        "sent_by_name text",
+        "delivered_at timestamp with time zone",
+        "delivery_note text",
+        "department text DEFAULT 'salle'::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.profile_departments",
+      "columns": [
+        "profile_id uuid NOT NULL",
+        "department text NOT NULL",
+        "is_primary boolean DEFAULT false NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.profiles",
+      "columns": [
+        "id uuid NOT NULL",
+        "email text NOT NULL",
+        "prenom text",
+        "nom text",
+        "role text DEFAULT 'employe'::text NOT NULL",
+        "actif boolean DEFAULT true NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL",
+        "departement text"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.proposal_notifications",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "recipient_user_id uuid NOT NULL",
+        "content_id uuid NOT NULL",
+        "content_type text NOT NULL",
+        "title text DEFAULT ''::text NOT NULL",
+        "decision text NOT NULL",
+        "review_note text DEFAULT ''::text NOT NULL",
+        "reviewer_name text DEFAULT ''::text NOT NULL",
+        "reviewed_at timestamp with time zone NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "read_at timestamp with time zone"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.team_banners",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "title text NOT NULL",
+        "message text DEFAULT ''::text NOT NULL",
+        "level text DEFAULT 'information'::text NOT NULL",
+        "audience text DEFAULT 'all'::text NOT NULL",
+        "start_at timestamp with time zone DEFAULT now() NOT NULL",
+        "end_at timestamp with time zone",
+        "active boolean DEFAULT true NOT NULL",
+        "created_by uuid",
+        "created_by_name text DEFAULT ''::text NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "updated_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.temperature_readings",
+      "columns": [
+        "id uuid DEFAULT gen_random_uuid() NOT NULL",
+        "department text DEFAULT 'cuisine'::text NOT NULL",
+        "equipment text NOT NULL",
+        "temperature numeric(6,2) NOT NULL",
+        "min_allowed numeric(6,2) DEFAULT 0 NOT NULL",
+        "max_allowed numeric(6,2) DEFAULT 4 NOT NULL",
+        "anomaly boolean GENERATED ALWAYS AS (((temperature < min_allowed) OR (temperature > max_allowed))) STORED",
+        "note text DEFAULT ''::text NOT NULL",
+        "recorded_at timestamp with time zone DEFAULT now() NOT NULL",
+        "recorded_by uuid",
+        "recorded_by_name text DEFAULT ''::text NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL",
+        "round_id uuid",
+        "equipment_id uuid",
+        "equipment_location text DEFAULT ''::text NOT NULL",
+        "equipment_type text DEFAULT ''::text NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    },
+    {
+      "name": "public.user_admin_events",
+      "columns": [
+        "id bigint GENERATED ALWAYS AS IDENTITY NOT NULL",
+        "actor_user_id uuid",
+        "target_user_id uuid",
+        "target_email text",
+        "action text NOT NULL",
+        "details jsonb DEFAULT '{}'::jsonb NOT NULL",
+        "created_at timestamp with time zone DEFAULT now() NOT NULL"
+      ],
+      "status": "COLUMNS_ONLY_NOT_INSTALLABLE"
+    }
+  ],
+  "functionReferences": [
+    {
+      "name": "private.is_active_user",
+      "arguments": "",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "private.is_admin",
+      "arguments": "",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "private.is_responsible_or_admin",
+      "arguments": "",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "private.set_catalog_audit",
+      "arguments": "",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "private.user_has_department",
+      "arguments": "p_user_id uuid, p_department text",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "public.log_stopflow_event",
+      "arguments": "p_event_type text, p_entity_type text, p_entity_id text, p_label text, p_details jsonb DEFAULT '{}'::jsonb",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "public.submit_order",
+      "arguments": "p_order_id uuid",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "public.validate_order",
+      "arguments": "p_order_id uuid",
+      "source": "docs/schema/references/stopflow_fonctions_manquantes_reference.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    },
+    {
+      "name": "private.current_role",
+      "arguments": "",
+      "source": "docs/schema/references/dossier-2026-10-17/CURRENT_ROLE_REFERENCE.sql",
+      "status": "REFERENCE_BODY_ONLY_ACL_UNVERIFIED"
+    }
+  ],
+  "protectedFunctions": [
+    "private.protect_core_accounts()",
+    "private.protect_main_admin()",
+    "public.admin_set_user_access(...)",
+    "public.admin_set_user_profile_permissions_070(...)"
+  ],
+  "blockers": [
+    "Final constraints/indexes/ACL/RLS/triggers for all 24 tables; final columns of the other five tables",
+    "All 56 final function identities/bodies/owners/ACL, including four privately reviewed protected-account functions",
+    "Five sequences parameters/ownership/ACL, enum/types, schemas/default/column privileges and extension dependencies",
+    "handle_new_user() body and exact on_auth_user_created trigger; real Auth provisioning verification",
+    "Approved test-only identity mapping preserving protection semantics and provenance of the changed manager default",
+    "Blank Supabase with actual GoTrue/PostgREST reconstruction and user-JWT tests; no such stack available here"
+  ]
+}

@@ -1,5 +1,9 @@
 # Mission 1.6 — schéma et installation isolée
 
+**Dernier état :** [analyse du dossier complet reçu](DOSSIER-REPORT.md) et
+[préparation de baseline bloquée](baseline/README.md). `current_role()` et les
+colonnes des 19 tables sont désormais documentées ; la baseline reste incomplète.
+
 Suite après réception du rapprochement Production : voir
 [RECONCILIATION.md](RECONCILIATION.md) pour les huit références, les dépendances
 restantes et les requêtes exactes de prochaine extraction. La baseline reste partielle.

@@ -1,0 +1,96 @@
+{
+  "source": "Supabase StopFlow's Project, pg_catalog (read-only), 2026-10-17",
+  "database_reference": "gjwvquhoecfikjorapud",
+  "scope": [
+    "public",
+    "private",
+    "custom trigger on auth.users"
+  ],
+  "verified_counts": {
+    "public_tables": 24,
+    "public_sequences": 5,
+    "public_functions": 18,
+    "private_functions": 38,
+    "public_rls_policies": 63,
+    "public_custom_triggers": 16,
+    "custom_auth_users_triggers": 1,
+    "remote_migrations": 45
+  },
+  "table_names": [
+    "activity_events",
+    "app_settings",
+    "article_categories",
+    "articles",
+    "checklist_run_items",
+    "checklist_runs",
+    "checklist_suggestions",
+    "checklist_template_items",
+    "checklist_templates",
+    "deleted_user_identities",
+    "department_content",
+    "order_lines",
+    "orders",
+    "profile_card_preferences",
+    "profile_departments",
+    "profile_permissions",
+    "profiles",
+    "proposal_notifications",
+    "suppliers",
+    "team_banners",
+    "temperature_equipment",
+    "temperature_readings",
+    "temperature_rounds",
+    "user_admin_events"
+  ],
+  "initial_create_missing_from_local_inventory": [
+    "public.activity_events",
+    "public.app_settings",
+    "public.article_categories",
+    "public.articles",
+    "public.checklist_run_items",
+    "public.checklist_runs",
+    "public.checklist_suggestions",
+    "public.checklist_template_items",
+    "public.checklist_templates",
+    "public.deleted_user_identities",
+    "public.department_content",
+    "public.order_lines",
+    "public.orders",
+    "public.profile_departments",
+    "public.profiles",
+    "public.proposal_notifications",
+    "public.team_banners",
+    "public.temperature_readings",
+    "public.user_admin_events"
+  ],
+  "missing_helper_recovered": "private.current_role()",
+  "auth_provisioning_trigger": "auth.users: on_auth_user_created -> public.handle_new_user()",
+  "custom_enum": {
+    "public.stopflow_order_status": [
+      "Brouillon",
+      "À valider",
+      "Validé",
+      "Commandé",
+      "Annulé"
+    ]
+  },
+  "sequences": [
+    "activity_events_id_seq",
+    "articles_id_seq",
+    "order_lines_id_seq",
+    "order_number_seq",
+    "user_admin_events_id_seq"
+  ],
+  "privacy": {
+    "business_row_data_exported": false,
+    "user_accounts_exported": false,
+    "raw_ddl_of_protected_admin_functions_included": false,
+    "protected_functions_require_review": [
+      "private.protect_core_accounts()",
+      "private.protect_main_admin()",
+      "public.admin_set_user_access(...)",
+      "public.admin_set_user_profile_permissions_070(...)"
+    ]
+  },
+  "status": "catalog verified, NOT a complete runnable SQL baseline; codex must finish reconciliation and tests"
+}
