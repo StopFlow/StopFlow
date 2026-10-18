@@ -53,7 +53,7 @@ async function preflight(){
  const network=inspectedNetworks[0],members=Object.keys(network.Containers||{});
  S.need(members.length>0&&members.every(id=>/^[0-9a-f]{64}$/.test(id)),'GATEWAY_NETWORK_INCOMPLETE');
  const endpoints=JSON.parse(command(['inspect',...members]));
- report.gateway=S.gateway(gatewayConfig,{kong,network,containers:endpoints,authId:auth.Id,restId:rest.Id});
+ report.gateway=S.gateway(gatewayConfig,{kong,network,containers:endpoints,authId:auth.Id,restId:rest.Id,dbId:db.Id});
  S.authHooks(S.environment(auth));
  credentials=S.keys(gatewayConfig,env);
  dbId=db.Id;

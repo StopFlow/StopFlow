@@ -1,8 +1,14 @@
-# StopFlow — Mission 2.4.1 — Supabase local PG17, macOS
+# StopFlow — Mission 2.4.1 r2 — Supabase local PG17, macOS
 
 **À soumettre à ChatGPT pilote pour revue de sécurité AVANT exécution.**
 Ce paquet n'a pas encore été exécuté sur votre Mac. Un ZIP préparé ou des tests
 de garde réussis ne prouvent pas une reconstruction Supabase réussie.
+
+Révision `network-members-and-db-aliases-r2`, dossier et ZIP distincts
+`StopFlow-mission24.1-r2-macos`. L'original Mission 2.4.1 n'est pas remplacé.
+`transfer-manifest.json` identifie le commit exact et son arbre Git ;
+`REVIEW.patch` contient le diff depuis 655f77a3660cfd36d13c2b9846aa56377a4ad229,
+sans en-tête d'identité Git. Une empreinte ne vaut pas autorisation d'exécution.
 
 ## Préconditions
 
@@ -26,14 +32,14 @@ avant toute remise à zéro **locale** séparée et explicitement autorisée.
 Décompresser le ZIP dans Téléchargements puis :
 
 ```bash
-bash "$HOME/Downloads/StopFlow-mission24.1-macos/run-macos.sh"
+bash "$HOME/Downloads/StopFlow-mission24.1-r2-macos/run-macos.sh"
 ```
 
 Si le dossier est ailleurs, adapter seulement ce chemin. Le dossier du projet
 Supabase cible reste fixe. Vérification préalable sans écriture en base :
 
 ```bash
-bash "$HOME/Downloads/StopFlow-mission24.1-macos/run-macos.sh" --preflight-only
+bash "$HOME/Downloads/StopFlow-mission24.1-r2-macos/run-macos.sh" --preflight-only
 ```
 
 Ce mode produit volontairement `NO-GO / PREFLIGHT_ONLY_NO_TEST_EXECUTION` :
@@ -52,13 +58,19 @@ Les routes DB de GoTrue et PostgREST doivent désigner ce conteneur.
 Les URL de services Kong doivent résoudre vers un unique conteneur réellement
 inspecté du projet, via son nom ou ses alias/DNSNames sur le réseau Docker
 `supabase_network_StopFlow-test-local` (bridge local). Tous ses endpoints sont
-inspectés, y compris ceux sans le label du projet, pour détecter les collisions.
+inspectés. Chaque membre doit être reconnu, identifié comme appartenant au projet,
+démarré/healthy et sur ce seul réseau, même si aucune route Kong ne l'utilise.
+Un membre étranger ou non identifié est refusé, pas simplement ignoré.
 Les alias `realtime` / `realtime-dev` ne sont autorisés que pour le conteneur
 `supabase_realtime_StopFlow-test-local`. Un label seul ou un nom ressemblant à
 Supabase ne suffit pas. Un réseau supplémentaire pour Kong ou une destination
 est refusé ; l'ID réseau et les IDs d'endpoints doivent correspondre entre les
 inspections réseau et conteneur. Auth et REST doivent être les conteneurs déjà
 vérifiés, sur les ports attendus.
+Leurs hôtes PostgreSQL configurés sont aussi résolus via la carte exhaustive
+des noms, alias, DNSNames et adresses inspectés. Ils doivent désigner uniquement
+l'ID de la base vérifiée ; les collisions et les paramètres d'URI qui changent
+la cible sont refusés. Aucun DNS externe ou accès Docker réel dans les autotests.
 
 **Tous** les ports publiés de Kong sont contrôlés (API, TLS et administration).
 Seules les liaisons explicites `127.0.0.1` / `::1` sont acceptées, avec l'API
@@ -150,5 +162,7 @@ les 15 autres URL sont représentatives, pas une copie du fichier réel inconnu.
 Les autotests utilisent des inspections Docker fictives et aucun service réel.
 La suite Supabase, le précontrôle Mac et les SQL ne sont pas exécutés pour cette
 livraison. Le ZIP Mission 2.4 original reste inchangé.
-Le fichier `REVIEW.patch` contient le diff intégral du commit de préparation
-mentionné dans le manifeste, pour faciliter la revue avant exécution.
+Le fichier `REVIEW.patch` contient le diff intégral depuis le commit de base
+mentionné dans le manifeste jusqu'au commit exact du paquet, pour revue avant
+exécution. Cette révision ajoute le refus de tout membre réseau étranger même
+inutilisé par Kong, et des collisions de destination PostgreSQL d'Auth/REST.

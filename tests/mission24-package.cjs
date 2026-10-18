@@ -1,13 +1,19 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),cp=require('node:child_process');
-const {build}=require('../scripts/build-mission24-transfer.cjs');
+const {build,packageName,packageRevision,reviewBaseCommit}=require('../scripts/build-mission24-transfer.cjs');
 const {hash}=require('../tools/mission24/safety.cjs');
 const source=process.env.STOPFLOW_SNAPSHOT23_SOURCE;
 assert(source,'External reviewed snapshot required');
 const parent=fs.mkdtempSync(path.join(os.tmpdir(),'stopflow24-package-test-'));
 const result=build(source,path.join(parent,'payload'));
-const root=path.join(parent,'payload/StopFlow-mission24.1-macos');
+const root=path.join(parent,'payload',packageName);
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'transfer-manifest.json')));
+assert.equal(manifest.packageRevision,packageRevision);
+assert.equal(manifest.reviewBaseCommit,reviewBaseCommit);
+assert.equal(manifest.sourceCommit,cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim());
+assert.equal(manifest.sourceTree,cp.execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim());
+assert.deepEqual(fs.readFileSync(path.join(root,'REVIEW.patch')),cp.execFileSync('git',['diff','--no-ext-diff','--color=never',reviewBaseCommit,manifest.sourceCommit]));
+for(const name of ['README.md','run-macos.sh','runner.cjs','safety.cjs','local-http.cjs','self-test.cjs','gateway-self-test.cjs'])assert.deepEqual(fs.readFileSync(path.join(root,name)),cp.execFileSync('git',['show',manifest.sourceCommit+':tools/mission24/'+name]));
 assert.equal(manifest.files.length,14);
 for(const file of manifest.files){assert.equal(hash(fs.readFileSync(path.join(root,file.name))),file.sha256);assert(!/(\.env|\.pem|credentials|password)/i.test(file.name))}
 assert.equal(hash(fs.readFileSync(result.zip)),result.sha256);
@@ -22,7 +28,7 @@ assert(baseline.includes('POSTGRES_17_REQUIRED'));assert(baseline.includes('FRES
 assert(!/service_role_key|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|sb_secret_/i.test(baseline));
 const emails=[...baseline.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)].map(m=>m[0]);
 assert(emails.every(e=>e.endsWith('@example.invalid')));
-cp.execFileSync('python3',['-c',"import sys,zipfile; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; assert len(z.namelist())==15; assert all(n.startswith('StopFlow-mission24.1-macos/') and '..' not in n.split('/') for n in z.namelist())",result.zip]);
+cp.execFileSync('python3',['-c',"import sys,zipfile; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; assert len(z.namelist())==15; assert all(n.startswith(sys.argv[2]+'/') and '..' not in n.split('/') for n in z.namelist())",result.zip,packageName]);
 if(process.platform!=='darwin'){
  assert.throws(()=>cp.execFileSync('bash',[path.join(root,'run-macos.sh')],{stdio:'pipe'}));
  let report=JSON.parse(fs.readFileSync(path.join(root,'reports/result.json')));

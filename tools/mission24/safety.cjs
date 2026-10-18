@@ -1,6 +1,9 @@
 'use strict';
 const crypto=require('node:crypto');
 const project='StopFlow-test-local',dbName='supabase_db_'+project;
+// Recognized local CLI components, including optional services. A new/unknown
+// component requires review; the project label alone is not sufficient.
+const projectNames=new Set(['db','kong','auth','rest','storage','edge_runtime','realtime','imgproxy','pg_meta','studio','inbucket','mailpit','analytics','vector','pooler','supavisor'].map(s=>'supabase_'+s+'_'+project));
 class Failure extends Error{constructor(code){super(code);this.code=code}}
 const need=(value,code)=>{if(!value)throw new Failure(code)};
 function localUrl(value,port){
@@ -40,7 +43,7 @@ function gatewayPort(kong){
  need(ports.length===1&&declared.some(b=>b.HostIp==='127.0.0.1'&&b.HostPort===ports[0]),'GATEWAY_PORT_REFUSED');
  return ports[0];
 }
-function gateway(config,{kong,network,containers,authId,restId}={}){
+function gateway(config,{kong,network,containers,authId,restId,dbId}={}){
  need(kong&&network&&Array.isArray(containers),'GATEWAY_DOCKER_EVIDENCE_REQUIRED');
  container(kong,'supabase_kong_'+project);
  need(network.Name==='supabase_network_'+project&&network.Driver==='bridge'&&network.Scope==='local'&&!network.Ingress&&
@@ -53,24 +56,40 @@ function gateway(config,{kong,network,containers,authId,restId}={}){
   Object.keys(members).every(id=>byId.has(id))&&byId.has(kong.Id),'GATEWAY_NETWORK_INCOMPLETE');
  const aliases=new Map();
  for(const c of containers){
+  // Every network member must be identified, even if no Kong route uses it.
+  need(typeof c?.Name==='string'&&/^[0-9a-f]{64}$/.test(c.Id),'GATEWAY_MEMBER_UNIDENTIFIED');
+  container(c,c.Name.slice(1));
+  need(projectNames.has(c.Name.slice(1)),'GATEWAY_CONTAINER_NAME_REFUSED');
+  need(Object.keys(c.NetworkSettings?.Networks||{}).length===1,'GATEWAY_DESTINATION_FOREIGN_NETWORK');
   const endpoint=c.NetworkSettings?.Networks?.[network.Name];
   need(endpoint?.NetworkID===network.Id&&members[c.Id]?.Name===c.Name.slice(1),'GATEWAY_ENDPOINT_MISMATCH');
   need(endpoint.EndpointID&&endpoint.EndpointID===members[c.Id].EndpointID,'GATEWAY_ENDPOINT_MISMATCH');
-  // Enumerate ALL endpoints, including foreign containers, to detect collisions.
-  for(const name of new Set([c.Name.slice(1),...(endpoint.Aliases||[]),...(endpoint.DNSNames||[])].map(n=>n.toLowerCase()))){
+  need((endpoint.Aliases==null||Array.isArray(endpoint.Aliases))&&(endpoint.DNSNames==null||Array.isArray(endpoint.DNSNames)),'GATEWAY_MEMBER_UNIDENTIFIED');
+  // Bind names and direct addresses to inspected endpoint IDs, never DNS lookups.
+  const names=[c.Name.slice(1),...(endpoint.Aliases||[]),...(endpoint.DNSNames||[]),...(endpoint.IPAddress?[endpoint.IPAddress]:[])];
+  need(names.every(n=>typeof n==='string'&&n.length>0),'GATEWAY_MEMBER_UNIDENTIFIED');
+  for(const name of new Set(names.map(n=>n.toLowerCase()))){
    if(!aliases.has(name))aliases.set(name,new Set());aliases.get(name).add(c.Id);
   }
  }
  const urls=gatewayUrls(config),resolved=[];
  for(const url of urls){
   const ids=aliases.get(url.hostname);need(ids?.size===1,'GATEWAY_DESTINATION_UNKNOWN_OR_AMBIGUOUS');
-  const c=byId.get([...ids][0]);container(c,c.Name.slice(1));
-  need(/^\/supabase_[a-z0-9_-]+_StopFlow-test-local$/.test(c.Name),'GATEWAY_CONTAINER_NAME_REFUSED');
+  const c=byId.get([...ids][0]);
   if(['realtime','realtime-dev'].includes(url.hostname))need(c.Name==='/supabase_realtime_'+project,'GATEWAY_REALTIME_IDENTITY_REFUSED');
-  need(Object.keys(c.NetworkSettings.Networks).length===1,'GATEWAY_DESTINATION_FOREIGN_NETWORK');
   resolved.push({url,id:c.Id});
  }
  for(const [id,port]of [[authId,'9999'],[restId,'3000']])need(id&&resolved.some(r=>r.id===id&&r.url.port===port),'GATEWAY_SERVICE_MISSING');
+ // Auth and REST use PostgreSQL directly, outside the Kong route list. Resolve
+ // their actual configured hosts through the SAME exhaustive endpoint map.
+ const db=byId.get(dbId);need(db,'GATEWAY_DATABASE_IDENTITY_REQUIRED');container(db,dbName);
+ const dbHosts=[...aliases].filter(([,ids])=>ids.has(dbId)).map(([name])=>name);
+ for(const [id,name,key]of [[authId,'auth','GOTRUE_DB_DATABASE_URL'],[restId,'rest','PGRST_DB_URI']]){
+  const service=byId.get(id);container(service,'supabase_'+name+'_'+project);
+  const url=databaseRoute(environment(service)[key],dbHosts);
+  const ids=aliases.get(url.hostname.toLowerCase());
+  need(ids?.size===1&&ids.has(dbId),'DATABASE_DESTINATION_UNKNOWN_OR_AMBIGUOUS');
+ }
  return {routes:resolved.length,destinations:new Set(resolved.map(r=>r.id)).size};
 }
 function daemon(env,context){need(!env.DOCKER_HOST&&!env.DOCKER_TLS_VERIFY&&!env.DOCKER_CERT_PATH,'DOCKER_OVERRIDE_REFUSED');need(/^unix:\/\/\//.test(context),'NON_LOCAL_DOCKER_REFUSED')}
@@ -83,6 +102,8 @@ function environment(c){return Object.fromEntries((c.Config.Env||[]).map(s=>{con
 function databaseRoute(value,aliases){
  let u;try{u=new URL(value)}catch{throw new Failure('DB_ROUTE_UNREADABLE')}
  need(['postgres:','postgresql:'].includes(u.protocol)&&aliases.map(s=>s.toLowerCase()).includes(u.hostname.toLowerCase())&&(!u.port||u.port==='5432')&&u.pathname==='/postgres','NON_LOCAL_DB_ROUTE_REFUSED');
+ // Reject connection-target overrides hidden in libpq query parameters.
+ need(!u.search&&!u.hash,'NON_LOCAL_DB_ROUTE_REFUSED');return u;
 }
 function jwt(value,role){try{const p=JSON.parse(Buffer.from(value.split('.')[1],'base64url'));return value.split('.').length===3&&p.role===role&&!['gjwvquhoecfikjorapud','mywiuegzzldjlsgfiwks','ojqbzyrwuyjggbyphdqi'].includes(p.ref)}catch{return false}}
 function keys(config,env){
