@@ -61,6 +61,30 @@
           "value": "public, max-age=86400"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://mmrdpyhoawwoplbzqwag.supabase.co wss://mmrdpyhoawwoplbzqwag.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/stopflow-environment-config.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
-  ]
+  ],
+  "buildCommand": "node scripts/build-pilot.cjs",
+  "outputDirectory": ".stopflow-dist"
 }

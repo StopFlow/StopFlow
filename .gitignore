@@ -4,3 +4,8 @@
 !.env.example
 .vercel/
 supabase/.temp/
+
+.pilot-private/
+/tools/pilot/public-config.json
+/tools/pilot/verify-auth.py
+/tests/pilot-auth-runner.py
