@@ -1,0 +1,24 @@
+{
+  "qualification_postgresql": "22_CONTROLES_ACQUIS_NON_REJOUES",
+  "source_qualification": "Résultat acquis rapporté par utilisateur, moteur SQL inchangé",
+  "files": {
+    "tools/reservations-service/lan-r3.py": "07467149aadd81a701cbf6c9d541161beac88174ede2bdcbabda3fba943ce2fb",
+    "tools/reservations-service/trial.py": "bfad7ba602a6d8b320f8df80ddfdfdbeae0b3b2a664a10b8e961d56c879a0538",
+    "tools/reservations-service/service.proposed.sql": "266b85e409abaad4cde3abae793ee1bd7035ba648c0489870d6aa4277632ecd9",
+    "tools/reservations-service/design-r2/fixtures.json": "d55ab2bd346eb636fc47400220245ec49ca1b8b3bbbe0e7e1ba76b6e540bb76d",
+    "stopflow-091-reservations.js": "92e61462f2d3f653f929d306c047b5d96d73ece626426972de7bc6cdc52f3561",
+    "stopflow-091-reservations.css": "20496767c49a6eaef86246b9c60ee671d123ece361664ad56287ecb9b152c282",
+    "stopflow-092-bookings.js": "0d9b072377cec89515d8bc834bef813ef774aa4b95174c04e290f3826c0df017",
+    "stopflow-093-service.js": "51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a",
+    "stopflow-093-service-model.js": "d1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09",
+    "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
+    "tools/reservations-v1/iphone-tryout.py": "05f21adddadbd8299f073af7907661c0c58629c0b538d5aeb5ead6129fbbae83",
+    "tools/reservations-v1/team-auth-http.py": "5d5e261071be7811c10767516c340a68f7b4f3f11ef2a921e2373236386b8cd7",
+    "tools/reservations-v1/team-auth-http-manifest.json": "d1a153fb6977d4bbe8c1ff99f513c326f1c5e2422ba2deecd2135d2e747d50a6",
+    "tools/reservations-v1/team-auth-jwt.cjs": "9299095a02c69d6a685104697676b291f7bdf233e1643feb7e1cd426df5351bc",
+    "tools/reservations-v1/team-internal-http.py": "c4f40a845392852ac5b4ddf7cd7e835d7f5661416434133c6fb13492727a8156",
+    "tools/reservations-v1/demo-isolee.py": "d5f508937fe6f712be7ca3436e900b6e250a50c99b833bc08b832c2b1268a070"
+  },
+  "port": 8098,
+  "publication": false
+}

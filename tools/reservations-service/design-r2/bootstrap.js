@@ -1,0 +1,15 @@
+'use strict';
+window.UIFixture={manager:true,calls:[],externalWrites:0};
+window.stopflowReservations={bookingContext:()=>({actor:UIFixture.manager?'manager-fictif':'equipe-fictive',establishmentId:'etablissement-fictif'})};
+let fixture;
+const instant=t=>{const date=new Date(fixture.day+'T'+t+':00Z'),local=stopflowServiceModel.local(date.toISOString());return new Date(date.getTime()-(Date.parse(local+'Z')-date.getTime())).toISOString()};
+const supabaseClient={rpc:async(name,args={})=>{UIFixture.calls.push({name,args});await new Promise(r=>setTimeout(r,15));
+ if(name==='reservations_context')return {data:{establishments:[{id:'etablissement-fictif',can_view:true,can_manage_layouts:UIFixture.manager,can_manage_rooms:false,can_manage_tables:false}]}};
+ if(name==='reservations_booking_context')return {data:{can_view:true,can_manage:true,timezone:'Europe/Brussels'}};
+ if(name==='reservations_read')return {data:structuredClone(fixture.data)};
+ if(name==='reservations_service_groups')return {data:structuredClone(fixture.groups)};
+ if(name==='reservations_service_day')return {data:args.p_day===fixture.day?fixture.records.map(r=>({id:r.id,establishment_id:'etablissement-fictif',contact_name:r.name,covers:r.covers,member_table_ids:r.ids,table_id:r.ids[0],starts_at:instant(r.start),ends_at:instant(r.end),status:r.status,note:r.note,source:r.id==='soir-a'?'web':'staff',version:1})):[]};
+ if(name==='reservations_service_clients')return {data:{client:null,history:[]}};
+ UIFixture.externalWrites++;return {error:{code:'42501'}};
+}};
+window.addEventListener('load',async()=>{fixture=await (await fetch('/fixtures.json')).json();UIFixture.fixture=fixture;await stopflowService.mount();const d=document.querySelector('[name=day]');if(d.value!==fixture.day){d.value=fixture.day;d.dispatchEvent(new Event('change',{bubbles:true}))}});

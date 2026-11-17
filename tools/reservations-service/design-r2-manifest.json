@@ -1,0 +1,20 @@
+{
+  "files": {
+    "stopflow-093-service-model.js": "d1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09",
+    "stopflow-093-service.js": "51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a",
+    "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
+    "tools/reservations-service/review-design-r2.py": "1b3a82b8b1675213a2e9272d30dd21fdadc0189b15e5de9f6d2206ec5f6460db",
+    "tools/reservations-v1/transfer-ui-docker.py": "823184b496d81a041d452a84384d7dd229b117ae1e09a54c5d9b175a1f23d7d7",
+    "tools/reservations-v1/run-ui-docker.py": "250ad270f6efc19f72045add60aaf91fcded373340e005ffab4e9c95c7a1af08",
+    "tools/reservations-v1/docker-error-filter.py": "147253be0751ff0df577352e7ed6bb8025c73d25addccd449afca56108b9c13d",
+    "tools/reservations-service/design-r2/index.html": "32117263389487fcc06dc8f163d5794b968100d21b98ac82349f75106905586b",
+    "tools/reservations-service/design-r2/bootstrap.js": "e8190b0052a5917717b9766df947e6f37fb328ed3a66358feab7dcfe93c30e22",
+    "tools/reservations-service/design-r2/fixtures.json": "d55ab2bd346eb636fc47400220245ec49ca1b8b3bbbe0e7e1ba76b6e540bb76d",
+    "tools/reservations-service/design-r2/scenario.cjs": "e96c93a5e1a7e254b655a93c83cfe2b8a8d7b6e02661a6e274acdf97d195b315"
+  },
+  "reference": {
+    "path": "/Users/quentinpollet/Downloads/StopFlow-Reservations-reference/maquette-reservations.html",
+    "sha256": "a4e07faae7ff9497aa55afc23186d7fe6dc8e7bc5f8ace789247bdb2554f60d0"
+  },
+  "backend_tests_replayed": false
+}

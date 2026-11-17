@@ -1,0 +1,31 @@
+{
+  "files": {
+    "index.html": "dd5fe516516a8bd17d6c7777fd7a9e8557d3113cda7c3cfc74e8aa7bca0e00ee",
+    "stopflow-091-reservations.js": "92e61462f2d3f653f929d306c047b5d96d73ece626426972de7bc6cdc52f3561",
+    "stopflow-093-service-model.js": "d1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09",
+    "stopflow-093-service.js": "51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a",
+    "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
+    "tools/reservations-service/service.proposed.sql": "266b85e409abaad4cde3abae793ee1bd7035ba648c0489870d6aa4277632ecd9",
+    "tools/reservations-service/trial.py": "bfad7ba602a6d8b320f8df80ddfdfdbeae0b3b2a664a10b8e961d56c879a0538",
+    "tools/reservations-service/online.html": "bc87e5b6df50f7e27db323cbe8104fec0fd57a2fccdf33a6c24a11081c2de494",
+    "tools/reservations-service/online.js": "67a474334eb69d596450aae5a10bc94b341f7b1233c88ec40c768335f520ff80",
+    "tests/reservations-service-ui.cjs": "b1e3b33c90ab0a258e4b01c744f1cbbddd2bf72027c2c5ef3b06aefd88740097",
+    "tests/reservations-service-trial.py": "1130ea3e601c6d82327bb1039d31680b6acc930358849639f857a305034b3f31",
+    "tests/reservations-service-pg17.py": "cef5a7cf9f3658bb3abd32310ff88a7d2323f1b7f95c7b4e7144f87c17adf99d",
+    "docs/reservations/INTEGRATION-SERVICE-20261117.md": "c454b2cc8bb2a91c08e49bf3e2e66d08617901efc1d4d190f3bb30a06d768315",
+    "tests/bookings-v1-pg17.py": "0a2e23a430a7cb3aff189a2f68efcbbea1f1ccd68a369e22fa6916c5ddd9a9f2",
+    "tools/reservations-v1/bookings.proposed.sql": "1fd88220b6690681ff0115aedc3b9ac467b44c4d70134c5a3136b9fde54b71ed",
+    "tools/reservations-local/layout-save.proposed.sql": "b9988f0d22a0e9ec36350740b7ef865426a089ca8f362608d4f2a795a7aaee4b",
+    "tools/reservations-v1/iphone-tryout.py": "05f21adddadbd8299f073af7907661c0c58629c0b538d5aeb5ead6129fbbae83",
+    "tools/reservations-v1/team-auth-http.py": "5d5e261071be7811c10767516c340a68f7b4f3f11ef2a921e2373236386b8cd7"
+  },
+  "reference": {
+    "path": "/Users/quentinpollet/Downloads/StopFlow-Reservations-reference/maquette-reservations.html",
+    "sha256": "a4e07faae7ff9497aa55afc23186d7fe6dc8e7bc5f8ace789247bdb2554f60d0",
+    "coordinates_imported": false
+  },
+  "branch": "feat/reservations-service-integration",
+  "sql_qualification": "PASS_22_RAPPORTE_UTILISATEUR_NON_REJOUE",
+  "active_database_changed": false,
+  "qualification_rapportee_utilisateur": "22 contrôles PostgreSQL acquis ; non rejoués pendant la passe interface"
+}

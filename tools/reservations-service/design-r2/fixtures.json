@@ -1,0 +1,449 @@
+{
+  "day": "2026-11-17",
+  "data": {
+    "rooms": [
+      {
+        "id": "room-back-fictive",
+        "name": "Salle arrière",
+        "active": true
+      },
+      {
+        "id": "room-up-fictive",
+        "name": "Premier étage",
+        "active": true
+      }
+    ],
+    "tables": [
+      {
+        "id": "room-back-fictive-table-1",
+        "room_id": "room-back-fictive",
+        "label": "1",
+        "capacity": 2,
+        "shape": "round",
+        "active": true
+      },
+      {
+        "id": "room-back-fictive-table-2",
+        "room_id": "room-back-fictive",
+        "label": "2",
+        "capacity": 2,
+        "shape": "rectangle",
+        "active": true
+      },
+      {
+        "id": "room-back-fictive-table-3",
+        "room_id": "room-back-fictive",
+        "label": "3",
+        "capacity": 4,
+        "shape": "round",
+        "active": true
+      },
+      {
+        "id": "room-back-fictive-table-4",
+        "room_id": "room-back-fictive",
+        "label": "4",
+        "capacity": 4,
+        "shape": "rectangle",
+        "active": true
+      },
+      {
+        "id": "room-up-fictive-table-1",
+        "room_id": "room-up-fictive",
+        "label": "E1",
+        "capacity": 2,
+        "shape": "round",
+        "active": true
+      },
+      {
+        "id": "room-up-fictive-table-2",
+        "room_id": "room-up-fictive",
+        "label": "E2",
+        "capacity": 2,
+        "shape": "rectangle",
+        "active": true
+      },
+      {
+        "id": "room-up-fictive-table-3",
+        "room_id": "room-up-fictive",
+        "label": "E3",
+        "capacity": 4,
+        "shape": "round",
+        "active": true
+      },
+      {
+        "id": "room-up-fictive-table-4",
+        "room_id": "room-up-fictive",
+        "label": "E4",
+        "capacity": 4,
+        "shape": "rectangle",
+        "active": true
+      }
+    ],
+    "layouts": [
+      {
+        "id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "status": "active",
+        "width": 1000,
+        "height": 700,
+        "version": 4
+      },
+      {
+        "id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "status": "active",
+        "width": 1000,
+        "height": 700,
+        "version": 4
+      }
+    ],
+    "elements": [
+      {
+        "id": "element-room-back-fictive-table-1",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": "room-back-fictive-table-1",
+        "kind": "table",
+        "x": 100,
+        "y": 130,
+        "width": 80,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-back-fictive-table-2",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": "room-back-fictive-table-2",
+        "kind": "table",
+        "x": 250,
+        "y": 130,
+        "width": 80,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-back-fictive-table-3",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": "room-back-fictive-table-3",
+        "kind": "table",
+        "x": 100,
+        "y": 280,
+        "width": 100,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-back-fictive-table-4",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": "room-back-fictive-table-4",
+        "kind": "table",
+        "x": 250,
+        "y": 280,
+        "width": 100,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "mark-room-back-fictivewall",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": null,
+        "kind": "wall",
+        "x": 60,
+        "y": 80,
+        "width": 310,
+        "height": 8,
+        "rotation": 0,
+        "properties": {
+          "label": ""
+        }
+      },
+      {
+        "id": "mark-room-back-fictivedoor",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": null,
+        "kind": "door",
+        "x": 60,
+        "y": 390,
+        "width": 70,
+        "height": 20,
+        "rotation": 0,
+        "properties": {
+          "label": "Porte"
+        }
+      },
+      {
+        "id": "mark-room-back-fictiveplant",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": null,
+        "kind": "plant",
+        "x": 340,
+        "y": 210,
+        "width": 50,
+        "height": 50,
+        "rotation": 0,
+        "properties": {
+          "label": "Fleurs"
+        }
+      },
+      {
+        "id": "mark-room-back-fictivebar",
+        "layout_id": "layout-room-back-fictive",
+        "room_id": "room-back-fictive",
+        "table_id": null,
+        "kind": "bar",
+        "x": 100,
+        "y": 30,
+        "width": 170,
+        "height": 35,
+        "rotation": 0,
+        "properties": {
+          "label": "Bar"
+        }
+      },
+      {
+        "id": "element-room-up-fictive-table-1",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": "room-up-fictive-table-1",
+        "kind": "table",
+        "x": 100,
+        "y": 130,
+        "width": 80,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-up-fictive-table-2",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": "room-up-fictive-table-2",
+        "kind": "table",
+        "x": 250,
+        "y": 130,
+        "width": 80,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-up-fictive-table-3",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": "room-up-fictive-table-3",
+        "kind": "table",
+        "x": 100,
+        "y": 280,
+        "width": 100,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "element-room-up-fictive-table-4",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": "room-up-fictive-table-4",
+        "kind": "table",
+        "x": 250,
+        "y": 280,
+        "width": 100,
+        "height": 80,
+        "rotation": 0,
+        "properties": {}
+      },
+      {
+        "id": "mark-room-up-fictivewall",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": null,
+        "kind": "wall",
+        "x": 60,
+        "y": 80,
+        "width": 310,
+        "height": 8,
+        "rotation": 0,
+        "properties": {
+          "label": ""
+        }
+      },
+      {
+        "id": "mark-room-up-fictivelabel",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": null,
+        "kind": "label",
+        "x": 120,
+        "y": 30,
+        "width": 180,
+        "height": 35,
+        "rotation": 0,
+        "properties": {
+          "label": "Cuisine"
+        }
+      },
+      {
+        "id": "mark-room-up-fictiveplant",
+        "layout_id": "layout-room-up-fictive",
+        "room_id": "room-up-fictive",
+        "table_id": null,
+        "kind": "plant",
+        "x": 340,
+        "y": 390,
+        "width": 50,
+        "height": 50,
+        "rotation": 0,
+        "properties": {
+          "label": "Fleurs"
+        }
+      }
+    ]
+  },
+  "groups": [
+    {
+      "id": "group-fictive",
+      "room_id": "room-back-fictive",
+      "name": "Jumelage 2 + 3",
+      "table_ids": [
+        "room-back-fictive-table-2",
+        "room-back-fictive-table-3"
+      ],
+      "active": true,
+      "version": 1
+    }
+  ],
+  "records": [
+    {
+      "id": "midi-a",
+      "name": "Camille · fictif",
+      "start": "12:00",
+      "end": "13:30",
+      "ids": [
+        "room-back-fictive-table-1"
+      ],
+      "covers": 2,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "midi-groupe",
+      "name": "Noémie · fictif",
+      "start": "12:30",
+      "end": "14:30",
+      "ids": [
+        "room-back-fictive-table-2",
+        "room-back-fictive-table-3"
+      ],
+      "covers": 6,
+      "status": "confirmed",
+      "note": "Prévoir une chaise haute — note fictive."
+    },
+    {
+      "id": "midi-b",
+      "name": "Robin · fictif",
+      "start": "12:00",
+      "end": "14:00",
+      "ids": [
+        "room-up-fictive-table-1"
+      ],
+      "covers": 2,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "midi-c",
+      "name": "Jules · fictif",
+      "start": "13:00",
+      "end": "14:30",
+      "ids": [
+        "room-up-fictive-table-3"
+      ],
+      "covers": 4,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "midi-d",
+      "name": "Alix · fictif",
+      "start": "14:30",
+      "end": "16:00",
+      "ids": [
+        "room-back-fictive-table-4"
+      ],
+      "covers": 3,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "soir-a",
+      "name": "Nora · fictif",
+      "start": "18:30",
+      "end": "20:30",
+      "ids": [
+        "room-back-fictive-table-1"
+      ],
+      "covers": 2,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "soir-b",
+      "name": "Sam · fictif",
+      "start": "19:00",
+      "end": "21:00",
+      "ids": [
+        "room-up-fictive-table-2"
+      ],
+      "covers": 2,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "soir-groupe",
+      "name": "Alex · fictif",
+      "start": "19:30",
+      "end": "21:30",
+      "ids": [
+        "room-back-fictive-table-2",
+        "room-back-fictive-table-3"
+      ],
+      "covers": 6,
+      "status": "confirmed",
+      "note": ""
+    },
+    {
+      "id": "soir-c",
+      "name": "Charlie · fictif",
+      "start": "20:00",
+      "end": "22:00",
+      "ids": [
+        "room-up-fictive-table-4"
+      ],
+      "covers": 4,
+      "status": "cancelled",
+      "note": ""
+    },
+    {
+      "id": "soir-d",
+      "name": "Morgan · fictif",
+      "start": "21:00",
+      "end": "23:00",
+      "ids": [
+        "room-back-fictive-table-4"
+      ],
+      "covers": 4,
+      "status": "confirmed",
+      "note": ""
+    }
+  ]
+}
