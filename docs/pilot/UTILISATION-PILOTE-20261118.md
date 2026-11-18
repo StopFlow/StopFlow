@@ -12,6 +12,10 @@ QR d’installation : `/pilot-install.svg`. QR d’inscription :
 aucune clé, session ou permission. La levée de protection Vercel porte seulement
 sur cet alias ; les autres aperçus et la production gardent leurs réglages.
 La connexion StopFlow et les contrôles PostgreSQL restent obligatoires.
+La barre Vercel est désactivée uniquement pour la branche pilote avec
+`VERCEL_PREVIEW_FEEDBACK_ENABLED=0`. La sonde `/api/pilot-access-check` vérifie
+la page sans cookie ni authentification Vercel et les réglages publics d’Auth.
+Elle ne crée aucun compte et ne vérifie ni livraison d’e-mail ni redirection.
 Les anciens comptes et identifiants de secours hors ligne ont été retirés de
 la page pilote ; aucune connexion locale ne contourne Auth ou l’approbation.
 
