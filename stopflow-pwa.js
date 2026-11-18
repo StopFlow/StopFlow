@@ -5,7 +5,7 @@
   const isStandalone=()=>window.matchMedia?.("(display-mode: standalone)").matches||window.navigator.standalone===true;
   const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
   const isMacSafari=()=>/Macintosh/i.test(navigator.userAgent)&&/Safari/i.test(navigator.userAgent)&&!/Chrome|Chromium|Edg/i.test(navigator.userAgent);
-  const isProtectedPreview=()=>location.hostname.includes("-git-")||location.hostname.includes("stopflow-")&&location.hostname!== "stopflow-app.vercel.app"||new URLSearchParams(location.search).has("_vercel_share");
+  const isProtectedPreview=()=>location.origin!=="https://stopflow-app-git-pilot-stopflow-v1-20261117-stopflow.vercel.app"&&(location.hostname.includes("-git-")||location.hostname.includes("stopflow-")&&location.hostname!== "stopflow-app.vercel.app"||new URLSearchParams(location.search).has("_vercel_share"));
 
   function ensureHead(){
     const head=document.head;

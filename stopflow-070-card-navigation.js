@@ -195,7 +195,7 @@
     const direct=GENERAL_DIRECT.filter(card=>has(card.key,card.scope)).map(card=>({...card,id:`direct:${card.key}`}));
     const scoped=GENERAL_SCOPED.map(card=>({...card,scopes:scopesFor(card.key)})).filter(card=>card.scopes.length).map(card=>({...card,id:`scoped:${card.key}`}));
     const universal=[{id:"installation",title:"Installation de StopFlow",description:"Installer l’application sur un appareil",icon:"⇩",tone:"slate",type:"page",target:"installation"}];
-    const admin=isAdminUser()?[{id:"users",title:"Utilisateurs",description:"Créer les profils et attribuer les permissions",icon:"♙",tone:"blue",type:"page",target:"users"}]:[];
+    const admin=isAdminUser()?[{id:"users",title:"Équipe",description:"Demandes d’inscription et accès au pilote",icon:"♙",tone:"blue",type:"page",target:"users"}]:[];
     return [...direct,...scoped,...admin,...universal];
   }
 

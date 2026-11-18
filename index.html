@@ -81,17 +81,12 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
     <h2 style="text-align:center">Connexion à votre compte</h2>
     <p class="muted" style="text-align:center">Version 0.3.2 — Gestion des utilisateurs</p>
     <form id="loginForm">
-      <div class="field"><label>E-mail</label><input class="input" id="email" value="contact@srlreunion.com" type="email" autocomplete="username" required></div>
+      <div class="field"><label>E-mail</label><input class="input" id="email" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
       <button class="btn primary" id="loginButton" type="submit">Se connecter avec Supabase</button>
     </form>
     <div id="loginMessage" class="login-status info" aria-live="polite"></div>
-    <div class="demo hidden" id="localFallbackPanel"><b>Mode local de secours</b><br>
-Disponible uniquement en local ou sur la branche de développement pendant les tests.<br><br>
-Responsable : quentin@lunion.be / stopflow<br>
-Employé : employe@lunion.be / stopflow<br>
-Admin : contact@srlreunion.com / stopflow
-<button class="btn ghost" id="localFallback" type="button">Utiliser le mode local de secours</button></div>
+    <div class="hidden" id="localFallbackPanel"><button id="localFallback" type="button" disabled>Connexion Auth requise</button></div>
   </div>
 </div>
 
@@ -221,7 +216,7 @@ Admin : contact@srlreunion.com / stopflow
     </div>
     <div class="field" style="margin-bottom:14px"><label>Rechercher</label><input id="userSearch" class="input" placeholder="Nom, e-mail ou rôle…"></div>
     <div class="tablewrap"><table><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Statut</th><th>E-mail</th><th>Dernière connexion</th><th></th></tr></thead><tbody id="userRows"><tr><td colspan="6" class="muted">Chargement…</td></tr></tbody></table></div>
-    <div class="notice" style="margin-top:16px"><b>Comptes protégés :</b> contact@srlreunion.com reste Administrateur actif et quentin@lunion.be reste Responsable actif.</div>
+    <div class="notice" style="margin-top:16px">Le compte propriétaire utilise une activation privée. Les accès de l’équipe sont soumis à son approbation.</div>
    </div>
   </section>
  </main>
@@ -316,15 +311,11 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmt=d=>new Intl.DateTimeFormat("fr-BE",{dateStyle:"short",timeStyle:"short"}).format(new Date(d));
 const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="—").length+1)).padStart(6,"0");
 
-const LOCAL_FALLBACK_ACCOUNTS={
- "contact@srlreunion.com":{name:"Administrateur",role:ROLE.ADMIN},
- "quentin@lunion.be":{name:"Quentin Pollet",role:ROLE.RESPONSABLE},
- "employe@lunion.be":{name:"Employé test",role:ROLE.EMPLOYE}
-};
+const LOCAL_FALLBACK_ACCOUNTS=Object.freeze({});
 let supabaseClient=null;
 
 function localFallbackAllowed(){
- return window.stopflowEnvironment?.allowLocalFallback===true;
+ return false; // Pilot: no offline account can bypass Auth or approval.
 }
 function setLoginMessage(message="",type="info"){
  const box=$("#loginMessage");
@@ -408,13 +399,7 @@ function restoreLocalFallback(email){
  return true;
 }
 function signInWithLocalFallback(){
- if(!localFallbackAllowed())return setLoginMessage("Le mode local n’est pas autorisé sur cette adresse.","error");
- const email=$("#email").value.trim().toLowerCase();
- const password=$("#password").value;
- if(password!=="stopflow"||!LOCAL_FALLBACK_ACCOUNTS[email]){
-   return setLoginMessage("Identifiants du mode local incorrects.","error");
- }
- restoreLocalFallback(email);
+ return setLoginMessage("Le pilote utilise exclusivement la connexion Auth Supabase.","error");
 }
 async function bootstrapAuth(){
  const fallbackAllowed=localFallbackAllowed();
@@ -855,7 +840,8 @@ $("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{t
 $("#importData").onchange=e=>{if(isCloudMode()){e.target.value="";return alert("L’import global est désactivé en mode partagé afin de protéger les données Supabase.")}const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=migrate(r.result);save();alert("Import terminé.");page("dashboard")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
 $("#resetData").onclick=()=>{if(isCloudMode())return alert("La réinitialisation est désactivée en mode partagé afin de protéger les données Supabase.");if(confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
 
-bootstrapAuth();
+// The pilot gate must install before restoring an Auth session.
+window.stopflowPilotStart = () => bootstrapAuth();
 </script>
 <link rel="stylesheet" href="stopflow-091-reservations.css?v=20261111-booking-v1">
 <script defer src="stopflow-091-reservations.js?v=20261117-service-r1"></script>
@@ -864,5 +850,8 @@ bootstrapAuth();
 <script defer src="stopflow-093-service-model.js?v=20261117-service-r3"></script>
 <script defer src="stopflow-093-service.js?v=20261117-service-r3"></script>
 <script defer src="stopflow-pilot.js?v=20261117-pilot1"></script>
+<link rel="stylesheet" href="stopflow-pilot-team.css?v=20261118-team1">
+<script defer src="stopflow-qr.js?v=2.0.4"></script>
+<script defer src="stopflow-pilot-team.js?v=20261118-team1"></script>
 
 </body></html>

@@ -20,6 +20,12 @@ try {
   assert.equal(release.source_commit, 'e160453537460c5b05e501d68d2376724b030317');
   assert.equal(release.pilot_commit, env.STOPFLOW_PILOT_COMMIT);
   assert.equal(release.project_ref, 'mmrdpyhoawwoplbzqwag');
+  const index=fs.readFileSync(path.join(output,'index.html'),'utf8');
+  assert(index.includes('stopflow-pilot-team.js?v=20261118-team1'));
+  assert(index.includes('stopflow-pilot-team.css?v=20261118-team1'));
+  for(const name of ['pilot-install.svg','pilot-inscription.svg']){
+    const qr=fs.readFileSync(path.join(output,name),'utf8');assert(qr.startsWith('<svg'));assert(!/(?:href|src)=["']http/.test(qr));
+  }
   for (const [name, sha] of Object.entries(release.r3_assets)) {
     assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(output, name))).digest('hex'), sha);
   }
