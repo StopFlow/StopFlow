@@ -161,7 +161,8 @@
     const form=event.target;
     if (!['sfPilotSignup','sfPilotActivation','sfPilotRequest'].includes(form.id)) return;
     event.preventDefault(); event.stopImmediatePropagation();
-    if (state.busy || !form.reportValidity() || !validEnvironment() || !client()) return;
+    if (state.busy || !form.reportValidity()) return;
+    if(!validEnvironment() || !client()){gateMessage('Connexion au pilote indisponible. Aucune inscription ni modification effectuée.',true);return;}
     state.busy=true; const button=form.querySelector('button[type="submit"]'); if(button)button.disabled=true;
     try {
       if (form.id==='sfPilotActivation') {
@@ -179,6 +180,7 @@
         delete document.body.dataset.pilotEntry; gate?.classList.add('hidden'); await loadAuthenticatedProfile(user);
       } else if(form.id==='sfPilotSignup') {
         const first=form.elements.first.value.trim(), last=form.elements.last.value.trim();
+        if(!first || !last){gateMessage('Complétez votre prénom et votre nom.',true);return;}
         const created=await client().auth.signUp({email:form.elements.email.value.trim(),password:form.elements.password.value,
           options:{data:{first_name:first,last_name:last},emailRedirectTo:PUBLIC_ORIGIN+'/?inscription=1'}});
         if(created.error)throw {code:'SIGNUP_REFUSED'};
@@ -236,7 +238,7 @@
     }
     toolbar();
     if (activation) {
-      if (!client()) {try {initSupabaseClient();} catch {gateMessage('Configuration du pilote non confirmée.',true);}}
+      if (!client()) {try {if(!initSupabaseClient())gateMessage('Bibliothèque de connexion indisponible. Aucune activation effectuée.',true);} catch {gateMessage('Configuration du pilote non confirmée.',true);}}
     } else if (typeof window.stopflowPilotStart==='function') void window.stopflowPilotStart();
   }
   document.addEventListener('submit',event=>{
