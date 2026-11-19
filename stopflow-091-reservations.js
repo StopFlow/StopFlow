@@ -288,7 +288,7 @@
     if(action==='home'){if(leaveDraft())window.stopflow070CardNavigation?.openHome();return}
     if(action==='refresh'){if(leaveDraft())void load();return}
     if(action==='reconcile-plan'){if(confirm('Relire le plan enregistré et abandonner le brouillon seulement si la lecture réussit ?'))void load(true);return}
-    if(action==='edit-plan'){beginEdit();return}
+    if(action==='edit-plan'){if(window.stopflowPlanEditor&&window.stopflowService?.openEditor){if(!leaveDraft())return;state.booking=true;state.manage=false;render();void window.stopflowService.openEditor(state.roomId);return;}beginEdit();return}
     if(action==='save-plan')return void savePlan();
     if(action==='cancel-plan'){if(leaveDraft()){render();message('Brouillon annulé. Le dernier plan enregistré est affiché.')}return}
     if(action==='zoom-in'||action==='zoom-out'){editor.zoom=Math.max(0.5,Math.min(3,editor.zoom+(action==='zoom-in'?0.25:-0.25)));render();return}

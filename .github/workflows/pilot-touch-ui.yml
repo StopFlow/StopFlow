@@ -1,0 +1,56 @@
+name: Pilot touch editor (isolated fixtures)
+on:
+  push:
+    branches: [pilot/stopflow-v1-20261117]
+    paths:
+      - 'stopflow-09*.js'
+      - 'stopflow-094-plan-editor.css'
+      - 'stopflow-pilot-password.js'
+      - 'tests/pilot-touch*.cjs'
+      - 'tests/fixtures/pilot-touch.cjs'
+      - '.github/workflows/pilot-touch-ui.yml'
+permissions:
+  contents: read
+jobs:
+  touch:
+    if: github.ref == 'refs/heads/pilot/stopflow-v1-20261117'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Prepare pinned browser tools, without application credentials
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pw" --ignore-scripts --no-audit --no-fund playwright@1.64.1
+          docker pull mcr.microsoft.com/playwright:v1.64.1-noble
+          mkdir -p "$RUNNER_TEMP/touch-output"
+      - name: Touch scenario in a network-isolated disposable container
+        env:
+          FIXTURE_CONTAINER: sf-touch-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            if docker inspect "$FIXTURE_CONTAINER" >/dev/null 2>&1; then
+              test "$(docker inspect --format '{{ index .Config.Labels "stopflow.operation" }}' "$FIXTURE_CONTAINER")" = "$FIXTURE_CONTAINER"
+              docker rm -f "$FIXTURE_CONTAINER" >/dev/null
+            fi
+            test -z "$(docker ps -aq --filter "name=^/${FIXTURE_CONTAINER}$")"
+            echo NETTOYAGE_CONTENEUR_CONFIRME
+          }
+          trap cleanup EXIT
+          docker run --rm --name "$FIXTURE_CONTAINER" --label "stopflow.operation=$FIXTURE_CONTAINER" \
+            --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=512m --shm-size=512m --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$GITHUB_WORKSPACE,dst=/work,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/pw/node_modules,dst=/modules,readonly" \
+            --mount "type=bind,src=$RUNNER_TEMP/touch-output,dst=/out" \
+            --env NODE_PATH=/modules --env STOPFLOW_UI_OUTPUT=/out --workdir /work \
+            mcr.microsoft.com/playwright:v1.64.1-noble node tests/pilot-touch-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: pilot-touch-tablet
+          path: ${{ runner.temp }}/touch-output
+          if-no-files-found: warn
+          retention-days: 7

@@ -26,7 +26,13 @@ try {
   for(const name of ['pilot-install.svg','pilot-inscription.svg']){
     const qr=fs.readFileSync(path.join(output,name),'utf8');assert(qr.startsWith('<svg'));assert(!/(?:href|src)=["']http/.test(qr));
   }
-  for (const [name, sha] of Object.entries(release.r3_assets)) {
+  assert.equal(release.r3_reference.commit,'e160453537460c5b05e501d68d2376724b030317');
+  assert.equal(release.r3_reference.assets['stopflow-093-service.js'],'51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a');
+  assert.equal(release.edition,'20261119-touch1');
+  assert.equal(release.assets['stopflow-093-service-model.js'],release.r3_reference.assets['stopflow-093-service-model.js']);
+  assert.equal(release.assets['stopflow-093-service.css'],release.r3_reference.assets['stopflow-093-service.css']);
+  assert.notEqual(release.assets['stopflow-093-service.js'],release.r3_reference.assets['stopflow-093-service.js']);
+  for (const [name, sha] of Object.entries(release.assets)) {
     assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(output, name))).digest('hex'), sha);
   }
   const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.webmanifest')));

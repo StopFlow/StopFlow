@@ -1,0 +1,14 @@
+{
+  "edition": "20261119-touch1",
+  "r3_reference": "e160453537460c5b05e501d68d2376724b030317",
+  "assets": {
+    "index.html": "61cff3dc078c7164f772e047ae5533e0d79de58366c46b8a6482b876bf7c8c5d",
+    "stopflow-091-reservations.js": "9db6a2fbb19a827a3108a8d6ed352917ac47e60296dfdcf49b2d3eb193250b29",
+    "stopflow-093-service.js": "1e6e942bedb28e313a0f33ad601288e1ec450bf95dcbabb9b9611ee13439a19c",
+    "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
+    "stopflow-093-service-model.js": "d1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09",
+    "stopflow-094-plan-editor.js": "90b675be46c78cb594bdfa1b6efda23e30adfba8637d6679d1f08add2c06f795",
+    "stopflow-094-plan-editor.css": "5d4f2c2fbb43ce200e837631935f5a446a2670744bc4ad656ac8387826723b98",
+    "stopflow-pilot-password.js": "fed05d2eae87853a5676eb0ee14592a9053b1a99c8e89f9296ea3d1bd4c99d0b"
+  }
+}

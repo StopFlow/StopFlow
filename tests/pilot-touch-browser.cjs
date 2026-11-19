@@ -1,0 +1,64 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium}=require('playwright'),{backend}=require('./fixtures/pilot-touch.cjs');
+const ROOT=path.resolve(__dirname,'..'),OUT=process.env.STOPFLOW_UI_OUTPUT||'/out';fs.mkdirSync(OUT,{recursive:true});
+const ORIGIN='https://pilot-touch.stopflow.invalid';
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ const result={navigateur:'Chromium '+browser.version(),interaction:'EMULATION_TACTILE_CDP',backend:'RPC_SIMULES',base_active:false,etapes:[],reseau_externe:[],erreurs:[]};
+ const b=backend(),est=b.state.data.rooms[0].establishment_id;let manager=true;
+ const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE'});const page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>result.erreurs.push(e.message));
+ await page.exposeFunction('fixtureRPC',async(n,a)=>{
+  if(n==='reservations_context')return {data:{establishments:[{id:est,can_view:true,can_manage_layouts:manager,can_manage_tables:manager,can_manage_rooms:manager}]}};
+  if(n==='reservations_booking_context')return {data:{can_view:true,can_manage:true,timezone:'Europe/Brussels'}};
+  if(n==='reservations_service_day')return {data:[]};
+  try{return await b.rpc(n,a);}catch(e){if(e.code)return {error:{code:e.code}};throw e;}
+ });
+ const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),login=index.match(/<form id="loginForm">[\s\S]*?<\/form>/)[0],globals=index.match(/<style>([\s\S]*?)<\/style>/)[1];
+ const styles=['stopflow-052-mobile.css','stopflow-052-mobile-corrections.css','stopflow-053-readability-orders.css','stopflow-093-service.css','stopflow-pilot-team.css','stopflow-094-plan-editor.css'];
+ const scripts=['stopflow-093-service-model.js','stopflow-094-plan-editor.js','stopflow-093-service.js','stopflow-pilot-password.js'];
+ const html='<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+globals+'</style>'+styles.map(s=>'<link rel="stylesheet" href="/'+s+'">').join('')+'</head><body><section id="login" class="login-page"><div class="login-card"><h1>StopFlow Pilote — test fictif</h1>'+login+'</div></section><div id="app" class="shell hidden"><main class="main"><nav class="sfPilotToolbar"><strong>StopFlow · Données fictives</strong><button type="button">Accueil</button></nav><section id="sf93Service"></section></main></div><script>var supabaseClient={rpc:(n,a)=>window.fixtureRPC(n,a)};window.stopflowReservations={bookingContext:()=>({actor:"synthetic-editor",establishmentId:'+JSON.stringify(est)+'})};window.fixtureSubmits=0;document.getElementById("loginForm").onsubmit=e=>{e.preventDefault();window.fixtureSubmits++};</script>'+scripts.map(s=>'<script src="/'+s+'"></script>').join('')+'</body></html>';
+ await context.route('**/*',async route=>{const url=new URL(route.request().url());if(url.origin!==ORIGIN){result.reseau_externe.push(url.origin);return route.abort();}
+  if(url.pathname==='/')return route.fulfill({contentType:'text/html; charset=utf-8',body:html});const name=url.pathname.slice(1);
+  if(![...styles,...scripts].includes(name))return route.fulfill({status:404,body:''});return route.fulfill({contentType:name.endsWith('.css')?'text/css':'application/javascript',body:fs.readFileSync(path.join(ROOT,name))});});
+ const cd=await context.newCDPSession(page);let touchId=1;
+ async function drag(locator,dx,dy){const box=await locator.boundingBox();assert(box);const id=touchId++,x=box.x+box.width/2,y=box.y+box.height/2;
+  await cd.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id}]});
+  for(let i=1;i<=6;i++)await cd.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/6,y:y+dy*i/6,id}]});
+  await cd.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
+ const action=a=>page.locator('[data-plan-action="'+a+'"]');const item=id=>page.locator('[data-plan-item="'+id+'"]');
+ const position=async id=>{const value=await item(id).getAttribute('transform');const m=/translate\(([-\d.]+) ([-\d.]+)\)/.exec(value);assert(m);return {x:Number(m[1]),y:Number(m[2])};};
+ try{
+  await page.goto(ORIGIN);await page.locator('#sfPilotPasswordToggle').waitFor();
+  const password=page.locator('#password'),eye=page.locator('#sfPilotPasswordToggle');await password.fill('SYNTHETIC_ONLY_NOT_A_CREDENTIAL');assert.equal(await password.getAttribute('type'),'password');
+  await eye.tap();assert.equal(await password.getAttribute('type'),'text');assert.equal(await eye.getAttribute('aria-label'),'Masquer le mot de passe');assert.equal(await password.inputValue(),'SYNTHETIC_ONLY_NOT_A_CREDENTIAL');
+  await eye.focus();await eye.press('Enter');assert.equal(await password.getAttribute('type'),'password');assert.equal(await eye.getAttribute('type'),'button');assert.equal(await password.getAttribute('autocomplete'),'current-password');assert.equal(await page.evaluate(()=>window.fixtureSubmits),0);result.etapes.push('OEIL_TACTILE_CLAVIER_SANS_SOUMISSION_PASS');
+  await page.evaluate(async()=>{document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await window.stopflowService.mount();});
+  await page.locator('[data-service-action="editor"]').tap();await page.locator('[data-plan-svg]').waitFor();assert.equal(await page.locator('.sf94-zone-name').count(),2);result.etapes.push('EDITEUR_DEUX_SALLES_PASS');
+  const first=b.state.data.elements.find(e=>e.table_id),second=b.state.data.elements.find(e=>e.table_id&&e.room_id===first.room_id&&e.id!==first.id),original={x:first.x,y:first.y};
+  await item(first.id).tap();assert.equal(await item(first.id).getAttribute('aria-pressed'),'true');
+  await drag(item(first.id),30,14);let moved=await position(first.id);assert(moved.x>original.x&&moved.y>original.y);assert.equal(b.state.data.elements.find(e=>e.id===first.id).x,original.x);result.etapes.push('SELECTION_GLISSER_BROUILLON_PASS');
+  await action('zoom-in').tap();const beforeZoom=await position(first.id),matrix=await page.locator('[data-plan-svg]').evaluate(el=>{const m=el.getScreenCTM().inverse();return {a:m.a,b:m.b};});
+  await drag(item(first.id),20,0);moved=await position(first.id);assert(Math.abs(moved.x-beforeZoom.x-matrix.a*20)<1);assert(Math.abs(moved.y-beforeZoom.y-matrix.b*20)<1);result.etapes.push('COORDONNEES_STABLES_AU_ZOOM_PASS');
+  const beforePan=await position(first.id);await action('pan').tap();await drag(item(first.id),28,12);assert.deepEqual(await position(first.id),beforePan);await action('pan').tap();result.etapes.push('DEPLACEMENT_VUE_DISTINCT_PASS');
+  // Two contacts over the canvas: the view changes, physical coordinates do not.
+  const viewBefore=await page.locator('[data-plan-svg]').getAttribute('viewBox'),canvas=await page.locator('[data-plan-viewport]').boundingBox();const y=canvas.y+canvas.height*.8,x=canvas.x+canvas.width*.5;
+  await cd.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:91,x:x-35,y},{id:92,x:x+35,y}]});
+  await cd.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:91,x:x-60,y},{id:92,x:x+60,y}]});await cd.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  assert.notEqual(await page.locator('[data-plan-svg]').getAttribute('viewBox'),viewBefore);assert.deepEqual(await position(first.id),beforePan);await action('center').tap();result.etapes.push('PINCEMENT_SANS_DEPLACER_TABLE_PASS');
+  await action('cancel').tap();await page.locator('[data-service-action="editor"]').waitFor();assert.deepEqual({x:b.state.data.elements[0].x,y:b.state.data.elements[0].y},original);await page.locator('[data-service-action="editor"]').tap();assert.deepEqual(await position(first.id),original);result.etapes.push('ANNULER_REVIENT_AU_PLAN_ENREGISTRE_PASS');
+  await drag(item(first.id),24,12);const desired=await position(first.id);await action('save').tap();await page.getByText('Plan enregistré et relu. Toutes les modifications sont confirmées.',{exact:true}).waitFor();assert.equal(b.state.data.elements.find(e=>e.id===first.id).x,desired.x);result.etapes.push('SAUVEGARDE_ET_RELECTURE_PASS');
+  await action('add').tap();await page.locator('[data-plan-action="add-item"][data-id="rectangle"]').tap();await page.locator('[data-plan-field="label"]').fill('T9 fictive');await page.locator('[data-plan-field="capacity"]').fill('4');await page.locator('[data-plan-field="rotation"]').fill('30');await page.locator('[data-plan-field="rotation"]').press('Tab');await action('save').tap();await page.getByText('Plan enregistré et relu. Toutes les modifications sont confirmées.',{exact:true}).waitFor();assert(b.state.data.tables.some(t=>t.label==='T9 fictive'&&t.capacity===4));result.etapes.push('AJOUT_MODIFICATION_TABLE_PASS');
+  await action('add').tap();await page.locator('[data-plan-action="add-item"][data-id="plant"]').tap();const mark=page.locator('.sf94-object.plant.selected');const markId=await mark.getAttribute('data-plan-item');const markBefore=await position(markId);await drag(mark,18,8);assert((await position(markId)).x>markBefore.x);await action('save').tap();await page.getByText('Plan enregistré et relu. Toutes les modifications sont confirmées.',{exact:true}).waitFor();assert(b.state.data.elements.some(e=>e.id===markId&&e.kind==='plant'));result.etapes.push('AJOUT_DEPLACEMENT_REPERE_PASS');
+  await action('multi').tap();await item(first.id).tap();await item(second.id).tap();await page.locator('[data-plan-field="groupName"]').fill('Jumelage tactile fictif');await action('stage-group').tap();await action('save').tap();await page.getByText('Plan enregistré et relu. Toutes les modifications sont confirmées.',{exact:true}).waitFor();assert(b.state.groups.some(g=>g.name==='Jumelage tactile fictif'&&g.table_ids.includes(second.table_id)));assert.equal(b.state.groups.filter(g=>g.table_ids.includes(second.table_id)).length,2);result.etapes.push('JUMELAGES_PARTAGEANT_UNE_TABLE_PASS');
+  await action('multi').tap();await item(first.id).tap();await page.screenshot({path:path.join(OUT,'editeur-tablette-1024x768.png')});
+  const overflow=await page.evaluate(()=>({outside:document.documentElement.scrollWidth>innerWidth+1,items:[...document.querySelectorAll('.sf94-toolbar button,.sf94-properties input,.sf94-properties select')].filter(n=>{const r=n.getBoundingClientRect();return r.width&&r.right>innerWidth+1;}).length}));assert(!overflow.outside&&overflow.items===0);result.etapes.push('TABLETTE_SANS_DEBORDEMENT_PASS');
+  await action('cancel').tap();await page.locator('[data-service-action="expand-plan"]').tap();assert(await page.locator('.sf93-reservations').isHidden());await page.screenshot({path:path.join(OUT,'service-plan-agrandi-1024x768.png')});result.etapes.push('AGRANDIR_PLAN_PASS');
+  // A fresh page must read persisted positions, not a retained DOM draft.
+  await page.reload();await page.evaluate(async()=>{document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await window.stopflowService.mount();});await page.locator('[data-service-action="editor"]').tap();assert.equal((await position(first.id)).x,desired.x);result.etapes.push('RECHARGEMENT_POSITIONS_CONSERVEES_PASS');
+  await page.setViewportSize({width:1440,height:900});await action('center').tap();assert(await page.locator('.sf94-properties').isVisible());assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:path.join(OUT,'editeur-macbook-1440x900.png')});result.etapes.push('MACBOOK_SANS_DEBORDEMENT_PASS');
+  manager=false;await page.reload();await page.evaluate(async()=>{document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await window.stopflowService.mount();});assert.equal(await page.locator('[data-service-action="editor"]').count(),0);assert.equal(await page.locator('[data-plan-svg]').count(),0);result.etapes.push('PERSONNEL_SANS_DROIT_EDITEUR_PASS');
+  assert.deepEqual(result.erreurs,[]);assert.deepEqual(result.reseau_externe,[]);result.resultat='PASS';
+ }catch(error){result.resultat='ECHEC';result.erreur={type:error.name,message:error.message};await page.screenshot({path:path.join(OUT,'echec.png')}).catch(()=>{});process.exitCode=1;}
+ finally{fs.writeFileSync(path.join(OUT,'resultat.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));await context.close();await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

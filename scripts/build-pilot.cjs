@@ -11,6 +11,7 @@ const r3Assets = Object.freeze({
   'stopflow-093-service.css': 'e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3',
   'stopflow-093-service-model.js': 'd1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09',
 });
+const delivery=require('../tools/pilot/touch-release.json');
 function run(env, output) {
   if (env.STOPFLOW_ENVIRONMENT !== 'development' || env.STOPFLOW_SUPABASE_URL !== target)
     throw new Error('PILOT_TARGET_REQUIRED');
@@ -21,9 +22,10 @@ function run(env, output) {
   const commit = env.VERCEL_GIT_COMMIT_SHA || env.STOPFLOW_PILOT_COMMIT || null;
   if (env.VERCEL_ENV && !/^[a-f0-9]{40}$/.test(commit || ''))
     throw new Error('PILOT_COMMIT_REQUIRED');
-  for (const [file, sha] of Object.entries(r3Assets)) {
+  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261119-touch1')throw new Error('PILOT_EDITION_UNREVIEWED');
+  for (const [file, sha] of Object.entries(delivery.assets)) {
     if (crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', file))).digest('hex') !== sha)
-      throw new Error('R3_SOURCE_DIFFERENT');
+      throw new Error('PILOT_SOURCE_DIFFERENT');
   }
   const origins=JSON.parse(env.STOPFLOW_APP_ORIGINS||'[]');
   if(!Array.isArray(origins))throw new Error('PILOT_ORIGINS_REQUIRED');
@@ -66,7 +68,9 @@ function run(env, output) {
   }
   fs.writeFileSync(path.join(result.directory, 'pilot-release.json'), JSON.stringify({
     source_commit: sourceCommit, pilot_commit: commit, project_ref: 'mmrdpyhoawwoplbzqwag',
-    environment: 'development', r3_assets: r3Assets,
+    environment: 'development', edition:delivery.edition,
+    r3_reference:{commit:sourceCommit,assets:r3Assets},source_assets:delivery.assets,
+    assets:Object.fromEntries(Object.keys(delivery.assets).map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(result.directory,file))).digest('hex')])),
   }, null, 2) + '\n', {flag: 'wx'});
   return result;
 }
