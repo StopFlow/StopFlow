@@ -20,7 +20,10 @@ async function verify(){
    const extraction=spawnSync('tar',['-xf','-','-C',dir],{env:clean,input:data});
    if(extraction.status!==0)throw new Error('BROWSER_LIBRARY_EXTRACTION_FAILED');
   }
-  const browserEnv={...clean,LD_LIBRARY_PATH:path.join(temp,'al2023/lib'),FONTCONFIG_PATH:path.join(temp,'fonts'),PLAYWRIGHT_BROWSERS_PATH:path.join(temp,'browsers')};
+  // AL2023's build image omits libsmime3. Install its official NSS package
+  // only in this disposable build VM (never on the Mac or in the app runtime).
+  run('dnf',['install','-y','nss'],clean,150000);
+  const browserEnv={...clean,FONTCONFIG_PATH:path.join(temp,'fonts'),PLAYWRIGHT_BROWSERS_PATH:path.join(temp,'browsers')};
   run(process.execPath,[path.join(temp,'node_modules/playwright-core/cli.js'),'install','chromium','--no-shell'],browserEnv,150000);
   const executable=path.join(browserEnv.PLAYWRIGHT_BROWSERS_PATH,'chromium-1248/chrome-linux64/chrome');
   const deps=spawnSync('ldd',[executable],{env:browserEnv,encoding:'utf8'});
