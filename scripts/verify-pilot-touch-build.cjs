@@ -10,7 +10,7 @@ async function verify(){
   console.log('QUALIFICATION_TACTILE_ISOLEE_DEMARREE');
   run('npm',['install','--prefix',temp,'--save-exact','--ignore-scripts','--no-audit','--no-fund','--registry=https://registry.npmjs.org','playwright-core@1.64.1','@sparticuz/chromium@153.0.0'],clean,150000);
   const launch='(async()=>{const {pathToFileURL}=require("node:url");const {default:chromium}=await import(pathToFileURL('+JSON.stringify(path.join(temp,'node_modules/@sparticuz/chromium/build/index.js'))+').href);chromium.setGraphicsMode=false;process.env.STOPFLOW_CHROMIUM_EXECUTABLE=await chromium.executablePath();process.env.STOPFLOW_CHROMIUM_ARGS=JSON.stringify(chromium.args);require('+JSON.stringify(path.resolve(__dirname,'../tests/pilot-touch-browser.cjs'))+');})().catch(e=>{console.error(e);process.exitCode=1;});';
-  run(process.execPath,['-e',launch],{...clean,NODE_PATH:path.join(temp,'node_modules'),STOPFLOW_PLAYWRIGHT_MODULE:'playwright-core',STOPFLOW_UI_OUTPUT:out,VERCEL:process.env.VERCEL==='1'?'1':''},150000);
+  run(process.execPath,['-e',launch],{...clean,NODE_PATH:path.join(temp,'node_modules'),STOPFLOW_PLAYWRIGHT_MODULE:'playwright-core',STOPFLOW_UI_OUTPUT:out,VERCEL:process.env.VERCEL==='1'?'1':'',DEBUG:'pw:browser'},150000);
   const report=JSON.parse(fs.readFileSync(path.join(out,'resultat.json'),'utf8'));if(report.resultat!=='PASS')throw new Error('PILOT_TOUCH_NOT_PASS');
   const images=fs.readdirSync(out).filter(n=>n.endsWith('.png')).map(name=>{const buffer=fs.readFileSync(path.join(out,name));return {name,sha256:crypto.createHash('sha256').update(buffer).digest('hex'),base64:buffer.toString('base64')};});
   fs.writeFileSync(path.join(out,'captures.json'),JSON.stringify({donnees:'FICTIVES',images}));

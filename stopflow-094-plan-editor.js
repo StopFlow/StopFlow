@@ -11,13 +11,16 @@ function bounds(e,l){
  return {minX:Math.max(0,ex-w/2),minY:Math.max(0,ey-h/2),maxX:Math.min(l.width-w,l.width-w/2-ex),maxY:Math.min(l.height-h,l.height-h/2-ey)};
 }
 function constrain(e,l,x,y,snap=false){const b=bounds(e,l);need(b.maxX>=b.minX&&b.maxY>=b.minY);return {x:Math.max(b.minX,Math.min(b.maxX,snap?Math.round(x/10)*10:x)),y:Math.max(b.minY,Math.min(b.maxY,snap?Math.round(y/10)*10:y))};}
-function create(data,groups,identity){
- const draft={data:copy(data),groups:copy(groups)},base=copy(draft);
- const e={identity,base,draft,selected:'',selection:[],multi:false,pan:false,grid:true,snap:false,room:data.rooms.find(r=>r.active)?.id||'',dirty:false,busy:false,pending:null,message:'',error:false,add:false,groupId:'',groupName:'',groupActive:true,placements:[],view:null};
+function reframe(e){const data=e.draft.data;e.placements=[];
  let offset=0;for(const room of data.rooms.filter(r=>r.active)){const l=data.layouts.find(l=>l.room_id===room.id&&l.status==='active');if(!l)continue;
   const f=root.stopflowServiceModel.frame(data.elements.filter(x=>x.layout_id===l.id)),width=Math.max(360,f.width+80),height=Math.max(300,f.height+80);
   e.placements.push({id:room.id,layout:l.id,originX:offset-f.x+(width-f.width)/2,originY:56-f.y+35,x:offset,width,height:height+56});offset+=width+36;}
- e.fit={x:-12,y:-12,width:Math.max(360,offset-12),height:Math.max(380,...e.placements.map(p=>p.height))+24};e.view=copy(e.fit);return e;
+ e.fit={x:-12,y:-12,width:Math.max(360,offset-12),height:Math.max(380,...e.placements.map(p=>p.height))+24};e.view=copy(e.fit);
+}
+function create(data,groups,identity){
+ const draft={data:copy(data),groups:copy(groups)},base=copy(draft);
+ const e={identity,base,draft,selected:'',selection:[],multi:false,pan:false,grid:true,snap:false,room:data.rooms.find(r=>r.active)?.id||'',dirty:false,busy:false,pending:null,message:'',error:false,add:false,groupId:'',groupName:'',groupActive:true,placements:[],view:null};
+ reframe(e);return e;
 }
 function dirty(e){const semantic=s=>[s.data.tables.map(t=>[t.id,t.room_id,meta(t)]).sort(),s.data.elements.map(x=>[x.id,x.layout_id,x.table_id,geo(x)]).sort(),s.groups.map(g=>[g.id,g.room_id,g.name,g.active,[...g.table_ids].sort()]).sort()];return !eq(semantic(e.base),semantic(e.draft));}
 function key(e){return 'sf94-plan:'+e.identity;}
@@ -28,6 +31,7 @@ function select(e,id){const item=e.draft.data.elements.find(x=>x.id===id);if(!it
  else if(!e.multi)e.selection=item.table_id?[item.table_id]:[];}
 function zoom(e,factor,anchor){const v=e.view,p=anchor||{x:v.x+v.width/2,y:v.y+v.height/2},w=Math.max(e.fit.width/5,Math.min(e.fit.width*3,v.width/factor)),r=w/v.width;e.view={x:p.x-(p.x-v.x)*r,y:p.y-(p.y-v.y)*r,width:w,height:v.height*r};}
 const label=e=>e.properties?.label||({wall:'Mur',door:'Porte',plant:'Plante',bar:'Bar',label:'Cuisine'})[e.kind]||'Repère';
+function tableList(e){return `<details class="sf94-tables"><summary>Tables du plan (${e.draft.data.tables.filter(t=>t.active).length})</summary>${e.draft.data.tables.filter(t=>t.active).map(t=>{const el=e.draft.data.elements.find(x=>x.table_id===t.id);return `<button type="button" class="sf94-table-choice" data-plan-action="select-item" data-id="${esc(el?.id||'')}" ${el?'':'disabled'}><strong>${esc(t.label)} · ${t.capacity} places</strong><span>${esc(e.draft.data.rooms.find(r=>r.id===t.room_id)?.name)}${el?.x==null?' · À placer':''}</span></button>`;}).join('')}</details>`;}
 function add(e,kind,access,id){need(access.can_manage_layouts,'42501');const d=e.draft.data,l=d.layouts.find(l=>l.room_id===e.room&&l.status==='active');need(l);
  const shapes=['square','rectangle','round'],table=shapes.includes(kind);if(table)need(access.can_manage_tables,'42501');
  const selected=d.elements.find(x=>x.id===e.selected&&x.room_id===e.room),w=kind==='wall'?160:kind==='rectangle'?120:80,h=kind==='wall'?12:kind==='label'?60:80;
@@ -35,12 +39,12 @@ function add(e,kind,access,id){need(access.can_manage_layouts,'42501');const d=e
  Object.assign(el,constrain(el,l,selected?Number(selected.x)+30:140,selected?Number(selected.y)+30:150));
  if(table){let n=1;while(d.tables.some(t=>t.room_id===e.room&&t.label.toLocaleLowerCase()===String(n)))n++;
   el.table_id='new:'+id;d.tables.push({id:el.table_id,room_id:e.room,establishment_id:l.establishment_id,label:String(n),capacity:kind==='rectangle'?4:2,shape:kind,active:true,version:null});}
- d.elements.push(el);e.selected=id;e.selection=table?[el.table_id]:[];e.add=false;e.dirty=true;}
+ d.elements.push(el);e.selected=id;e.selection=table?[el.table_id]:[];e.add=false;e.dirty=true;reframe(e);}
 function properties(e){const d=e.draft.data,item=d.elements.find(x=>x.id===e.selected),t=d.tables.find(t=>t.id===item?.table_id),selected=e.selection.map(id=>d.tables.find(t=>t.id===id)).filter(Boolean);
  const input=(name,title,value,type='number',extra='')=>`<label>${title}<input class="input" data-plan-field="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
  return `<div class="sf94-property-head"><h3>${e.multi?'Jumelage':t?'Table '+esc(t.label):item?esc(label(item)):'Propriétés'}</h3><span>${item?esc(d.rooms.find(r=>r.id===item.room_id)?.name):'Touchez un objet du plan'}</span></div>${e.multi?`<p class="sf94-selection-summary">${selected.length} tables · ${selected.reduce((n,t)=>n+Number(t.capacity),0)} places</p><p>${selected.map(t=>esc(t.label)).join(' + ')||'Touchez au moins deux tables de la même salle.'}</p>${input('groupName','Nom du jumelage',e.groupName,'text','maxlength="120"')}<label class="sf94-check"><input type="checkbox" data-plan-field="groupActive" ${e.groupActive?'checked':''}>Actif</label><button type="button" data-plan-action="stage-group" class="btn">Ajouter au brouillon</button>`:item?`${t?`<fieldset ${e.access.can_manage_tables?'':'disabled'}>${input('label','Numéro / nom',t.label,'text','maxlength="80"')}${input('capacity','Couverts',t.capacity,'number','min="1" max="1000" step="1"')}<label>Forme<select class="input" data-plan-field="shape">${[['square','Carrée'],['rectangle','Rectangulaire'],['round','Ronde']].map(([v,n])=>`<option value="${v}" ${t.shape===v?'selected':''}>${n}</option>`).join('')}</select></label></fieldset>`:input('markLabel','Libellé',label(item),'text','maxlength="120"')}
  ${item.x==null?'<p>Cette table n’a pas de position.</p><button type="button" class="btn" data-plan-action="place">Placer au centre</button>':`<div class="sf94-numbers">${[['x','Position X'],['y','Position Y'],['width','Largeur'],['height','Hauteur'],['rotation','Orientation (°)']].map(([k,n])=>input(k,n,Math.round(Number(item[k])*100)/100,'number',k==='rotation'?'min="0" max="359.99" step="0.1"':k==='width'||k==='height'?'min="20" step="1"':'min="0" step="0.1"')).join('')}</div>`}${!t?'<button type="button" class="btn" data-plan-action="remove-mark">Retirer ce repère</button>':''}`:'<p>Déplacez une table ou un repère au doigt. Utilisez « Déplacer la vue » pour parcourir le plan.</p>'}
- <section class="sf94-combinations"><h3>Combinaisons possibles</h3>${e.draft.groups.filter(g=>g.active).map(g=>`<button type="button" class="sf94-combo ${g.id===e.groupId?'selected':''}" data-plan-action="group" data-id="${esc(g.id)}"><strong>${esc(g.name)}</strong><span>${g.table_ids.map(id=>esc(d.tables.find(t=>t.id===id)?.label)).join(' + ')} · ${g.table_ids.reduce((n,id)=>n+Number(d.tables.find(t=>t.id===id)?.capacity||0),0)} places</span></button>`).join('')||'<p>Aucun jumelage.</p>'}<p class="sf94-help">Une table peut appartenir à plusieurs combinaisons. Les disponibilités restent contrôlées par table physique.</p></section>`;
+ ${tableList(e)}<section class="sf94-combinations"><h3>Combinaisons possibles</h3>${e.draft.groups.filter(g=>g.active).map(g=>`<button type="button" class="sf94-combo ${g.id===e.groupId?'selected':''}" data-plan-action="group" data-id="${esc(g.id)}"><strong>${esc(g.name)}</strong><span>${g.table_ids.map(id=>esc(d.tables.find(t=>t.id===id)?.label)).join(' + ')} · ${g.table_ids.reduce((n,id)=>n+Number(d.tables.find(t=>t.id===id)?.capacity||0),0)} places</span></button>`).join('')||'<p>Aucun jumelage.</p>'}<p class="sf94-help">Une table peut appartenir à plusieurs combinaisons. Les disponibilités restent contrôlées par table physique.</p></section>`;
 }
 function svg(e){let html='';const d=e.draft.data;
  for(const p of e.placements){const room=d.rooms.find(r=>r.id===p.id);html+=`<g><rect class="sf94-zone" x="${p.x}" y="0" width="${p.width}" height="${p.height}" rx="18"/><text class="sf94-zone-name" x="${p.x+20}" y="30">${esc(room.name)}</text><g transform="translate(${p.originX} ${p.originY})">`;
@@ -86,7 +90,10 @@ function bind(node,e,options){const viewport=node.querySelector('[data-plan-view
  viewport.onpointermove=ev=>{if(!points.has(ev.pointerId)||!gesture)return;ev.preventDefault();points.set(ev.pointerId,{clientX:ev.clientX,clientY:ev.clientY});const g=gesture;
   if(g.pinch){if(points.size!==2)return;const ps=[...points.values()],mid={clientX:(ps[0].clientX+ps[1].clientX)/2,clientY:(ps[0].clientY+ps[1].clientY)/2},ratio=Math.max(.2,Math.min(5,Math.hypot(ps[1].clientX-ps[0].clientX,ps[1].clientY-ps[0].clientY)/Math.max(1,g.distance))),start=xy(g.startMid,g.matrix),now=xy(mid,g.matrix),w=g.view.width/ratio,h=g.view.height/ratio;e.view={x:start.x-(now.x-g.view.x)/ratio,y:start.y-(now.y-g.view.y)/ratio,width:w,height:h};}
   else {const a=xy(g.start,g.matrix),b=xy(ev,g.matrix),dx=b.x-a.x,dy=b.y-a.y;if(Math.hypot(ev.clientX-g.start.clientX,ev.clientY-g.start.clientY)>4)g.moved=true;
-   if(g.element&&g.moved){const l=e.draft.data.layouts.find(l=>l.id===g.element.layout_id);Object.assign(g.element,constrain(g.element,l,Number(g.original.x)+dx,Number(g.original.y)+dy,e.snap));}
+   if(g.element&&g.moved){const el=g.element,l=e.draft.data.layouts.find(l=>l.id===el.layout_id),p=e.placements.find(p=>p.id===el.room_id),b=bounds(el,l),ex=Math.abs(el.width*Math.cos(el.rotation*Math.PI/180))/2+Math.abs(el.height*Math.sin(el.rotation*Math.PI/180))/2,ey=Math.abs(el.width*Math.sin(el.rotation*Math.PI/180))/2+Math.abs(el.height*Math.cos(el.rotation*Math.PI/180))/2;
+    const candidate=constrain(el,l,Number(g.original.x)+dx,Number(g.original.y)+dy,e.snap);
+    candidate.x=Math.max(Math.max(b.minX,p.x+14-p.originX+ex-el.width/2),Math.min(Math.min(b.maxX,p.x+p.width-14-p.originX-ex-el.width/2),candidate.x));
+    candidate.y=Math.max(Math.max(b.minY,50-p.originY+ey-el.height/2),Math.min(Math.min(b.maxY,p.height-14-p.originY-ey-el.height/2),candidate.y));Object.assign(el,candidate);}
    else if(g.camera)e.view={...g.view,x:g.view.x-dx,y:g.view.y-dy};}paint();
  };
  const end=ev=>{if(!points.has(ev.pointerId))return;const g=gesture;points.delete(ev.pointerId);if(ev.type==='pointercancel'&&g?.element)Object.assign(g.element,g.original);ignoreClick=Boolean(g?.moved||g?.pinch||e.multi);if(points.size)return;gesture=null;e.dirty=dirty(e);redraw();};
@@ -96,14 +103,14 @@ function bind(node,e,options){const viewport=node.querySelector('[data-plan-view
  node.querySelector('.sf94-editor').onclick=ev=>{const b=ev.target.closest?.('[data-plan-action]');if(!b)return;ev.preventDefault();ev.stopPropagation();if(e.busy)return;const a=b.dataset.planAction;
   try{if(a==='save'){void options.save();return;}if(a==='reconcile'){void options.reconcile();return;}if(a==='cancel'){options.cancel();return;}if(e.pending)return;
    if(a==='add')e.add=!e.add;if(a==='add-item')add(e,b.dataset.id,e.access,options.uuid());if(a==='multi'){e.multi=!e.multi;e.groupEditing=false;e.groupId='';e.groupName='';e.selection=[];}
-   if(a==='pan')e.pan=!e.pan;if(a==='zoom-in')zoom(e,1.25);if(a==='zoom-out')zoom(e,.8);if(a==='center')e.view=copy(e.fit);
-   if(a==='stage-group')stageGroup(e,options.uuid());
+   if(a==='pan')e.pan=!e.pan;if(a==='zoom-in')zoom(e,1.25);if(a==='zoom-out')zoom(e,.8);if(a==='center')reframe(e);
+   if(a==='stage-group')stageGroup(e,options.uuid());if(a==='select-item')select(e,b.dataset.id);
    if(a==='group'){const g=e.draft.groups.find(x=>x.id===b.dataset.id);e.multi=true;e.groupId=g.id;e.room=g.room_id;e.groupName=g.name;e.groupActive=g.active;e.selection=[...g.table_ids];e.selected='';}
    if(a==='place'){const x=e.draft.data.elements.find(x=>x.id===e.selected),l=e.draft.data.layouts.find(l=>l.id===x.layout_id);Object.assign(x,constrain(x,l,150,150));}
    if(a==='remove-mark'){const x=e.draft.data.elements.find(x=>x.id===e.selected);if(x&&!x.table_id){e.draft.data.elements=e.draft.data.elements.filter(z=>z.id!==x.id);e.selected='';}}
    redraw();}catch(err){e.error=true;e.message=options.error(err);options.render();}};
  node.querySelector('.sf94-editor').oninput=ev=>{const n=ev.target.dataset.planField;if(!n||e.busy||e.pending)return;try{field(e,n,ev.target.type==='checkbox'?ev.target.checked:ev.target.value);persistNow();const state=node.querySelector('.sf94-state');if(state)state.textContent=dirty(e)||e.groupEditing?'Modifications non enregistrées':'Plan enregistré';const save=node.querySelector('[data-plan-action="save"]');if(save)save.disabled=false;}catch(err){e.error=true;e.message=options.error(err);}};
- node.querySelector('.sf94-editor').onchange=ev=>{if(ev.target.dataset.planField){node.querySelector('.sf94-editor').oninput(ev);redraw();}};
+ node.querySelector('.sf94-editor').onchange=ev=>{if(ev.target.dataset.planField){node.querySelector('.sf94-editor').oninput(ev);if(fields.includes(ev.target.dataset.planField))reframe(e);redraw();}};
 }
 function planArgs(e,room){const d=e.draft.data,l=e.base.data.layouts.find(l=>l.room_id===room&&l.status==='active');need(l);
  return {p_est:l.establishment_id,p_room:room,p_layout:l.id,p_version:l.version,p_tables:d.tables.filter(t=>t.active&&t.room_id===room).map(t=>{const x=d.elements.find(x=>x.table_id===t.id&&x.layout_id===l.id),b=e.base.data.elements.find(x=>x.table_id===t.id&&x.layout_id===l.id);need(x&&b&&x.x!=null&&x.y!=null);const limits=bounds(x,l);need(fields.every(k=>Number.isFinite(Number(x[k])))&&x.width>=20&&x.height>=20&&x.rotation>=0&&x.rotation<360&&x.x>=limits.minX-1e-6&&x.x<=limits.maxX+1e-6&&x.y>=limits.minY-1e-6&&x.y<=limits.maxY+1e-6);return {element_id:b.id,table_id:t.id,expected_version:b.version,...Object.fromEntries(fields.map(k=>[k,Number(x[k])]))};}),p_marks:d.elements.filter(x=>x.layout_id===l.id&&!x.table_id).map(x=>{need(x.x>=0&&x.y>=0&&x.width>0&&x.height>0&&x.x+x.width<=l.width&&x.y+x.height<=l.height&&x.rotation>=0&&x.rotation<360);return copy(x);})};}

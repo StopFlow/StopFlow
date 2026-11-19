@@ -1,13 +1,15 @@
 'use strict';
-const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.STOPFLOW_PLAYWRIGHT_MODULE||'playwright'),{backend}=require('./fixtures/pilot-touch.cjs');
 const ROOT=path.resolve(__dirname,'..'),OUT=process.env.STOPFLOW_UI_OUTPUT||'/out';fs.mkdirSync(OUT,{recursive:true});
 const ORIGIN='https://pilot-touch.stopflow.invalid';
 (async()=>{
- const browser=await chromium.launch({headless:true,executablePath:process.env.STOPFLOW_CHROMIUM_EXECUTABLE||undefined,args:process.env.STOPFLOW_CHROMIUM_ARGS?JSON.parse(process.env.STOPFLOW_CHROMIUM_ARGS):['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
+ const profile=fs.mkdtempSync(path.join(os.tmpdir(),'stopflow-touch-profile-'));
+ const context=await chromium.launchPersistentContext(profile,{headless:true,viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE',executablePath:process.env.STOPFLOW_CHROMIUM_EXECUTABLE||undefined,args:process.env.STOPFLOW_CHROMIUM_ARGS?JSON.parse(process.env.STOPFLOW_CHROMIUM_ARGS):['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
+ const browser=context.browser();
  const result={navigateur:'Chromium '+browser.version(),interaction:'EMULATION_TACTILE_CDP',backend:'RPC_SIMULES',base_active:false,etapes:[],reseau_externe:[],erreurs:[]};
  const b=backend(),est=b.state.data.rooms[0].establishment_id;let manager=true;
- const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE'});const page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>result.erreurs.push(e.message));
+ const page=context.pages()[0]||await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>result.erreurs.push(e.message));
  await page.exposeFunction('fixtureRPC',async(n,a)=>{
   if(n==='reservations_context')return {data:{establishments:[{id:est,can_view:true,can_manage_layouts:manager,can_manage_tables:manager,can_manage_rooms:manager}]}};
   if(n==='reservations_booking_context')return {data:{can_view:true,can_manage:true,timezone:'Europe/Brussels'}};
@@ -60,5 +62,5 @@ const ORIGIN='https://pilot-touch.stopflow.invalid';
   manager=false;await page.reload();await page.evaluate(async()=>{document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await window.stopflowService.mount();});assert.equal(await page.locator('[data-service-action="editor"]').count(),0);assert.equal(await page.locator('[data-plan-svg]').count(),0);result.etapes.push('PERSONNEL_SANS_DROIT_EDITEUR_PASS');
   assert.deepEqual(result.erreurs,[]);assert.deepEqual(result.reseau_externe,[]);result.resultat='PASS';
  }catch(error){result.resultat='ECHEC';result.erreur={type:error.name,message:error.message};await page.screenshot({path:path.join(OUT,'echec.png')}).catch(()=>{});process.exitCode=1;}
- finally{fs.writeFileSync(path.join(OUT,'resultat.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));await context.close();await browser.close();}
+ finally{fs.writeFileSync(path.join(OUT,'resultat.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));await context.close();await browser.close();fs.rmSync(profile,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});
