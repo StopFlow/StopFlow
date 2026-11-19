@@ -3,7 +3,7 @@
 #sf93Service .sf94-editor{border:1px solid #cfdae6;border-radius:18px;background:#f5f8fb;overflow:hidden;color:#17334e}
 #sf93Service .sf94-toolbar{padding:12px 16px;background:white;border-bottom:1px solid #d5e0eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 #sf93Service .sf94-toolbar h2{font-size:20px;font-weight:800}.sf94-state{font-size:13px;color:#526983}.sf94-edit-actions{display:flex;gap:8px;flex-wrap:wrap}
-html body #sf93Service .sf94-editor button,html body #sf93Service .sf94-editor .input{min-height:46px!important;padding:10px 13px!important;font-size:15px!important;border-radius:10px!important}
+html body #sf93Service .sf94-editor button,html body #sf93Service .sf94-editor .input{touch-action:manipulation;min-height:46px!important;padding:10px 13px!important;font-size:15px!important;border-radius:10px!important}
 #sf93Service .sf94-editor .primary{background:#2059b4;color:white;border-color:#2059b4}#sf93Service .sf94-editor button[aria-pressed=true],#sf93Service .sf94-combo.selected{background:#e5efff;border-color:#2059b4;color:#164d9d}
 #sf93Service .sf94-workspace{display:grid;grid-template-columns:minmax(0,1fr) 268px;height:var(--sf94-height,calc(100dvh - 210px));min-height:280px}
 #sf93Service .sf94-canvas{min-width:0;min-height:0;display:flex;flex-direction:column;padding:12px;gap:8px}

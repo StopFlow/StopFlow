@@ -5,7 +5,7 @@ const ROOT=path.resolve(__dirname,'..'),OUT=process.env.STOPFLOW_UI_OUTPUT||'/ou
 const ORIGIN='https://pilot-touch.stopflow.invalid';
 (async()=>{
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),'stopflow-touch-profile-'));
- const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE',args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
+ const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:1024,height:768},hasTouch:true,isMobile:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE',args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
  const browser=context.browser();
  const result={navigateur:'Chromium '+browser.version(),interaction:'EMULATION_TACTILE_CDP',backend:'RPC_SIMULES',base_active:false,etapes:[],reseau_externe:[],erreurs:[]};
  const b=backend(),est=b.state.data.rooms[0].establishment_id;let manager=true;
@@ -41,9 +41,9 @@ const ORIGIN='https://pilot-touch.stopflow.invalid';
   const first=b.state.data.elements.find(e=>e.table_id),second=b.state.data.elements.find(e=>e.table_id&&e.room_id===first.room_id&&e.id!==first.id),original={x:first.x,y:first.y};
   await item(first.id).tap();assert.equal(await item(first.id).getAttribute('aria-pressed'),'true');
   await drag(item(first.id),30,14);let moved=await position(first.id);assert(moved.x>original.x&&moved.y>original.y);assert.equal(b.state.data.elements.find(e=>e.id===first.id).x,original.x);result.etapes.push('SELECTION_GLISSER_BROUILLON_PASS');
-  await action('zoom-in').tap();const beforeZoom=await position(first.id),matrix=await page.locator('[data-plan-svg]').evaluate(el=>{const m=el.getScreenCTM().inverse();return {a:m.a,b:m.b};});
+  const oldView=await page.locator('[data-plan-svg]').getAttribute('viewBox');await action('zoom-in').tap();assert.notEqual(await page.locator('[data-plan-svg]').getAttribute('viewBox'),oldView);const beforeZoom=await position(first.id),matrix=await page.locator('[data-plan-svg]').evaluate(el=>{const m=el.getScreenCTM().inverse();return {a:m.a,b:m.b};});
   await drag(item(first.id),20,0);moved=await position(first.id);assert(Math.abs(moved.x-beforeZoom.x-matrix.a*20)<1);assert(Math.abs(moved.y-beforeZoom.y-matrix.b*20)<1);result.etapes.push('COORDONNEES_STABLES_AU_ZOOM_PASS');
-  const beforePan=await position(first.id);await action('pan').tap();await drag(item(first.id),28,12);assert.deepEqual(await position(first.id),beforePan);await action('pan').tap();result.etapes.push('DEPLACEMENT_VUE_DISTINCT_PASS');
+  const beforePan=await position(first.id);await action('pan').tap();assert.equal(await action('pan').getAttribute('aria-pressed'),'true');await drag(item(first.id),28,12);assert.deepEqual(await position(first.id),beforePan);await action('pan').tap();assert.equal(await action('pan').getAttribute('aria-pressed'),'false');result.etapes.push('DEPLACEMENT_VUE_DISTINCT_PASS');
   // Two contacts over the canvas: the view changes, physical coordinates do not.
   const viewBefore=await page.locator('[data-plan-svg]').getAttribute('viewBox'),canvas=await page.locator('[data-plan-viewport]').boundingBox();const y=canvas.y+canvas.height*.8,x=canvas.x+canvas.width*.5;
   await cd.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:91,x:x-35,y},{id:92,x:x+35,y}]});
@@ -63,5 +63,5 @@ const ORIGIN='https://pilot-touch.stopflow.invalid';
   manager=false;await page.reload();await page.evaluate(async()=>{document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await window.stopflowService.mount();});assert.equal(await page.locator('[data-service-action="editor"]').count(),0);assert.equal(await page.locator('[data-plan-svg]').count(),0);result.etapes.push('PERSONNEL_SANS_DROIT_EDITEUR_PASS');
   assert.deepEqual(result.erreurs,[]);assert.deepEqual(result.reseau_externe,[]);result.resultat='PASS';
  }catch(error){result.resultat='ECHEC';result.erreur={type:error.name,message:error.message};result.editeur={touches:await page.evaluate(()=>window.fixtureTouches),message:await page.locator('.sf94-message').textContent().catch(()=>null),statut:await page.locator('.sf94-state').textContent().catch(()=>null),save_disabled:await action('save').isDisabled().catch(()=>null),rpc:b.calls.map(x=>({name:x.name,version:x.args?.p_version,elements:x.args?.p_tables?.length}))};await page.screenshot({path:path.join(OUT,'echec.png')}).catch(()=>{});process.exitCode=1;}
- finally{fs.writeFileSync(path.join(OUT,'resultat.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));await context.close();await browser.close();fs.rmSync(profile,{recursive:true,force:true});}
+ finally{try{await context.close();await browser.close();assert(!browser.isConnected());fs.rmSync(profile,{recursive:true,force:true});result.nettoyage='NAVIGATEUR_FERME_PROFIL_SUPPRIME';}catch{result.resultat='ECHEC';result.nettoyage='NON_CONFIRME';process.exitCode=1;}fs.writeFileSync(path.join(OUT,'resultat.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
