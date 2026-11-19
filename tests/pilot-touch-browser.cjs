@@ -5,7 +5,7 @@ const ROOT=path.resolve(__dirname,'..'),OUT=process.env.STOPFLOW_UI_OUTPUT||'/ou
 const ORIGIN='https://pilot-touch.stopflow.invalid';
 (async()=>{
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),'stopflow-touch-profile-'));
- const context=await chromium.launchPersistentContext(profile,{headless:true,viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE',executablePath:process.env.STOPFLOW_CHROMIUM_EXECUTABLE||undefined,args:process.env.STOPFLOW_CHROMIUM_ARGS?JSON.parse(process.env.STOPFLOW_CHROMIUM_ARGS):['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
+ const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE',args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
  const browser=context.browser();
  const result={navigateur:'Chromium '+browser.version(),interaction:'EMULATION_TACTILE_CDP',backend:'RPC_SIMULES',base_active:false,etapes:[],reseau_externe:[],erreurs:[]};
  const b=backend(),est=b.state.data.rooms[0].establishment_id;let manager=true;
