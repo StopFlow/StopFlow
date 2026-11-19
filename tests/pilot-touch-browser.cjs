@@ -26,8 +26,10 @@ const ORIGIN='https://pilot-touch.stopflow.invalid';
  const cd=await context.newCDPSession(page);let touchId=1;
  async function drag(locator,dx,dy){const box=await locator.boundingBox();assert(box);const id=touchId++,x=box.x+box.width/2,y=box.y+box.height/2;
   await cd.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id}]});
-  for(let i=1;i<=6;i++)await cd.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/6,y:y+dy*i/6,id}]});
-  await cd.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
+  // A finger drag has a duration. Instant CDP moves become a fling and
+  // Chromium suppresses the next tap; that would test the driver, not the UI.
+  for(let i=1;i<=6;i++){await new Promise(resolve=>setTimeout(resolve,35));await cd.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*i/6,y:y+dy*i/6,id}]});}
+  await cd.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
  const action=a=>page.locator('[data-plan-action="'+a+'"]');const item=id=>page.locator('[data-plan-item="'+id+'"]');
  const position=async id=>{const value=await item(id).getAttribute('transform');const m=/translate\(([-\d.]+) ([-\d.]+)\)/.exec(value);assert(m);return {x:Number(m[1]),y:Number(m[2])};};
  try{
