@@ -1,10 +1,10 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium}=require('playwright'),{backend}=require('./fixtures/pilot-touch.cjs');
+const {chromium}=require(process.env.STOPFLOW_PLAYWRIGHT_MODULE||'playwright'),{backend}=require('./fixtures/pilot-touch.cjs');
 const ROOT=path.resolve(__dirname,'..'),OUT=process.env.STOPFLOW_UI_OUTPUT||'/out';fs.mkdirSync(OUT,{recursive:true});
 const ORIGIN='https://pilot-touch.stopflow.invalid';
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ const browser=await chromium.launch({headless:true,executablePath:process.env.STOPFLOW_CHROMIUM_EXECUTABLE||undefined,args:process.env.STOPFLOW_CHROMIUM_ARGS?JSON.parse(process.env.STOPFLOW_CHROMIUM_ARGS):['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});
  const result={navigateur:'Chromium '+browser.version(),interaction:'EMULATION_TACTILE_CDP',backend:'RPC_SIMULES',base_active:false,etapes:[],reseau_externe:[],erreurs:[]};
  const b=backend(),est=b.state.data.rooms[0].establishment_id;let manager=true;
  const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block',locale:'fr-BE'});const page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>result.erreurs.push(e.message));

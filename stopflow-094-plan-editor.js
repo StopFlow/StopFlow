@@ -128,9 +128,17 @@ function accept(e,step,fresh,groups){const a=step.args,d=e.draft.data,b=e.base.d
  e.pending=null;e.dirty=dirty(e);
 }
 function preflight(e,fresh,groups){for(const name of ['tables','layouts','elements'])for(const old of e.base.data[name]){const row=fresh[name].find(x=>x.id===old.id);need(row&&row.version===old.version,'40001');}for(const g of e.base.groups)need(groups.some(x=>x.id===g.id&&x.version===g.version),'40001');need(fresh.tables.length===e.base.data.tables.length&&fresh.elements.length===e.base.data.elements.length,'40001');}
+function validate(e){const d=e.draft.data;
+ for(const t of d.tables){const old=e.base.data.tables.find(x=>x.id===t.id);if(!old||!eq(meta(old),meta(t))){need(e.access.can_manage_tables,'42501');need(t.label.trim()&&t.label.trim().length<=80&&Number.isInteger(t.capacity)&&t.capacity>=1&&t.capacity<=1000&&['round','square','rectangle'].includes(t.shape));}}
+ for(const l of d.layouts){const before=e.base.data.elements.filter(x=>x.layout_id===l.id).map(x=>[x.id,geo(x)]),after=d.elements.filter(x=>x.layout_id===l.id).map(x=>[x.id,geo(x)]);if(eq(before,after))continue;
+  for(const t of d.tables.filter(t=>t.active&&t.room_id===l.room_id)){const el=d.elements.find(x=>x.table_id===t.id&&x.layout_id===l.id);need(el&&fields.every(k=>el[k]!=null&&Number.isFinite(Number(el[k]))));const b=bounds(el,l);need(el.width>=20&&el.height>=20&&el.rotation>=0&&el.rotation<360&&el.x>=b.minX-1e-6&&el.x<=b.maxX+1e-6&&el.y>=b.minY-1e-6&&el.y<=b.maxY+1e-6);}
+  for(const m of d.elements.filter(x=>x.layout_id===l.id&&!x.table_id))need(fields.every(k=>Number.isFinite(Number(m[k])))&&m.x>=0&&m.y>=0&&m.width>0&&m.height>0&&m.x+m.width<=l.width&&m.y+m.height<=l.height&&m.rotation>=0&&m.rotation<360);
+ }
+ for(const g of e.draft.groups){need(g.name.trim()&&g.name.length<=120&&g.table_ids.length>=2&&g.table_ids.length<=20&&new Set(g.table_ids).size===g.table_ids.length);need(g.table_ids.every(id=>d.tables.some(t=>t.id===id&&t.active&&t.room_id===g.room_id)));}
+}
 async function reconcile(e,io){need(e.pending);const [data,groups]=await Promise.all([io.read(),io.groups()]);accept(e,e.pending,data,groups);persist(e,io.storage);io.changed(data,groups);return data;}
-async function save(e,io){need(e.access.can_manage_layouts&&!e.busy&&!e.pending,'42501');if(e.groupEditing)stageGroup(e,io.uuid());e.busy=true;e.error=false;e.message='Enregistrement et relecture…';io.render();let confirmed=0;
- try{const [fresh,groups]=await Promise.all([io.read(),io.groups()]);preflight(e,fresh,groups);
+async function save(e,io){need(e.access.can_manage_layouts&&!e.busy&&!e.pending,'42501');e.busy=true;e.error=false;e.message='Enregistrement et relecture…';io.render();let confirmed=0;
+ try{if(e.groupEditing)stageGroup(e,io.uuid());validate(e);const [fresh,groups]=await Promise.all([io.read(),io.groups()]);preflight(e,fresh,groups);
   for(let i=0;i<100;i++){const step=next(e);if(!step)break;persist(e,io.storage);e.pending=step;persist(e,io.storage);let ack=false;
    try{step.result=await io.rpc(step.name,step.args);ack=true;persist(e,io.storage);await reconcile(e,io);confirmed++;}
    catch(err){if(!ack&&['40001','42501','22023','23514','23505','22P02','23P01'].includes(err?.code)){e.pending=null;persist(e,io.storage);}throw err;}}

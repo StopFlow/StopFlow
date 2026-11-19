@@ -76,6 +76,17 @@ function run(env, output) {
 }
 module.exports = {run, target};
 if (require.main === module) {
-  try { console.log(JSON.stringify(run(process.env, path.resolve(__dirname, '../.stopflow-dist')))); }
-  catch { console.error('PILOT_BUILD_REFUSED'); process.exitCode = 1; }
+  void (async()=>{let fixture;
+    try {const result=run(process.env,path.resolve(__dirname,'../.stopflow-dist'));
+      if(process.env.STOPFLOW_TOUCH_UI_CHECK==='1'){
+        fixture=await require('./verify-pilot-touch-build.cjs').verify();
+        fs.cpSync(fixture.out,path.join(result.directory,'pilot-touch'),{recursive:true});
+        const file=path.join(result.directory,'pilot-release.json'),release=JSON.parse(fs.readFileSync(file,'utf8'));
+        release.ui_validation={resultat:fixture.report.resultat,navigateur:fixture.report.navigateur,interaction:fixture.report.interaction,backend:'RPC_SIMULES',rapport:'/pilot-touch/resultat.json'};
+        fs.writeFileSync(file,JSON.stringify(release,null,2)+'\n');
+      }
+      console.log(JSON.stringify(result));
+    } catch {console.error('PILOT_BUILD_REFUSED');process.exitCode=1;}
+    finally {fixture?.cleanup();}
+  })();
 }
