@@ -24,7 +24,7 @@ async function verify(){
   fs.copyFileSync(path.join(temp,'package-lock.json'),path.join(out,'dependencies-lock.json'));
   return {out,report,cleanup:()=>fs.rmSync(temp,{recursive:true,force:true})};
  }catch(error){const reportPath=path.join(out,'resultat.json');if(fs.existsSync(reportPath))console.error('PILOT_UI_RESULT='+fs.readFileSync(reportPath,'utf8'));
-  const image=path.join(out,'echec.png');if(fs.existsSync(image)){const b64=fs.readFileSync(image).toString('base64');for(let i=0;i<b64.length;i+=3000)console.log('PILOT_UI_IMAGE_'+String(i/3000).padStart(4,'0')+'='+b64.slice(i,i+3000));}
+  const image=path.join(out,'echec.png');if(fs.existsSync(image)){const b64=fs.readFileSync(image).toString('base64');for(let i=0;i<b64.length;i+=1000)console.log('PILOT_UI_IMAGE_'+String(i/1000).padStart(4,'0')+'='+b64.slice(i,i+1000));}
   fs.rmSync(temp,{recursive:true,force:true});throw error;
  }
 }
