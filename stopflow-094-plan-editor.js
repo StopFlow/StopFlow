@@ -36,7 +36,14 @@ function add(e,kind,access,id){need(access.can_manage_layouts,'42501');const d=e
  const shapes=['square','rectangle','round'],table=shapes.includes(kind);if(table)need(access.can_manage_tables,'42501');
  const selected=d.elements.find(x=>x.id===e.selected&&x.room_id===e.room),w=kind==='wall'?160:kind==='rectangle'?120:80,h=kind==='wall'?12:kind==='label'?60:80;
  const el={id,layout_id:l.id,room_id:e.room,establishment_id:l.establishment_id,table_id:null,kind:table?'table':kind,width:w,height:h,rotation:0,version:null,properties:table?{}:{label:({wall:'Mur',door:'Porte',plant:'Plante',bar:'Bar',label:'Cuisine'})[kind]}};
- Object.assign(el,constrain(el,l,selected?Number(selected.x)+30:140,selected?Number(selected.y)+30:150));
+ // Place only the new object in a free spot; existing physical coordinates
+ // are never rearranged. Include rotated footprints and a small touch gap.
+ const box=x=>{const a=Number(x.rotation)*Math.PI/180,w=Number(x.width),h=Number(x.height),ex=(Math.abs(w*Math.cos(a))+Math.abs(h*Math.sin(a)))/2,ey=(Math.abs(w*Math.sin(a))+Math.abs(h*Math.cos(a)))/2;return {x:Number(x.x)+w/2-ex,y:Number(x.y)+h/2-ey,w:ex*2,h:ey*2};};
+ const occupied=d.elements.filter(x=>x.layout_id===l.id&&x.x!=null&&x.y!=null).map(box);
+ const free=p=>{const r=box({...el,...p});return occupied.every(o=>r.x+r.w+14<=o.x||o.x+o.w+14<=r.x||r.y+r.h+14<=o.y||o.y+o.h+14<=r.y);};
+ let pos=null;if(selected){const candidate=constrain(el,l,Number(selected.x)+Number(selected.width)+32,Number(selected.y));if(free(candidate))pos=candidate;}
+ for(let y=40,n=0;!pos&&y<=l.height-h&&n<5000;y+=40)for(let x=40;!pos&&x<=l.width-w&&n++<5000;x+=40){const candidate=constrain(el,l,x,y);if(free(candidate))pos=candidate;}
+ need(pos,'22023');Object.assign(el,pos);
  if(table){let n=1;while(d.tables.some(t=>t.room_id===e.room&&t.label.toLocaleLowerCase()===String(n)))n++;
   el.table_id='new:'+id;d.tables.push({id:el.table_id,room_id:e.room,establishment_id:l.establishment_id,label:String(n),capacity:kind==='rectangle'?4:2,shape:kind,active:true,version:null});}
  d.elements.push(el);e.selected=id;e.selection=table?[el.table_id]:[];e.add=false;e.dirty=true;reframe(e);}
