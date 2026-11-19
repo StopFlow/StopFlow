@@ -5,7 +5,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),{spa
 async function verify(){
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'stopflow-touch-')),out=path.join(temp,'output');fs.mkdirSync(out);
  const clean={PATH:process.env.PATH,HOME:temp,TMPDIR:temp,LANG:'C.UTF-8',NPM_CONFIG_USERCONFIG:'/dev/null'};
- function run(program,args,env,timeout){const r=spawnSync(program,args,{env,cwd:temp,encoding:'utf8',timeout,maxBuffer:6*1024*1024});if(r.stdout)console.log(r.stdout);if(r.status!==0){console.error(JSON.stringify({etape:program==='npm'?'PREPARATION_NAVIGATEUR':'SCENARIO_TACTILE',code:r.status,erreur_type:r.error?.code||null,diagnostic:r.stderr?.slice(-7000)||null}));throw new Error('PILOT_TOUCH_CHECK_FAILED');}}
+ function run(program,args,env,timeout){const r=spawnSync(program,args,{env,cwd:temp,encoding:'utf8',timeout,maxBuffer:6*1024*1024});if(r.stdout)console.log(r.stdout);if(r.status!==0){console.error(JSON.stringify({etape:program==='npm'?'PREPARATION_NAVIGATEUR':'SCENARIO_TACTILE',code:r.status,erreur_type:r.error?.code||null}));for(const line of (r.stderr||'').split('\n').filter(Boolean))for(let i=0;i<line.length;i+=1600)console.error('PILOT_BROWSER_DIAG '+line.slice(i,i+1600));throw new Error('PILOT_TOUCH_CHECK_FAILED');}}
  try{
   console.log('QUALIFICATION_TACTILE_ISOLEE_DEMARREE');
   run('npm',['install','--prefix',temp,'--save-exact','--ignore-scripts','--no-audit','--no-fund','--registry=https://registry.npmjs.org','playwright-core@1.64.1','@sparticuz/chromium@153.0.0'],clean,150000);

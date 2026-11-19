@@ -31,6 +31,7 @@ const ORIGIN='https://pilot-touch.stopflow.invalid';
  const action=a=>page.locator('[data-plan-action="'+a+'"]');const item=id=>page.locator('[data-plan-item="'+id+'"]');
  const position=async id=>{const value=await item(id).getAttribute('transform');const m=/translate\(([-\d.]+) ([-\d.]+)\)/.exec(value);assert(m);return {x:Number(m[1]),y:Number(m[2])};};
  try{
+  result.sous_etape='SONDE_RENDU_MINIMAL';await page.setContent('<html><body><p>Sonde de rendu fictive</p></body></html>');await page.screenshot({path:path.join(OUT,'sonde-moteur.png')});console.log('SONDE_RENDU_MINIMAL_PASS');result.sous_etape='NAVIGATION_FIXTURE';
   await page.goto(ORIGIN);await page.locator('#sfPilotPasswordToggle').waitFor();
   const password=page.locator('#password'),eye=page.locator('#sfPilotPasswordToggle');await password.fill('SYNTHETIC_ONLY_NOT_A_CREDENTIAL');assert.equal(await password.getAttribute('type'),'password');
   await eye.tap();assert.equal(await password.getAttribute('type'),'text');assert.equal(await eye.getAttribute('aria-label'),'Masquer le mot de passe');assert.equal(await password.inputValue(),'SYNTHETIC_ONLY_NOT_A_CREDENTIAL');
