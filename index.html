@@ -83,9 +83,11 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input class="input" id="email" type="email" autocomplete="username" required></div>
       <div class="field"><label>Mot de passe</label><input class="input" id="password" type="password" autocomplete="current-password" required></div>
-      <button class="btn primary" id="loginButton" type="submit">Se connecter avec Supabase</button>
+      <button class="btn primary" id="loginButton" type="submit" disabled>Préparation de la connexion…</button>
     </form>
-    <div id="loginMessage" class="login-status info" aria-live="polite"></div>
+    <div id="loginMessage" class="login-status info" role="status" aria-live="polite">Préparation de la connexion sécurisée…</div>
+    <p id="loginDiagnostic" class="muted hidden" aria-live="polite"></p>
+    <button class="btn ghost hidden" id="loginRetry" type="button">Réessayer la connexion</button>
     <div class="hidden" id="localFallbackPanel"><button id="localFallback" type="button" disabled>Connexion Auth requise</button></div>
   </div>
 </div>
@@ -236,7 +238,6 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
 
 <script src="stopflow-environment-config.js?v=091-env1"></script>
 <script src="stopflow-environment.js?v=091-env1"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-orders.js"></script>
 <script src="supabase-catalog.js"></script>
 <script src="supabase-article-tools.js"></script>
@@ -313,6 +314,40 @@ const nextNumber=()=> "BC-"+String((db.orders.filter(o=>o.number&&o.number!=="�
 
 const LOCAL_FALLBACK_ACCOUNTS=Object.freeze({});
 let supabaseClient=null;
+let authReady=false,authBooting=false,loginBusy=false,authBootPromise=null,sdkLoadPromise=null,sdkAttempt=0;
+let authDiagnostic=Object.freeze({phase:"idle",code:null,type:null});
+const SUPABASE_SDK_ASSET="stopflow-supabase-sdk.js?v=2.119.2";
+// Only safe technical state is observable; no URL, credential, key or session.
+window.stopflowAuthStatus=()=>({...authDiagnostic,ready:authReady,booting:authBooting,clientPresent:Boolean(supabaseClient)});
+function authStartupError(code){return Object.assign(new Error(code),{authStartupCode:code});}
+function loadSupabaseSdk(){
+ if(window.supabase&&typeof window.supabase.createClient==="function")return Promise.resolve();
+ if(sdkLoadPromise)return sdkLoadPromise;
+ const attempt=++sdkAttempt;
+ sdkLoadPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement("script");script.src=SUPABASE_SDK_ASSET;script.async=true;script.dataset.stopflowSdk=String(attempt);
+   let settled=false;
+   const finish=error=>{if(settled)return;settled=true;clearTimeout(timer);script.onload=null;script.onerror=null;
+     if(error){script.remove();reject(error);}else resolve();};
+   const timer=setTimeout(()=>finish(authStartupError("SDK_DELAI_DEPASSE")),10000);
+   script.onload=()=>finish(window.supabase&&typeof window.supabase.createClient==="function"?null:authStartupError("SDK_FORMAT_INVALIDE"));
+   script.onerror=()=>finish(authStartupError("SDK_CHARGEMENT_REFUSE"));
+   document.head.appendChild(script);
+ }).catch(error=>{if(attempt===sdkAttempt)sdkLoadPromise=null;throw error;});
+ return sdkLoadPromise;
+}
+async function ensureSupabaseClient(){await loadSupabaseSdk();if(!initSupabaseClient())throw authStartupError("SDK_FORMAT_INVALIDE");return supabaseClient;}
+function boundedAuth(promise){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(authStartupError("SESSION_DELAI_DEPASSE")),10000);})]).finally(()=>clearTimeout(timer));}
+function startupFailure(error,phase){
+ const known=new Set(["SDK_DELAI_DEPASSE","SDK_CHARGEMENT_REFUSE","SDK_FORMAT_INVALIDE","SESSION_DELAI_DEPASSE"]);
+ const code=known.has(error?.authStartupCode)?error.authStartupCode:phase==="configuration"?"CONFIGURATION_REFUSEE":phase==="initialisation"?"CLIENT_INITIALISATION_REFUSEE":"SESSION_VERIFICATION_REFUSEE";
+ const type=["Error","TypeError","SyntaxError","SecurityError","QuotaExceededError","AbortError"].includes(error?.name)?error.name:"Exception";
+ authDiagnostic=Object.freeze({phase,code,type});
+ const messages={SDK_DELAI_DEPASSE:"Le chargement de la connexion prend trop de temps. Réessayez.",SDK_CHARGEMENT_REFUSE:"La bibliothèque de connexion n’a pas pu être chargée depuis le pilote. Vérifiez votre connexion puis réessayez.",SDK_FORMAT_INVALIDE:"Le module de connexion reçu est invalide. Réessayez ; si le problème persiste, communiquez le code ci-dessous.",CONFIGURATION_REFUSEE:"La configuration de ce pilote n’est pas reconnue. Aucun identifiant n’a été envoyé.",CLIENT_INITIALISATION_REFUSEE:"Le navigateur n’a pas pu initialiser la connexion. Réessayez ; si le problème persiste, communiquez le code ci-dessous.",SESSION_DELAI_DEPASSE:"La vérification de la session prend trop de temps. Réessayez.",SESSION_VERIFICATION_REFUSEE:"La session n’a pas pu être vérifiée. Réessayez la connexion."};
+ setLoginMessage(messages[code],"error");
+ const box=document.getElementById("loginDiagnostic");if(box){box.textContent="Diagnostic : "+code+" · "+phase+" · "+type;box.classList.remove("hidden");}
+ document.getElementById("loginRetry")?.classList.remove("hidden");
+}
 
 function localFallbackAllowed(){
  return false; // Pilot: no offline account can bypass Auth or approval.
@@ -326,8 +361,9 @@ function setLoginMessage(message="",type="info"){
 function setLoginBusy(busy){
  const button=$("#loginButton");
  if(!button)return;
- button.disabled=busy;
- button.textContent=busy?"Connexion en cours…":"Se connecter avec Supabase";
+ loginBusy=busy;
+ button.disabled=loginBusy||authBooting||!authReady;
+ button.textContent=loginBusy?"Connexion en cours…":authBooting?"Préparation de la connexion…":"Se connecter avec Supabase";
 }
 function showApp(){
  $("#login").classList.add("hidden");
@@ -375,6 +411,7 @@ async function loadAuthenticatedProfile(user){
  showApp();
 }
 function initSupabaseClient(){
+ if(supabaseClient)return true;
  const config=window.stopflowEnvironment;
  if(!config?.ok||!config.cloud)throw new Error(config?.error||"Configuration StopFlow absente : connexion bloquée.");
  if(!window.supabase||typeof window.supabase.createClient!=="function")return false;
@@ -382,10 +419,11 @@ function initSupabaseClient(){
    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
    ...(config.environment==='development'?{global:{fetch:window.stopflowEnvironmentPolicy.guardedFetch(config,window.fetch.bind(window))}}:{})
  });
+ window.supabaseClient=supabaseClient; // Legacy extensions share the same ready client.
  return true;
 }
 async function signInWithSupabase(email,password){
- if(!supabaseClient)throw new Error("La connexion Supabase est momentanément indisponible.");
+ if(!authReady||authBooting||!supabaseClient)throw new Error("La connexion n’est pas encore prête. Utilisez Réessayer la connexion si le chargement a échoué.");
  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
  if(error||!data.user)throw new Error("E-mail ou mot de passe incorrect, ou compte non autorisé.");
  await loadAuthenticatedProfile(data.user);
@@ -401,41 +439,32 @@ function restoreLocalFallback(email){
 function signInWithLocalFallback(){
  return setLoginMessage("Le pilote utilise exclusivement la connexion Auth Supabase.","error");
 }
-async function bootstrapAuth(){
- const fallbackAllowed=localFallbackAllowed();
- $("#localFallbackPanel").classList.toggle("hidden",!fallbackAllowed);
- showLogin();
- if(!window.stopflowEnvironment?.ok){
-   $("#loginButton").disabled=true;
-   return setLoginMessage(window.stopflowEnvironment?.error||"Configuration StopFlow absente : connexion bloquée.","error");
- }
- let authError="";
- let hadSupabaseSession=false;
- try{
-   if(!initSupabaseClient())throw new Error("La bibliothèque Supabase n’a pas pu être chargée.");
-   const {data:{session:storedSession},error:sessionError}=await supabaseClient.auth.getSession();
-   if(sessionError)throw sessionError;
-   if(storedSession){
-     hadSupabaseSession=true;
-     const {data:{user},error:userError}=await supabaseClient.auth.getUser();
-     if(userError||!user){
-       await supabaseClient.auth.signOut();
-       throw new Error("La session Supabase n’est plus valide.");
-     }
-     await loadAuthenticatedProfile(user);
-     return;
-   }
- }catch(error){
-   authError=error?.message||"Impossible de vérifier la session Supabase.";
- }
- if(fallbackAllowed&&!hadSupabaseSession){
+function bootstrapAuth(){
+ if(authBootPromise)return authBootPromise;
+ authBootPromise=(async()=>{
+   let phase="configuration";
+   authReady=false;authBooting=true;setLoginBusy(false);showLogin();
+   $("#localFallbackPanel").classList.add("hidden");
+   $("#loginRetry").classList.add("hidden");$("#loginRetry").disabled=true;
+   $("#loginDiagnostic").classList.add("hidden");
+   setLoginMessage("Préparation de la connexion sécurisée…","info");
    try{
-     const stored=JSON.parse(localStorage.getItem("stopflowLogged")||"null");
-     if(stored?.email&&restoreLocalFallback(String(stored.email).toLowerCase()))return;
-   }catch{}
- }
- showLogin();
- setLoginMessage(authError||"Connectez-vous avec votre compte StopFlow Supabase.",authError?"error":"info");
+     if(!window.stopflowEnvironment?.ok||!window.stopflowEnvironment.cloud)throw authStartupError("CONFIGURATION_REFUSEE");
+     phase="sdk";authDiagnostic=Object.freeze({phase,code:null,type:null});await loadSupabaseSdk();
+     phase="initialisation";if(!initSupabaseClient())throw authStartupError("SDK_FORMAT_INVALIDE");
+     phase="session";const result=await boundedAuth(supabaseClient.auth.getSession());
+     if(result.error)throw result.error;
+     const storedSession=result.data?.session;
+     if(storedSession){
+       const response=await boundedAuth(supabaseClient.auth.getUser());
+       if(response.error||!response.data?.user){await supabaseClient.auth.signOut();throw authStartupError("SESSION_VERIFICATION_REFUSEE");}
+       await loadAuthenticatedProfile(response.data.user);
+     }else setLoginMessage("Connectez-vous avec votre compte StopFlow Supabase.","info");
+     authReady=true;authDiagnostic=Object.freeze({phase:"ready",code:null,type:null});
+   }catch(error){showLogin();startupFailure(error,phase);}
+   finally{authBooting=false;setLoginBusy(false);$("#loginRetry").disabled=false;}
+ })().finally(()=>{authBootPromise=null;});
+ return authBootPromise;
 }
 
 function isAdmin(){return session.role===ROLE.ADMIN;}
@@ -761,6 +790,7 @@ function loadSettings(){$("#establishment").value=db.settings.establishment;$("#
 
 $("#loginForm").onsubmit=async e=>{
  e.preventDefault();
+ if(!authReady||authBooting||!supabaseClient){if(authBooting)setLoginMessage("La connexion est en préparation. Votre saisie est conservée.","info");return;}
  const email=$("#email").value.trim().toLowerCase();
  const password=$("#password").value;
  setLoginBusy(true);
@@ -773,6 +803,7 @@ $("#loginForm").onsubmit=async e=>{
    setLoginBusy(false);
  }
 };
+$("#loginRetry").onclick=()=>{void bootstrapAuth();};
 $("#localFallback").onclick=()=>signInWithLocalFallback();
 $("#logout").onclick=async()=>{
  try{
@@ -855,6 +886,6 @@ window.stopflowPilotStart = () => bootstrapAuth();
 <script defer src="stopflow-pilot.js?v=20261117-pilot1"></script>
 <link rel="stylesheet" href="stopflow-pilot-team.css?v=20261118-team1">
 <script defer src="stopflow-qr.js?v=2.0.4"></script>
-<script defer src="stopflow-pilot-team.js?v=20261118-team1"></script>
+<script defer src="stopflow-pilot-team.js?v=20261120-auth1"></script>
 
 </body></html>

@@ -54,3 +54,37 @@ locaux sont exclus du commit. Ils restent sur le Mac. Aucune création de compte
 migration ou habilitation n'est déclenchée par le build ou le démarrage frontend.
 Les fixtures SQL et la définition du retour serveur sont conservées pour revue,
 sans exécution automatique. Aucun envoi fournisseur ou intégration externe.
+
+
+## Connexion du pilote — 20 novembre 2026
+
+Référence avant correctif : e1ec098. La page réelle démarre dans des profils
+neufs Chromium 156 et WebKit 27.2 avec le SDK CDN 2.119.2. Cela ne démontre
+pas la cause réseau précise sur l’iPadOS 26.6 signalé. Le chemin défectueux
+est confirmé : SDK absent ou initialisation échouée, client nul, bouton de
+connexion pourtant actif, puis message générique avant tout envoi Auth.
+
+Le SDK officiel 2.119.2 est désormais téléchargé au build seulement, contrôlé
+par SHA-512 pour l’archive npm et SHA-256 pour le fichier UMD, puis servi par
+le même domaine que l’application. Aucun script npm n’est exécuté. Les
+références sont dans `tools/pilot/supabase-sdk.json`. Un écart refuse le build.
+La licence accompagne le fichier distribué.
+
+Le bouton reste désactivé pendant la préparation. Les échecs distinguent
+chargement, délai, format, initialisation et vérification de session. Le code
+technique, la phase et le type d’exception sont affichés sans message brut,
+identifiant, clé ni jeton. Réessayer conserve les champs, déduplique les
+préparations et ne renvoie aucun identifiant automatiquement. Le client
+initialisé est aussi partagé avec les extensions historiques.
+
+`tests/pilot-auth-startup-browser.cjs` charge la page complète et le SDK réel,
+sans injecter de client. Douze cas sont vérifiés sous Chromium et WebKit :
+normal, SDK retardé, refusé, invalide, expiré et exception d’initialisation,
+avec reprise et conservation de la saisie. Seules les réponses HTTP de
+connexion sont simulées ; aucun compte ni mot de passe réel n’est utilisé.
+Le contrôle Chromium est aussi exécuté dans le build pilote pour ne plus
+confondre le démarrage réel avec le client simulé du test tactile.
+
+Éditeur tactile, bouton œil, plan, RPC, données et droits sont conservés.
+L’essai physique Safari et application installée sur iPadOS 26.6 reste
+distinct et non confirmé ; aucune modification du compte n’est requise.

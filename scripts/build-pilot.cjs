@@ -22,7 +22,7 @@ function run(env, output) {
   const commit = env.VERCEL_GIT_COMMIT_SHA || env.STOPFLOW_PILOT_COMMIT || null;
   if (env.VERCEL_ENV && !/^[a-f0-9]{40}$/.test(commit || ''))
     throw new Error('PILOT_COMMIT_REQUIRED');
-  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261119-touch1')throw new Error('PILOT_EDITION_UNREVIEWED');
+  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261120-auth1')throw new Error('PILOT_EDITION_UNREVIEWED');
   for (const [file, sha] of Object.entries(delivery.assets)) {
     if (crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', file))).digest('hex') !== sha)
       throw new Error('PILOT_SOURCE_DIFFERENT');
@@ -78,6 +78,9 @@ module.exports = {run, target};
 if (require.main === module) {
   void (async()=>{let fixture;
     try {const result=run(process.env,path.resolve(__dirname,'../.stopflow-dist'));
+      const sdk=await require('./prepare-pilot-sdk.cjs').prepare(result.directory);
+      const releaseFile=path.join(result.directory,'pilot-release.json'),sdkRelease=JSON.parse(fs.readFileSync(releaseFile,'utf8'));
+      sdkRelease.sdk=sdk;sdkRelease.assets[sdk.asset]=sdk.sha256;fs.writeFileSync(releaseFile,JSON.stringify(sdkRelease,null,2)+'\n');
       if(process.env.STOPFLOW_TOUCH_UI_CHECK==='1'){
         fixture=await require('./verify-pilot-touch-build.cjs').verify();
         fs.cpSync(fixture.out,path.join(result.directory,'pilot-touch'),{recursive:true});

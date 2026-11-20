@@ -238,7 +238,7 @@
     }
     toolbar();
     if (activation) {
-      if (!client()) {try {if(!initSupabaseClient())gateMessage('Bibliothèque de connexion indisponible. Aucune activation effectuée.',true);} catch {gateMessage('Configuration du pilote non confirmée.',true);}}
+      if (!client()) {const button=gate?.querySelector('button[type="submit"]');if(button)button.disabled=true;void ensureSupabaseClient().then(()=>{if(button)button.disabled=false;}).catch(()=>gateMessage('Connexion indisponible. Rechargez le lien privé pour réessayer ; aucune activation effectuée.',true));}
     } else if (typeof window.stopflowPilotStart==='function') void window.stopflowPilotStart();
   }
   document.addEventListener('submit',event=>{

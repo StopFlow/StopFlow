@@ -18,6 +18,9 @@ async function verify(){
   const deps=spawnSync('ldd',[executable],{env:browserEnv,encoding:'utf8'});
   console.log('BROWSER_NATIVE_LIBRARIES '+JSON.stringify({unresolved:(deps.stdout||'').split('\n').filter(l=>l.includes('not found')).map(l=>l.trim()),uid:process.getuid?.(),package_manager:['dnf','yum','apt-get','rpm2cpio'].filter(n=>spawnSync('which',[n],{env:clean}).status===0)}));
   run(process.execPath,[path.resolve(__dirname,'../tests/pilot-touch-browser.cjs')],{...browserEnv,NODE_PATH:path.join(temp,'node_modules'),STOPFLOW_PLAYWRIGHT_MODULE:'playwright-core',STOPFLOW_UI_OUTPUT:out,DEBUG:'pw:browser'},150000);
+  const authOutput=path.join(out,'auth');
+  run(process.execPath,[path.resolve(__dirname,'../tests/pilot-auth-startup-browser.cjs')],{...browserEnv,NODE_PATH:path.join(temp,'node_modules'),STOPFLOW_AUTH_DIRECTORY:path.resolve(__dirname,'../.stopflow-dist'),STOPFLOW_AUTH_OUTPUT:authOutput,STOPFLOW_AUTH_ENGINES:'chromium'},150000);
+  const auth=JSON.parse(fs.readFileSync(path.join(authOutput,'resultat.json'),'utf8'));if(auth.resultat!=='PASS')throw new Error('PILOT_AUTH_STARTUP_NOT_PASS');
   const report=JSON.parse(fs.readFileSync(path.join(out,'resultat.json'),'utf8'));if(report.resultat!=='PASS')throw new Error('PILOT_TOUCH_NOT_PASS');
   const images=fs.readdirSync(out).filter(n=>n.endsWith('.png')).map(name=>{const buffer=fs.readFileSync(path.join(out,name));return {name,sha256:crypto.createHash('sha256').update(buffer).digest('hex'),base64:buffer.toString('base64')};});
   fs.writeFileSync(path.join(out,'captures.json'),JSON.stringify({donnees:'FICTIVES',images}));
