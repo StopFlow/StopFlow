@@ -17,8 +17,9 @@ const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript; ch
 function read(file){return fs.readFileSync(path.join(ROOT,file));}
 async function scenario(browser,engine,mode){
  const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,isMobile:true,serviceWorkers:'block',locale:'fr-BE'});
- const result={engine,mode,etape:'NAVIGATION',resultat:'NON_CONFIRME',http_auth:0,sdk_requetes:0};let releaseSDK=null;const errors=[];
+ const result={engine,mode,etape:'NAVIGATION',resultat:'NON_CONFIRME',http_auth:0,sdk_requetes:0};let releaseSDK=null,page=null;const errors=[];
  try{
+  await context.addInitScript(()=>{window.fixtureRetryEvents=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,e=>{const n=e.target.closest?.('button');if(n?.id==='loginRetry')window.fixtureRetryEvents.push({type,id:n.id});},true);});
   if(mode==='initialisation-error')await context.addInitScript(()=>{const original=window.fetch;window.fixtureRestoreFetch=()=>{window.fetch=original;};window.fetch=undefined;});
   await context.route('**/*',async route=>{
    const request=route.request(),url=new URL(request.url());
@@ -43,7 +44,7 @@ async function scenario(browser,engine,mode){
    if(!fs.existsSync(absolute)||!fs.statSync(absolute).isFile())return route.fulfill({status:404,body:''});
    return route.fulfill({contentType:mime[path.extname(file)]||'application/octet-stream',body:read(file)});
   });
-  const page=await context.newPage();page.on('pageerror',error=>errors.push(error.name));
+  page=await context.newPage();page.on('pageerror',error=>errors.push(error.name));
   await page.goto(ORIGIN+'/',{waitUntil:'domcontentloaded',timeout:30000});
   const button=page.locator('#loginButton'),retry=page.locator('#loginRetry');
   const ready=()=>page.waitForFunction(()=>window.stopflowAuthStatus?.().ready&&!document.getElementById('loginButton').disabled,{},{timeout:15000});
@@ -64,7 +65,9 @@ async function scenario(browser,engine,mode){
     assert(await button.isDisabled());assert.equal(await page.evaluate(()=>window.stopflowAuthStatus().code),'SDK_DELAI_DEPASSE');
    }
    if(mode==='initialisation-error')await page.evaluate(()=>window.fixtureRestoreFetch());
-   result.etape='REESSAI_EXPLICITE';await retry.tap();await ready();
+   result.etape='REESSAI_EXPLICITE';
+   result.reessai_avant=await page.evaluate(()=>{const n=document.getElementById('loginRetry'),r=n.getBoundingClientRect();return {status:window.stopflowAuthStatus(),disabled:n.disabled,handler:typeof n.onclick,rectangle:{x:r.x,y:r.y,width:r.width,height:r.height},cible_centre:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')?.id||null};});
+   await retry.tap();await ready();
    assert.equal(await page.locator('#email').inputValue(),email);assert.equal(await page.locator('#password').inputValue(),password);
   }else await ready();
   result.etape='CLIENT_REEL_PRET';
@@ -81,7 +84,7 @@ async function scenario(browser,engine,mode){
   }
   const diagnostic=await page.locator('#loginDiagnostic').textContent();assert(!diagnostic.includes(email)&&!diagnostic.includes(password));assert.deepEqual(errors,[]);
   result.resultat='PASS';result.etape='TERMINEE';
- }catch(error){result.resultat='ECHEC';result.type=error.name;report.resultat='ECHEC';process.exitCode=1;}
+ }catch(error){result.resultat='ECHEC';result.type=error.name;if(page)result.diagnostic=await page.evaluate(()=>({status:window.stopflowAuthStatus?.(),reessai_evenements:window.fixtureRetryEvents||[],reessai_handler:typeof document.getElementById('loginRetry')?.onclick,scripts_sdk:[...document.querySelectorAll('[data-stopflow-sdk]')].map(n=>({tentative:Number(n.dataset.stopflowSdk)}))})).catch(()=>({lecture:'NON_CONFIRMEE'}));report.resultat='ECHEC';process.exitCode=1;}
  finally{releaseSDK?.();await context.close();report.cas.push(result);}
 }
 (async()=>{
