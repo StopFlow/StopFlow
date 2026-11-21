@@ -20,3 +20,34 @@ html body #sf93Service .sf94-editor button,html body #sf93Service .sf94-editor .
 #sf93Service .sf93-floor-panel{height:100%;display:flex;flex-direction:column;min-height:0}#sf93Service .sf93-plan{flex:1;min-height:180px;height:auto}#sf93Service .sf93-plan svg{height:100%;width:100%}
 .sfPilotPassword{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;align-items:center}.sfPilotPassword .input{width:100%}.sfPilotPasswordToggle{min-width:48px;min-height:48px;border:1px solid #cbd7e5;background:white;border-radius:10px;font-size:22px;cursor:pointer}.sfPilotPasswordToggle:focus-visible{outline:3px solid #e6a52a;outline-offset:2px}
 @media(max-width:720px){#sf93Service .sf94-workspace{grid-template-columns:minmax(0,1fr);height:auto}#sf93Service .sf94-canvas{height:62dvh;min-height:320px}#sf93Service .sf94-properties{border-left:0;border-top:1px solid #d5e0eb;max-height:52dvh}.sf94-add{grid-template-columns:1fr}#sf93Service .sf94-toolbar{padding:10px}#sf93Service .sf93-layout:not(.sf94-expanded){grid-template-columns:1fr}}
+
+/* 20261121: a real page above the app chrome, independent of Fullscreen API. */
+html:has(.sf94-editor),body:has(.sf94-editor){overflow:hidden!important}
+html body #sf93Service .sf94-editor{position:fixed;inset:0;z-index:10000;width:100%;height:100vh;height:100dvh;box-sizing:border-box;border:0;border-radius:0;display:flex;flex-direction:column;isolation:isolate;max-width:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#sf93Service .sf94-editor *{box-sizing:border-box}
+#sf93Service .sf94-toolbar{flex:none;flex-wrap:nowrap;padding:8px 12px;gap:12px;min-height:72px}
+#sf93Service .sf94-plan-title{display:flex;flex-direction:column;min-width:170px;max-width:280px;line-height:1.25;gap:2px}
+#sf93Service .sf94-plan-title>span:first-child{font-size:11px;color:#526983}#sf93Service .sf94-plan-title strong{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sf94-state{font-size:11px}
+#sf93Service .sf94-edit-actions{flex-wrap:nowrap;gap:6px}html body #sf93Service .sf94-edit-actions button{padding:8px 10px!important;font-size:13px!important;white-space:nowrap}
+html body #sf93Service [data-plan-action=save]{background:#2059b4;color:white;border-color:#2059b4}html body #sf93Service button:disabled{cursor:not-allowed;opacity:.5}
+#sf93Service .sf94-plan-nav{display:flex;align-items:center;gap:8px;padding:4px 12px;border-bottom:1px solid #d5e0eb;background:#fff;flex:none;min-width:0}
+#sf93Service .sf94-plan-nav>label{display:flex;align-items:center;gap:8px;font-size:12px;margin:0;min-width:0}#sf93Service .sf94-plan-nav select{max-width:260px;min-width:170px;flex:1}.sf94-nav-spacer{flex:1}
+#sf93Service .sf94-workspace{flex:1;height:auto!important;min-height:0;display:grid;grid-template-columns:minmax(0,1fr)}
+#sf93Service .properties-open .sf94-workspace{grid-template-columns:minmax(0,1fr) 280px}
+#sf93Service .sf94-canvas{height:auto;min-height:0;padding:8px;gap:6px}
+#sf93Service .sf94-viewport{min-height:0;border:1px solid #bccddd;border-radius:8px}
+#sf93Service .sf94-properties[hidden]{display:none!important}#sf93Service .sf94-properties{max-height:none;min-width:0;padding:12px;border-top:0}
+#sf93Service .sf94-properties input,#sf93Service .sf94-properties select{max-width:100%;min-width:0;width:100%}#sf93Service .sf94-properties label{font-size:12px}#sf93Service .sf94-properties fieldset fieldset{gap:7px}
+#sf93Service .sf94-message:not(:empty){flex:none;padding:5px 12px;font-size:12px;max-height:54px;overflow:auto;margin:0}
+#sf93Service .sf94-reference-note{flex:none;padding:4px 12px;margin:0;font-size:11px;background:#fff4d8;color:#75531c}
+#sf93Service .sf94-view-controls{gap:6px;flex-wrap:nowrap}#sf93Service .sf94-view-help{font-size:11px;color:#536c82;margin-left:auto}
+#sf93Service .sf94-add{position:absolute;top:126px;left:12px;right:12px;z-index:5;padding:12px;border:1px solid #afc4df;border-radius:12px;background:#fff;box-shadow:0 8px 32px #17334e33;display:flex;flex-direction:column;gap:12px}
+#sf93Service .sf94-add-menu{display:flex;gap:10px}#sf93Service .sf94-add-menu>button{flex:1}.sf94-add-form{display:flex;align-items:end;gap:10px;flex-wrap:wrap}.sf94-add-form label{display:grid;gap:4px;font-size:12px}.sf94-add-form input{max-width:260px}
+#sf93Service .sf94-object.label .sf94-object-name{font-size:10px}#sf93Service .sf94-object-name{font-size:17px}#sf93Service .sf94-seats{font-size:10px}
+#sf93Service .sf94-editor button:focus-visible,#sf93Service .sf94-object:focus-visible{outline:3px solid #d98d12;outline-offset:2px}
+@media(max-width:900px){#sf93Service .sf94-toolbar{flex-wrap:wrap;gap:6px;min-height:0}#sf93Service .sf94-plan-title{flex:1;max-width:none;min-width:150px}#sf93Service .sf94-edit-actions{flex-wrap:wrap}#sf93Service .sf94-plan-nav{flex-wrap:wrap;gap:5px}#sf93Service .sf94-view-help{display:none}#sf93Service .sf94-add{top:174px}}
+@media(max-width:600px){#sf93Service .sf94-edit-actions{display:grid;grid-template-columns:repeat(3,1fr);width:100%}#sf93Service .sf94-toolbar{padding:6px}#sf93Service .sf94-plan-nav select{min-width:0;max-width:180px}#sf93Service .properties-open .sf94-workspace{grid-template-columns:minmax(0,1fr)}#sf93Service .sf94-properties{position:absolute;right:0;bottom:0;top:210px;width:min(280px,85vw);z-index:4;box-shadow:-4px 0 20px #17334e22}#sf93Service .sf94-add{top:215px;max-height:50dvh;overflow:auto}}
+/* Camera controls float on the margin; they do not consume a third header row. */
+#sf93Service .sf94-canvas{position:relative}
+#sf93Service .sf94-view-controls{position:absolute;left:18px;bottom:18px;z-index:2;padding:5px;max-width:calc(100% - 36px);border:1px solid #c6d4e1;border-radius:12px;background:#ffffffed;box-shadow:0 2px 10px #17334e18}
+#sf93Service .sf94-view-help{display:none}

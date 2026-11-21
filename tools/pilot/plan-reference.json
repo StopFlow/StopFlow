@@ -1,0 +1,365 @@
+{
+  "format": "stopflow-plan-reference",
+  "format_version": 1,
+  "date": "2026-11-21",
+  "state": "REFERENCE_PREPAREE_NON_IMPORTEE",
+  "target": {
+    "branch": "pilot/stopflow-v1-20261117",
+    "supabase_project": "mmrdpyhoawwoplbzqwag",
+    "app_release_observed": "6f06e0d987cc80da89169735f488b92df5d89c85",
+    "plan_name": "Restaurant & Taverne",
+    "canvas": {
+      "width": 1100,
+      "height": 660,
+      "units": "unités de plan, pas mètres"
+    },
+    "one_plan_for_quentin": true
+  },
+  "source": {
+    "name": "Capture d’écran 2026-11-21 à 08.57.29.png",
+    "sha256": "bfb2344c600ed03dc7e39d364c8b7997f7f3575ae0865a3ca7331acabf4a7445",
+    "geometry": "Reconstitution visuelle approximative ; positions et dimensions à ajuster par Quentin, sans étalonnage métrique.",
+    "excluded": "Aucune réservation, fiche client, disponibilité ou occupation importée."
+  },
+  "tables": [
+    {
+      "reference_label": "4",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 38.0,
+      "y": 93.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "5",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 169.0,
+      "y": 35.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "6",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 298.0,
+      "y": 35.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "7",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 243.0,
+      "y": 164.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "8",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 243.0,
+      "y": 256.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "9",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 243.0,
+      "y": 347.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "3",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 40.0,
+      "y": 273.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "2",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 41.0,
+      "y": 439.0,
+      "width": 88,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "10",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 243.0,
+      "y": 439.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "1",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 243.0,
+      "y": 550.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "26",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 796.0,
+      "y": 35.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "25",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 35.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "24",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 145.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "23",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 221.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "22",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 329.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "21",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 421.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "20",
+      "shape": "rectangle",
+      "capacity_proposed": 4,
+      "capacity_requires_validation": true,
+      "x": 999.0,
+      "y": 514.0,
+      "width": 54,
+      "height": 88,
+      "rotation": 0
+    },
+    {
+      "reference_label": "31",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 758.0,
+      "y": 199.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "32",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 869.0,
+      "y": 199.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "30",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 758.0,
+      "y": 309.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "33",
+      "shape": "square",
+      "capacity_proposed": 2,
+      "capacity_requires_validation": true,
+      "x": 869.0,
+      "y": 309.0,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "S1 A",
+      "shape": "round",
+      "capacity_proposed": 30,
+      "capacity_requires_validation": true,
+      "x": 449.0,
+      "y": 167.0,
+      "width": 158,
+      "height": 158,
+      "rotation": 0
+    },
+    {
+      "reference_label": "S1 B",
+      "shape": "round",
+      "capacity_proposed": 10,
+      "capacity_requires_validation": true,
+      "x": 449.0,
+      "y": 356.0,
+      "width": 158,
+      "height": 158,
+      "rotation": 0
+    },
+    {
+      "reference_label": "SA1",
+      "shape": "rectangle",
+      "capacity_proposed": 8,
+      "capacity_requires_validation": true,
+      "x": 685.0,
+      "y": 440.0,
+      "width": 164,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "reference_label": "SA2",
+      "shape": "rectangle",
+      "capacity_proposed": 8,
+      "capacity_requires_validation": true,
+      "x": 685.0,
+      "y": 531.0,
+      "width": 164,
+      "height": 54,
+      "rotation": 0
+    }
+  ],
+  "decor": [
+    {
+      "label": "Emp1 · À emporter",
+      "kind": "label",
+      "usage": "repere_a_emporter_sans_table_reservable",
+      "x": 428,
+      "y": 53,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "label": "Emp2 · À emporter",
+      "kind": "label",
+      "usage": "repere_a_emporter_sans_table_reservable",
+      "x": 501,
+      "y": 53,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    },
+    {
+      "label": "Emp3 · À emporter",
+      "kind": "label",
+      "usage": "repere_a_emporter_sans_table_reservable",
+      "x": 575,
+      "y": 53,
+      "width": 54,
+      "height": 54,
+      "rotation": 0
+    }
+  ],
+  "current_pilot_observed": {
+    "Salle arrière": {
+      "active_tables": 4,
+      "confirmed_fictitious_bookings": 6
+    },
+    "Premier étage": {
+      "active_tables": 4,
+      "confirmed_fictitious_bookings": 3
+    },
+    "Test": {
+      "active_tables": 0,
+      "confirmed_bookings": 0,
+      "note": "Un brouillon local peut exister sur l’iPad et n’est pas visible dans cette lecture serveur."
+    }
+  },
+  "codex_requirements": [
+    "À l’ouverture de l’engrenage, afficher un éditeur occupant tout l’espace utile de la fenêtre, sans les bandeaux et conteneurs du parcours Service ; ne pas dépendre de Fullscreen API.",
+    "Par défaut, afficher un seul plan à la fois. Restaurant & Taverne est la cible de Quentin. Un sélecteur de plans explicite permet de changer ; la vue de tous les plans est facultative et secondaire.",
+    "Le plan sélectionné doit être encadré et nommé en permanence : Vous êtes sur le plan … . Sélectionner un autre plan change immédiatement la cible des ajouts, y compris lorsque le plan est vide.",
+    "Le bouton + ouvre exactement trois choix : Ajouter un plan / Ajouter une table / Ajouter un décor. Les formes sont ensuite présentées comme Table carrée / Table rectangulaire / Table ronde.",
+    "La création d’un plan est indépendante de l’ajout de tables. Prévoir Renommer et Archiver dans son menu. Préserver les historiques et identifiants ; ne jamais supprimer définitivement un plan ou ses réservations.",
+    "Un glissement sur le fond déplace directement la vue ; deux doigts déplacent/zooment. Un glissement sur un objet déplace uniquement cet objet. Le mode Déplacer la vue reste un outil facultatif de forçage, pas un passage obligé au tactile.",
+    "La barre compacte propose ↶ Annuler la dernière action / ↷ Rétablir / + Ajouter / × Abandonner le brouillon / disquette Enregistrer, avec noms accessibles et aides visibles au toucher. Distinguer Quitter de Annuler la dernière action.",
+    "L’historique couvre les modifications du brouillon, un déplacement comptant pour une seule action. Déplacer/zoomer la vue ne crée pas de modification métier. Après sauvegarde confirmée, utiliser une nouvelle base ; un envoi incertain interdit toute opération qui ferait perdre son reçu.",
+    "Le panneau de propriétés est repliable et ne réduit pas le plan à un quart de l’écran. Permettre de zoomer puis de recentrer sur le plan courant. Agrandir l’écran ou changer d’orientation ne modifie jamais les positions enregistrées.",
+    "Réutiliser les RPC existantes, versions attendues, droits et contrôles de concurrence. Les jumelages possibles restent nommés et indépendants ; aucune combinaison entre des plans différents n’est créée implicitement.",
+    "Les objets de référence ci-dessous sont une reconstitution à préparer en brouillon. Ne pas écraser ni renuméroter les huit tables fictives existantes ou réaffecter leurs réservations. Ne pas reproduire les clients, créneaux, couleurs d’occupation ou statuts NR de Zenchef.",
+    "Les trois Emp sont proposés comme repères à emporter, et non comme tables de repas attribuables automatiquement. Leurs capacités ne sont pas ajoutées à la capacité du restaurant.",
+    "Les capacités proposées reposent sur les vues d’éditeur partagées dans la conversation et restent à valider. La capture de service seule ne suffit pas à certifier les capacités.",
+    "Verifier avec un plan de 25 tables + 3 repères, sous WebKit et Chromium, aux formats tablette, les gestes, le contexte d’ajout, l’archivage réversible, undo/redo, l’annulation globale et la sauvegarde/relecture. Distinguer simulation, appels réels et essai physique.",
+    "Conserver le correctif de connexion 6f06e0d, le SDK auto-hébergé, le bouton œil et la R3 de référence. Livraison sur pilot/stopflow-v1-20261117 et aperçu pilote existant ; aucune fusion main, production ou écriture Zenchef."
+  ]
+}
