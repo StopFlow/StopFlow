@@ -1,13 +1,13 @@
 {
-  "edition": "20261121-service1",
+  "edition": "20261121-service2",
   "r3_reference": "e160453537460c5b05e501d68d2376724b030317",
   "assets": {
-    "index.html": "0c898366b7fb42c9666c1181ef6b2887bc3b5186d913c81f8d08b7549ba567be",
+    "index.html": "93b3b553b9c259308237d05e47f141ade192ffe121d09a89f4960f46c0afdf45",
     "stopflow-091-reservations.js": "9db6a2fbb19a827a3108a8d6ed352917ac47e60296dfdcf49b2d3eb193250b29",
-    "stopflow-093-service.js": "f115dbbc6682e9ec4e41ddc4dd54922e959938ea34732320910f15eedb480d8f",
+    "stopflow-093-service.js": "05dd1b5b1df3526ff4c72e83564c44a60de048631f5e2c513ac9737c6d38f8a4",
     "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
-    "stopflow-096-service-pilot.css": "204d91f1e003e3978798c3eb70e2924fb737229c6ad82a93ac498e262c27347e",
-    "stopflow-093-service-model.js": "d1ec2eaf9e1cebb224eaae0908bb5c221d17835182a64e5fa5b319b93a747e09",
+    "stopflow-096-service-pilot.css": "72bd22422048bd351fd7d534db60c9399ab6bbd48db52649889c16327848ebaa",
+    "stopflow-093-service-model.js": "3ac4e7c7923532eaab57a8db24b4ef993014691434b2e9a6da3fd15dd13e5a43",
     "stopflow-095-plan-reference.js": "e4dcb8ce1f26cd5d71267d1028e4917848b3fcae85cd70a65b1069455e47f1aa",
     "stopflow-094-plan-editor.js": "51e419dbd4fd272feff9f41f08fc272fe88103a9fb2b5442cc37b7a9a5e96439",
     "stopflow-094-plan-editor.css": "ad65c950392ef05096999b37883a467211331dbae68c86496076530259998f7f",

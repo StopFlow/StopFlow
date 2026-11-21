@@ -46,3 +46,36 @@ body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotToolbar .sf80-noti
 @media(min-width:741px){#sf93Service .sf93-layout{grid-template-columns:minmax(220px,23%) minmax(0,1fr)}#sf93Service .sf93-layout.sf94-expanded{grid-template-columns:minmax(0,1fr)}#sf93Service .sf93-layout:has(.sf93-form){grid-template-columns:minmax(300px,32%) minmax(0,1fr)}}
 #sf93Service .sf93-table.reserved .sf93-table-top{fill:#e0f2d8;stroke:#5c8854}#sf93Service .sf93-legend i.reserved{background:#e0f2d8;border-color:#5c8854}
 #sf93Service .sf93-table.selected .sf93-table-top{fill:#dceaff;stroke:#2059b4}#sf93Service .sf93-legend i.picked{background:#dceaff;border-color:#2059b4}
+/* Installed iPad shell: reserve the system area, independently of editor geometry. */
+body:has(#sf93Service) #app{padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+body:has(#sf93Service) #sfPilotToolbar{flex-shrink:0}
+#sf93Service,#sf93Service *{box-sizing:border-box}
+#sf93Service .sf93-reservations,#sf93Service .sf93-form,#sf93Service .sf93-placement,#sf93Service .sf93-closure-panel{min-width:0;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none}
+#sf93Service .sf93-form{overflow-y:auto;touch-action:pan-y;flex:1;max-height:100%;padding:12px;gap:10px;scroll-padding-bottom:32px}
+#sf93Service .sf93-form label,#sf93Service .sf93-form input,#sf93Service .sf93-form select,#sf93Service .sf93-form textarea{min-width:0;max-width:100%;width:100%}
+#sf93Service .sf93-form input[type=date]{display:block;width:100%;min-inline-size:0;-webkit-appearance:none;appearance:none;min-height:46px}
+#sf93Service .sf93-form input::-webkit-date-and-time-value{text-align:left;min-width:0}
+#sf93Service .sf93-form input,#sf93Service .sf93-form select,#sf93Service .sf93-form textarea{font-size:16px}
+#sf93Service .sf93-form p{overflow-wrap:anywhere;font-size:12px;margin:0;color:#475b70}
+.sf93-required{color:#b21a28;margin-left:3px}
+#sf93Service .sf93-placement,#sf93Service .sf93-closure-panel{padding:12px;overflow-y:auto;flex:1;font-size:14px}
+#sf93Service .sf93-placement .btn,#sf93Service .sf93-closure-panel .btn{white-space:normal;min-height:44px;width:100%;margin:4px 0}
+#sf93Service .sf93-placement-evidence{padding:10px;border:2px solid #ad6b15;background:#fff4db;border-radius:10px}
+#sf93Service .sf93-placement-evidence input[type=checkbox]{width:24px;height:24px;vertical-align:middle}
+#sf93Service .sf93-closure-panel form{display:grid;gap:8px}
+#sf93Service .sf93-table-booking{width:100%;white-space:normal;text-align:left;min-height:50px;margin:4px 0}
+#sf93Service [data-service-action=place]{background:#b91c2e;color:white;border-color:#b91c2e;min-height:44px;font-weight:700}
+#sf93Service .sf93-booking:has([data-service-action=place]){display:grid;grid-template-columns:minmax(0,1fr)}
+#sf93Service .sf93-floor .sf93-plan{position:relative;overflow:hidden}
+#sf93Service .sf93-closed-watermark{position:absolute;inset:15% 0;display:grid;place-items:center;transform:rotate(-24deg);font-size:clamp(60px,12vw,150px);font-weight:900;color:#b91c2e33;pointer-events:none;letter-spacing:.08em}
+#sf93Service .sf93-closed-label{position:absolute;bottom:0;left:0;right:0;padding:9px 14px;background:#fff0edee;color:#8b1422;font-weight:700;font-size:14px;margin:0;pointer-events:none}
+#sf93Service .sf93-table.reserved .sf93-table-number{font-size:16px}
+#sf93Service .sf93-table-guest{font-size:11px;font-weight:700;fill:#142c46;pointer-events:none}
+#sf93Service .sf93-table-party{font-size:8px;fill:#223d57;pointer-events:none}
+#sf93Service .sf93-multi circle{fill:#8548a8;stroke:white;stroke-width:2}
+#sf93Service .sf93-multi text{font-size:12px;fill:white;font-weight:800}
+#sf93Service .sf93-table:has(.sf93-multi) .sf93-table-top{fill:#eee2f7;stroke:#8548a8}
+#sf93Service .sf93-technical-slot{border-left:3px solid #557ea4;padding-left:8px}
+@media(min-width:741px){#sf93Service .sf93-layout:has(.sf93-placement),#sf93Service .sf93-layout:has(.sf93-closure-panel){grid-template-columns:minmax(300px,32%) minmax(0,1fr)}}
+#sf93Service .sf93-reservations:has(.sf93-placement)>.sf93-list,#sf93Service .sf93-reservations:has(.sf93-closure-panel)>.sf93-list{display:none}
+@media(display-mode:standalone){body:has(#sf93Service) #app{padding-top:max(env(safe-area-inset-top,0px),24px)}}
