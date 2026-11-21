@@ -28,7 +28,7 @@ try {
   }
   assert.equal(release.r3_reference.commit,'e160453537460c5b05e501d68d2376724b030317');
   assert.equal(release.r3_reference.assets['stopflow-093-service.js'],'51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a');
-  assert.equal(release.edition,'20261121-plan1');
+  assert.equal(release.edition,'20261121-plan2');
   assert.equal(release.assets['stopflow-093-service-model.js'],release.r3_reference.assets['stopflow-093-service-model.js']);
   assert.equal(release.assets['stopflow-093-service.css'],release.r3_reference.assets['stopflow-093-service.css']);
   assert.notEqual(release.assets['stopflow-093-service.js'],release.r3_reference.assets['stopflow-093-service.js']);

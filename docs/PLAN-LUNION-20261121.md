@@ -1,5 +1,7 @@
 # Pilote — éditeur du plan L’Union, 21 novembre 2026
 
+Édition finale : `20261121-plan2` (commandes hors du plan).
+
 Branche exclusivement `pilot/stopflow-v1-20261117`. Base vérifiée :
 `6f06e0d987cc80da89169735f488b92df5d89c85`, avec la référence R3
 `e160453537460c5b05e501d68d2376724b030317` conservée. Le SDK Supabase
@@ -60,10 +62,12 @@ fonction, rôle, objet Auth ou réservation modifié par cette migration.
 - Régressions directement liées : 15 groupes ancien modèle tactile,
   19 groupes Service, 7 groupes équipe, 4 groupes paquet/installation iPad.
 - Vrais navigateurs dans une VM jetable, données et RPC **simulées** :
-  Chromium 156.0.8078.4, 16 étapes ; WebKit 27.2, 15 étapes. Tablette
+  Chromium 156.0.8078.4, 17 étapes ; WebKit 27.2, 16 étapes. Tablette
   1024 × 768, rotation 834 × 1194 et ordinateur 1440 × 900. Aucun appel
   externe ni erreur JavaScript. Surface du canevas tablette : Chromium
   1008 × 574,8 px (73,7 % de la fenêtre), WebKit 1008 × 569,8 px (73,0 %).
+  Les commandes de vue occupent un rail réservé hors du SVG (72 px),
+  sans recouvrir la table 1 : défaut constaté sur capture puis corrigé.
   Le conteneur éditeur remplit les 1024 × 768 px ; les 25 tables et 3 Emp
   sont présents ensemble. Propriétés ouvertes et fermées, focus clavier,
   glisser, zoom, ajout au plan vide, sauvegarde/relecture, rechargement,

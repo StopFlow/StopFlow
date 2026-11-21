@@ -22,7 +22,7 @@ function run(env, output) {
   const commit = env.VERCEL_GIT_COMMIT_SHA || env.STOPFLOW_PILOT_COMMIT || null;
   if (env.VERCEL_ENV && !/^[a-f0-9]{40}$/.test(commit || ''))
     throw new Error('PILOT_COMMIT_REQUIRED');
-  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261121-plan1')throw new Error('PILOT_EDITION_UNREVIEWED');
+  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261121-plan2')throw new Error('PILOT_EDITION_UNREVIEWED');
   for (const [file, sha] of Object.entries(delivery.assets)) {
     if (crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', file))).digest('hex') !== sha)
       throw new Error('PILOT_SOURCE_DIFFERENT');
@@ -85,7 +85,7 @@ if (require.main === module) {
         fixture=await require('./verify-pilot-touch-build.cjs').verify();
         fs.cpSync(fixture.out,path.join(result.directory,'pilot-touch'),{recursive:true});
         const file=path.join(result.directory,'pilot-release.json'),release=JSON.parse(fs.readFileSync(file,'utf8'));
-        release.ui_validation={resultat:fixture.report.resultat,navigateur:fixture.report.navigateur,interaction:fixture.report.interaction,backend:'RPC_SIMULES',rapport:'/pilot-touch/resultat.json'};
+        const browserReport=fixture.report.tests?.[0]||fixture.report;release.ui_validation={resultat:fixture.report.resultat,navigateur:browserReport.navigateur,interaction:browserReport.interaction,backend:'RPC_SIMULES',rapport:'/pilot-touch/resultat.json'};
         fs.writeFileSync(file,JSON.stringify(release,null,2)+'\n');
       }
       console.log(JSON.stringify(result));
