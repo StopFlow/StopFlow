@@ -1,0 +1,12 @@
+{
+  "project_ref": "mmrdpyhoawwoplbzqwag",
+  "base_commit": "5deac524511f6ec1a5291ef71b350cb2d116b93b",
+  "sql": "supabase/pilot/service-operations.sql",
+  "sql_sha256": "2fe9537bf0a0d5ab800bacf1b438d35a4331b7ba3e3df49ae011adf3c3b9aa3b",
+  "migration_name": "service_pilot_operations_20261121",
+  "technical_duration_minutes": 120,
+  "midday_end_exclusive": "16:30",
+  "evening_first": "16:30",
+  "qualification": "39_CONTROLES_POSTGRESQL17_JETABLE_AUTH_SIMULEE",
+  "permissions_added_to_accounts": false
+}
