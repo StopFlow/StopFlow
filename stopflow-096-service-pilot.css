@@ -1,0 +1,46 @@
+/* Service pilot: the complete app shell, two compact bars, saved data only. */
+.sfPilotToolbar [data-pilot-tools]{display:flex;align-items:center;gap:8px;margin-left:auto}.sfPilotHome{display:flex;align-items:center;gap:7px}.sfPilotServiceLabel,.sfPilotServiceOnly{display:none!important}
+.sfPilotMore{position:relative}.sfPilotMore summary{list-style:none;display:grid;place-items:center;min-width:48px;min-height:46px;font-size:28px;cursor:pointer;border:1px solid #d7e1ec;border-radius:10px}.sfPilotMore summary::-webkit-details-marker{display:none}
+.sfPilotMore [data-pilot-menu]{position:absolute;right:0;top:calc(100% + 6px);z-index:1001;display:flex;flex-direction:column;width:240px;max-height:70dvh;overflow:auto;background:#fff;border:1px solid #d7e1ec;border-radius:12px;padding:8px;box-shadow:0 8px 30px #17334e22}.sfPilotMore:not([open]) [data-pilot-menu]{display:none}.sfPilotMore button{text-align:left;width:100%}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #app>.main{padding:0!important;max-width:none}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #app .topbar,
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #sf91Reservations>.sf91-views,
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #sf91Reservations>.sf91-filters:not(.sf93-show-establishment),
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #sf93Service>.sf93-page-heading{display:none!important}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotDefaultLabel,
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotBack{display:none}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotServiceLabel{display:inline!important;border-left:1px solid #b5c3d4;margin-left:20px;padding-left:20px;font-size:20px;font-weight:500}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotServiceOnly{display:block!important}
+body:has(#sf91Reservations:not(.hidden) #sf93Service):not(:has([data-action=manage])) .sfPilotLegacyManage{display:none!important}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) #sfPilotToolbar{height:56px;min-height:56px;padding:4px 12px;margin:0;border:0;border-bottom:1px solid #d7e1ec;border-radius:0;flex-wrap:nowrap}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotToolbar strong{font-size:25px;white-space:nowrap}
+body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotToolbar .sf80-notification-bell{display:inline-grid!important;margin:0;min-width:46px;min-height:46px}
+#sf93Service{max-width:none;--sf93-skin:service-pilot-single-plan}
+#sf93Service>.sf93-toolbar{height:66px;padding:8px 12px;gap:14px;flex-wrap:nowrap;border:0;border-bottom:1px solid #d6e0eb;border-radius:0;box-shadow:none}
+#sf93Service .sf93-toolbar-actions .sf93-primary{font-size:16px;min-height:46px}
+#sf93Service .sf93-layout{grid-template-columns:minmax(200px,21%) minmax(0,1fr);gap:0;min-height:0;height:var(--sf93-workspace-height,calc(100dvh - 122px))}
+#sf93Service .sf93-reservations{border:0;border-right:1px solid #d6e0eb;border-radius:0}
+#sf93Service .sf93-list-heading{height:65px;padding:8px 12px}.sf93-count{display:inline-block;min-width:25px;padding:1px 5px;border-radius:7px;background:#eaf0f7;text-align:center;font-size:14px}.sf93-total-covers{color:#61728a;font-size:12px}
+#sf93Service .sf93-list-heading .sf93-refresh{width:36px;min-height:44px;padding:0;background:transparent;font-size:20px}
+#sf93Service .sf93-list{padding:0 4px 8px;scrollbar-gutter:auto}#sf93Service .sf93-bucket{padding-top:3px}#sf93Service .sf93-bucket h4{font-size:14px;padding:6px 9px}#sf93Service .sf93-bucket h4 span{display:none}
+#sf93Service .sf93-search{padding:0 9px 8px}#sf93Service .sf93-search input{font-size:13px;padding:8px}
+#sf93Service .sf93-booking{border-radius:0;padding:3px 7px;margin-bottom:0}#sf93Service .sf93-booking-main{grid-template-columns:48px minmax(0,1fr);gap:2px 5px;min-height:75px}
+#sf93Service .sf93-booking-time{font-size:16px}#sf93Service .sf93-booking-name{font-size:16px;line-height:1.2}#sf93Service .sf93-booking-tables{font-size:11px;line-height:1.3}#sf93Service .sf93-booking-meta{gap:3px}
+#sf93Service .sf93-booking.has-note{grid-template-columns:minmax(0,1fr) 32px}#sf93Service .sf93-note{width:32px;min-height:44px}
+#sf93Service .sf93-floor{border:0;border-radius:0;min-width:0;min-height:0}#sf93Service .sf93-floor-panel{border:0;border-radius:0;overflow:hidden}
+#sf93Service .sf93-floor-heading{height:58px;padding:6px 12px;display:flex;gap:10px;flex:none;border-bottom:1px solid #d6e0eb;background:#fff}
+#sf93Service .sf93-plan-choice{min-width:0;max-width:330px;flex:1}#sf93Service .sf93-plan-choice select{width:100%;font-weight:700}
+#sf93Service .sf93-occupancy{margin-left:auto;display:block;flex:none}#sf93Service .sf93-settings{margin:0;min-width:46px;min-height:46px;font-size:25px}
+#sf93Service .sf93-plan{height:auto;flex:1;min-height:0;background:#e9f0f7}#sf93Service .sf93-zone-bg{fill:transparent;stroke:none}#sf93Service .sf93-plan svg{display:block;width:100%;height:100%;touch-action:manipulation}
+#sf93Service .sf93-table-number{font-size:20px;font-weight:800}#sf93Service .sf93-table-capacity{font-size:10px}#sf93Service .sf93-mark-label{font-size:10px}
+#sf93Service .sf93-plan-footer{height:48px;flex:none;padding:3px 10px;gap:8px;background:#e9f0f7;border:0;flex-wrap:nowrap}#sf93Service .sf93-legend{font-size:11px;gap:10px}
+#sf93Service .sf93-plan-footer>[data-service-action=expand-plan]{font-size:11px;padding:4px 7px;min-height:40px;margin-left:auto}
+#sf93Service .sf93-zoom{display:flex;gap:0;margin-left:auto}#sf93Service .sf93-zoom button{font-size:20px;min-width:44px;padding:4px;min-height:42px}
+#sf93Service .sf93-detail{padding:10px;gap:10px}#sf93Service .sf93-detail h3{font-size:22px}#sf93Service .sf93-detail-heading{flex-wrap:wrap}#sf93Service .sf93-detail-tables{padding:8px;font-size:13px}#sf93Service .sf93-detail-slot{font-size:14px}
+#sf93Service .sf93-layout:has(.sf93-form){grid-template-columns:minmax(300px,32%) minmax(0,1fr)}
+#sf93Service .sf93-form{max-height:none;flex:1;min-height:0}#sf93Service .sf93-reservations:has(.sf93-form) .sf93-list{display:none}
+@media(max-width:740px){body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotToolbar strong{font-size:20px}body:has(#sf91Reservations:not(.hidden) #sf93Service) .sfPilotServiceLabel{font-size:15px;margin-left:8px;padding-left:8px}.sfPilotHome span{display:none}#sf93Service>.sf93-toolbar{height:auto;flex-wrap:wrap;gap:8px}#sf93Service .sf93-toolbar-actions{width:auto;margin-left:auto}#sf93Service .sf93-layout{grid-template-columns:minmax(0,1fr);height:auto}#sf93Service .sf93-reservations{max-height:50dvh}#sf93Service .sf93-floor-panel{height:65dvh}#sf93Service .sf93-layout:has(.sf93-form){grid-template-columns:minmax(0,1fr)}#sf93Service .sf93-form{max-height:70dvh;flex:none}.sfPilotToolbar [data-pilot-tools]{width:auto}.sfPilotMore{display:block}}
+/* Match the approved proportions: ~20% of the whole display for the list. */
+@media(min-width:741px){#sf93Service .sf93-layout{grid-template-columns:minmax(220px,23%) minmax(0,1fr)}#sf93Service .sf93-layout.sf94-expanded{grid-template-columns:minmax(0,1fr)}#sf93Service .sf93-layout:has(.sf93-form){grid-template-columns:minmax(300px,32%) minmax(0,1fr)}}
+#sf93Service .sf93-table.reserved .sf93-table-top{fill:#e0f2d8;stroke:#5c8854}#sf93Service .sf93-legend i.reserved{background:#e0f2d8;border-color:#5c8854}
+#sf93Service .sf93-table.selected .sf93-table-top{fill:#dceaff;stroke:#2059b4}#sf93Service .sf93-legend i.picked{background:#dceaff;border-color:#2059b4}

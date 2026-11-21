@@ -16,7 +16,7 @@
     ['can_manage_rooms','Gérer les salles'],['can_manage_tables','Gérer les tables'],['can_manage_layouts','Éditer le plan']];
   const LABELS = {pending:'En attente',approved:'Accepté',rejected:'Refusé',revoked:'Accès retirés',unregistered:'Demande à compléter'};
   const state = {context:null, selected:'', busy:false, uncertain:false, dirty:false, message:'', error:false, epoch:0};
-  let activation = null, gate = null, loaded = false;
+  let activation = null, gate = null, loaded = false, bellObserver = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const client = () => typeof supabaseClient !== 'undefined' ? supabaseClient : null;
   const approved = () => state.context?.status === 'approved';
@@ -58,15 +58,16 @@
     dialog.querySelector('button').onclick=()=>dialog.close(); dialog.onclose=()=>dialog.remove(); document.body.appendChild(dialog); dialog.showModal();
   }
   function toolbar() {
+    const top=document.querySelector('#app .topbar');if(!bellObserver&&top&&typeof MutationObserver==='function'){bellObserver=new MutationObserver(()=>toolbar());bellObserver.observe(top,{childList:true});}
     if (!document.getElementById('sfPilotToolbar') && document.querySelector('#app main.main')) {
       const node=document.createElement('div'); node.id='sfPilotToolbar'; node.className='sfPilotToolbar';
-      node.innerHTML='<strong>StopFlow <small>Pilote</small></strong><div><button class="btn ghost" data-pilot-action="home">Accueil</button><button class="btn ghost" data-pilot-action="back">Retour</button><button class="btn ghost" data-pilot-action="profile">Mon profil</button><button class="btn ghost" data-pilot-action="install">Installer</button><button class="btn ghost" data-pilot-action="logout">Déconnexion</button></div>';
+      node.innerHTML='<button type="button" class="btn ghost sfPilotHome" data-pilot-action="home" aria-label="Accueil">⌂<span>Accueil</span></button><strong>StopFlow <small class="sfPilotDefaultLabel">Pilote</small><span class="sfPilotServiceLabel">Réservations</span></strong><div data-pilot-tools><button type="button" class="btn ghost sfPilotBack" data-pilot-action="back">Retour</button><details class="sfPilotMore"><summary aria-label="Plus d’actions">⋯</summary><div data-pilot-menu><button type="button" class="btn ghost" data-pilot-action="profile">Mon profil</button><button type="button" class="btn ghost sfPilotServiceOnly" data-pilot-action="service-clients">Fiches clients</button><button type="button" class="btn ghost sfPilotServiceOnly sfPilotLegacyManage" data-pilot-action="service-manage">Salles et tables</button><button type="button" class="btn ghost sfPilotServiceOnly" data-pilot-action="service-establishment">Établissement</button><button type="button" class="btn ghost" data-pilot-action="install">Installer</button><button type="button" class="btn ghost" data-pilot-action="logout">Déconnexion</button></div></details></div>';
       document.querySelector('#app main.main').prepend(node);
     }
-    const tools=document.getElementById('sfPilotToolbar')?.querySelector('div');
+    const bar=document.getElementById('sfPilotToolbar');const tools=bar?.querySelector('[data-pilot-tools]')||bar?.querySelector('div'),menu=bar?.querySelector('[data-pilot-menu]')||tools;const bell=document.getElementById('sf80NotificationBellDesktop');if(tools&&bell&&bell.parentElement!==tools)tools.prepend(bell);
     let teamButton=document.getElementById('sfPilotTeamButton');
     if(tools && state.context?.is_owner) {
-      if(!teamButton){teamButton=document.createElement('button');teamButton.id='sfPilotTeamButton';teamButton.className='btn ghost';teamButton.dataset.pilotAction='team';tools.appendChild(teamButton);}
+      if(!teamButton){teamButton=document.createElement('button');teamButton.id='sfPilotTeamButton';teamButton.className='btn ghost';teamButton.dataset.pilotAction='team';menu.appendChild(teamButton);}
       teamButton.textContent='Équipe'+(state.context.pending_count?' · '+state.context.pending_count+' en attente':'');
     } else teamButton?.remove();
     document.querySelectorAll('[data-sf70-card="users"]').forEach(button => {
@@ -246,16 +247,18 @@
     else void submitEntry(event);
   },true);
   document.addEventListener('input',event=>{if(event.target.closest?.('#sfPilotReview'))state.dirty=true;});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');});
   document.addEventListener('click',event=>{
+    if(!event.target.closest?.('#sfPilotToolbar .sfPilotMore'))document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');
     const team=event.target.closest?.('[data-sf70-card="users"]');
     if(team){event.preventDefault();event.stopImmediatePropagation();openTeam();return;}
     const person=event.target.closest?.('[data-pilot-person]');
     if(person){event.preventDefault();if(!state.dirty||confirm('Abandonner les changements non enregistrés ?')){state.selected=person.dataset.pilotPerson;state.dirty=false;state.message='';renderTeam();}return;}
     const action=event.target.closest?.('[data-pilot-action]')?.dataset.pilotAction; if(!action)return;
-    event.preventDefault();event.stopImmediatePropagation();
+    event.preventDefault();event.stopImmediatePropagation();document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');
     if(action==='home'&&leave())window.stopflow070CardNavigation?.openHome();
     if(action==='back'&&leave())window.stopflow070BackNavigation?.back();
-    if(action==='profile')profile();
+    if(action==='service-clients')void window.stopflowService?.openClients?.();if(action==='service-manage'&&leave())document.querySelector('#sf91Reservations [data-action=manage]')?.click();if(action==='service-establishment'){const f=document.querySelector('#sf91Reservations .sf91-filters');f?.classList.toggle('sf93-show-establishment');}if(action==='profile')profile();
     if(action==='install')showQR('install');
     if(action==='invite')showQR('invite');
     if(action==='team')openTeam();
