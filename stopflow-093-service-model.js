@@ -25,7 +25,9 @@
  const period=start=>start.slice(11,16)>='16:30'?'soir':'midi';
  const inService=(b,service)=>b.status==='confirmed'&&(service==='tous'||period(local(b.starts_at))===service);
  const closed=(closures,day,service)=>closures.filter(c=>c.active&&c.first_day<=day&&day<=c.last_day&&(service==='tous'||c.service==='tous'||c.service===service));
+ const today=(instant=new Date())=>local(instant.toISOString()).slice(0,10);
+ const serviceClosed=(closures,day,service)=>service==='tous'?['midi','soir'].every(p=>closed(closures,day,p).length>0):closed(closures,day,service).length>0;
  function movedSelection(ids,source,target){if(!target||target===source||!ids.includes(source))return null;return [...new Set(ids.map(id=>id===source?target:id))];}
- const api={movedSelection,belgian,parseBelgian,tableSummary,searchMatches,byArrival,phone,local,end,slot,zones,serviceElements,ids,sameRoom,frame,shiftDay,occupied,occupies,interval,period,inService,closed,arrivals:Array.from({length:30},(_,i)=>String(8+Math.floor(i/2)).padStart(2,'0')+':'+(i%2?'30':'00'))};
+ const api={today,serviceClosed,movedSelection,belgian,parseBelgian,tableSummary,searchMatches,byArrival,phone,local,end,slot,zones,serviceElements,ids,sameRoom,frame,shiftDay,occupied,occupies,interval,period,inService,closed,arrivals:Array.from({length:30},(_,i)=>String(8+Math.floor(i/2)).padStart(2,'0')+':'+(i%2?'30':'00'))};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.stopflowServiceModel=api;
 })(typeof window==='object'?window:globalThis);

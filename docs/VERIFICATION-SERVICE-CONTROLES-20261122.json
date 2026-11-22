@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-22",
+  "base": "26fd4188b4473032f728644b1c7d7afcbb4154a3",
+  "project_ref": "mmrdpyhoawwoplbzqwag",
+  "edition": "20261122-controls1",
+  "database": {
+    "resultat": "PASS",
+    "groupes": 22,
+    "moteur": "PG17_JETABLE",
+    "auth": "SIMULEE",
+    "nettoyage": "CLUSTER_ARRETE_REPERTOIRE_SUPPRIME"
+  },
+  "dom": {
+    "resultat": "PASS",
+    "groupes": 37
+  },
+  "packaging": {
+    "resultat": "PASS",
+    "groupes": 4
+  },
+  "browser": {
+    "backend": "HTTP_AUTH_ET_RPC_SIMULES",
+    "page": "ENVELOPPE_COMPLETE_SDK_REEL",
+    "controls": [
+      {
+        "type": "report",
+        "engine": "chromium",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "156.0.8078.4",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "CINQ_ACTIONS_COLONNE_TEXTE_CONTENU_CENTRE_48PX",
+          "FERMETURES_CIBLES_DISTINCTES_TOUS_PARTIEL_ET_JOURNEE_BLOQUEE",
+          "REOUVERTURE_UN_JOUR_SERVICE_PERIODE_ET_AUTRE_SERVICE_PRESERVES",
+          "MENU_PERIODES_DATES_SANS_DEBORDEMENT_HAUTEURS_768_ET_480",
+          "AUJOURDHUI_BRUXELLES_TOUS_PLAN_CONSERVE_BROUILLON_PROTEGE"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      },
+      {
+        "type": "report",
+        "engine": "webkit",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "27.2",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "CINQ_ACTIONS_COLONNE_TEXTE_CONTENU_CENTRE_48PX",
+          "FERMETURES_CIBLES_DISTINCTES_TOUS_PARTIEL_ET_JOURNEE_BLOQUEE",
+          "REOUVERTURE_UN_JOUR_SERVICE_PERIODE_ET_AUTRE_SERVICE_PRESERVES",
+          "MENU_PERIODES_DATES_SANS_DEBORDEMENT_HAUTEURS_768_ET_480",
+          "AUJOURDHUI_BRUXELLES_TOUS_PLAN_CONSERVE_BROUILLON_PROTEGE"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      }
+    ],
+    "final_color_and_future_date_checks": "PASS_CHROMIUM_ET_WEBKIT",
+    "regressions": {
+      "placement": {
+        "chromium": 8,
+        "webkit": 8
+      },
+      "service": {
+        "chromium": {
+          "owner": 18,
+          "employee": 4
+        },
+        "webkit": {
+          "owner": 18,
+          "employee": 4
+        }
+      }
+    }
+  },
+  "pilot": {
+    "migration": "service_day_controls_20261122",
+    "function_md5": "251df01da4935820f1e75b9c1ff45fa3",
+    "data_fingerprints_unchanged": true,
+    "read_only_anonymous_denied": "42501",
+    "read_only_missing_identity_denied": "42501",
+    "closures_created_for_tests": 0,
+    "accounts_created": 0,
+    "rights_changed": false
+  },
+  "ipad_physical": "NON_VERIFIE"
+}
