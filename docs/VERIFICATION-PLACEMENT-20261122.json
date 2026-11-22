@@ -106,5 +106,17 @@
     "written_test_bookings": false
   },
   "physical_ipad": "NON_VERIFIE",
-  "project_ref": "mmrdpyhoawwoplbzqwag"
+  "project_ref": "mmrdpyhoawwoplbzqwag",
+  "auth_startup_retry": {
+    "resultat": "PASS",
+    "cas": 12,
+    "navigateurs": [
+      "Chromium 156",
+      "WebKit 27.2"
+    ],
+    "sdk": "2.119.2_REEL",
+    "transport": "HTTP_AUTH_SIMULE",
+    "sdk_invalide": "Deux requêtes, deuxième tentative avec URL distincte ; client réel prêt",
+    "nettoyage": "CONTEXTES_ET_NAVIGATEURS_FERMES"
+  }
 }

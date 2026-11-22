@@ -28,3 +28,7 @@ Migration appliquée au seul pilote sous le nom `service_initial_manual_placemen
 - Chromium et WebKit : page complète, SDK réel, transports Auth/RPC interceptés avec données fictives. Le résultat final et les captures sont conservés dans les artefacts de vérification.
 
 Ces contrôles navigateur ne sont pas une connexion réelle au pilote. Le glisser Chromium utilise le protocole tactile natif CDP ; WebKit reçoit des PointerEvents tactiles dans son vrai DOM. Aucun essai physique sur iPad n’est déclaré. L’éditeur de géométrie n’est pas modifié.
+
+## Défaut de démarrage rencontré pendant la livraison
+
+Le contrôle Chromium de construction a refusé la livraison : le bouton de réessai après un SDK invalide était bien appelé, `sdkAttempt` passait à 2, mais une seule requête SDK était interceptée et le second chargement restait invalide. Le réessai réutilisait la même URL. Un contrôle minimal hors application n’a pas reproduit ce comportement ; le détail interne du cache navigateur n’est donc pas présenté comme établi. Le réessai explicite utilise désormais un paramètre de tentative distinct, uniquement à partir du deuxième chargement, afin de demander une ressource fraîche. Le SDK, sa version et son empreinte sont inchangés ; aucun identifiant n’est ajouté à cette URL. Le test de SDK invalide exige deux requêtes distinctes et le client réel prêt. Aucun contrôle de connexion n’a été retiré ou relâché.

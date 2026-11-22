@@ -17,7 +17,7 @@ const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript; ch
 function read(file){return fs.readFileSync(path.join(ROOT,file));}
 async function scenario(browser,engine,mode){
  const context=await browser.newContext({viewport:{width:1024,height:768},hasTouch:true,isMobile:true,serviceWorkers:'block',locale:'fr-BE'});
- const result={engine,mode,etape:'NAVIGATION',resultat:'NON_CONFIRME',http_auth:0,sdk_requetes:0};let releaseSDK=null,page=null;const errors=[];
+ const result={engine,mode,etape:'NAVIGATION',resultat:'NON_CONFIRME',http_auth:0,sdk_requetes:0,sdk_tentatives:[]};let releaseSDK=null,page=null;const errors=[];
  try{
   await context.addInitScript(()=>{window.fixtureRetryEvents=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,e=>{const n=e.target.closest?.('button');if(n?.id==='loginRetry')window.fixtureRetryEvents.push({type,id:n.id});},true);});
   if(mode==='initialisation-error')await context.addInitScript(()=>{const original=window.fetch;window.fixtureRestoreFetch=()=>{window.fetch=original;};window.fetch=undefined;});
@@ -34,7 +34,7 @@ async function scenario(browser,engine,mode){
    const file=url.pathname==='/'?'index.html':decodeURIComponent(url.pathname.slice(1));
    const absolute=path.resolve(ROOT,file);assert(absolute.startsWith(ROOT+path.sep));
    if(file===pin.asset){
-    result.sdk_requetes++;
+    result.sdk_requetes++;result.sdk_tentatives.push(url.searchParams.get('sf-sdk-attempt'));
     if(result.sdk_requetes===1){
      if(mode==='failed-sdk')return route.abort('failed');
      if(mode==='invalid-sdk')return route.fulfill({contentType:'application/javascript',body:'/* Synthetic invalid SDK: no exported client. */'});
@@ -70,6 +70,7 @@ async function scenario(browser,engine,mode){
    result.etape='REESSAI_EXPLICITE';
    result.reessai_avant=await page.evaluate(()=>{const n=document.getElementById('loginRetry'),r=n.getBoundingClientRect();return {status:window.stopflowAuthStatus(),disabled:n.disabled,handler:typeof n.onclick,rectangle:{x:r.x,y:r.y,width:r.width,height:r.height},cible_centre:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')?.id||null};});
    await retry.tap();await ready();
+   if(mode==='invalid-sdk'){assert.equal(result.sdk_requetes,2);assert.deepEqual(result.sdk_tentatives,[null,'2']);}
    assert.equal(await page.locator('#email').inputValue(),email);assert.equal(await page.locator('#password').inputValue(),password);
   }else await ready();
   result.etape='CLIENT_REEL_PRET';

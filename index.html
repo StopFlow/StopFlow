@@ -325,7 +325,10 @@ function loadSupabaseSdk(){
  if(sdkLoadPromise)return sdkLoadPromise;
  const attempt=++sdkAttempt;
  sdkLoadPromise=new Promise((resolve,reject)=>{
-   const script=document.createElement("script");script.src=SUPABASE_SDK_ASSET;script.async=true;script.dataset.stopflowSdk=String(attempt);
+   const script=document.createElement("script"),source=new URL(SUPABASE_SDK_ASSET,document.baseURI);
+   // A retry must not reuse the invalid resource observed by the preceding load.
+   if(attempt>1)source.searchParams.set("sf-sdk-attempt",String(attempt));
+   script.src=source.href;script.async=true;script.dataset.stopflowSdk=String(attempt);
    let settled=false;
    const finish=error=>{if(settled)return;settled=true;clearTimeout(timer);script.onload=null;script.onerror=null;
      if(error){script.remove();reject(error);}else resolve();};
