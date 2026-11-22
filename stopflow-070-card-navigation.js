@@ -295,6 +295,7 @@
       return;
     }
     if(card.target==="alerts"){
+      S.state.bureau=scope;
       if(typeof page==="function")page("sf54BureauAlerts");
       setTitle(`Anomalies & températures — ${SCOPE_LABELS[scope]}`);
       return;

@@ -94,3 +94,4 @@ body.sf101-harmony.sf73-mobile-back-active #sf73MobileBack.sf73-top-back:not([hi
 .sf100-document-grid .sf100-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.sf100-document-grid .sf100-actions .btn{min-width:0;min-height:48px;padding:9px 10px;overflow-wrap:normal;word-break:normal}
 .sf100-field-caption{display:block}.sf100-field-caption>.sf100-required{display:inline}
 @media(max-width:390px){.sf100-document-grid .sf100-actions{grid-template-columns:minmax(0,1fr)}}
+body.sf101-harmony #sf93Service .sf93-booking-left .sf93-status-badge,body.sf101-harmony #sf93Service .sf93-booking-left .sf93-presence{font-size:11px;line-height:1;padding:1px 4px}

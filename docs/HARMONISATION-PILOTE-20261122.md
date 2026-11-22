@@ -18,7 +18,7 @@ Les huit références de `StopFlow-maquettes-20261122` ont été lues, dont la f
 ## Vérifications exécutées
 
 - **PostgreSQL 17 jetable : 30 contrôles PASS**, Auth simulée, rôle installateur non superutilisateur, arrêt et nettoyage confirmés. Voir `PRODUITS-INVENTAIRES-PILOTE-20261122.md`.
-- **Node : 6 tests ciblés PASS**, nombres/conditionnements/bases de prix, reçus incertains, raccourci de réservation limité aux droits vérifiés et véritable fichier PDF ; paquet pilote/iPad : 4 groupes PASS.
+- **Node : 8 tests ciblés PASS**, nombres/conditionnements/bases de prix, reçus incertains, raccourci de réservation limité aux droits vérifiés et véritable fichier PDF ; paquet pilote/iPad : 4 groupes PASS.
 - **Chromium 156.0.8078.4 et WebKit 27.2 réels**, application complète et SDK réel, transport Auth/RPC intercepté sur fixtures : propriétaire, responsable, Cuisine, Salle, Entretien. Dix scénarios, puis parcours propriétaires complémentaires : PASS. Dimensions 1024 × 768, 1180 × 820, 834 × 1194 et 390 × 844. Saisies contrôlées individuellement contre le débordement, pas seulement la largeur du document.
 - Brouillon relu après rechargement, clavier → + → sauvegarde ; réponse perdue après commit simulé, refus ultérieur, même reçu et saisies récentes conservés ; regroupement/PDF sans envoi ; idées enregistrées puis relues dans le simulateur HTTP.
 - Application complète Service : propriétaire/employé sur les deux moteurs, cinq actions, sélection/jumelage/placement, fermetures, présence, 25 tables +3 Emp et géométrie inchangée : PASS. Une scène de huit réservations fictives vérifie la densité et l’ouverture du détail.
@@ -35,3 +35,5 @@ Le catalogue pilote est actuellement vide : un gestionnaire habilité peut ajout
 L’essai physique iPad/iPhone, le clavier iOS réel et le PDF Safari physique ne sont pas validés par cette campagne ; le problème PDF Safari historique ne peut pas être déclaré résolu par un PASS WebKit. Aucune production, base active ou intervention Zenchef. Aucun nouveau droit n’a été accordé.
 
 Le raccourci Nouvelle réservation attend une capacité de gestion explicitement relue par `reservations_booking_context` ; le simple droit de consulter le plan ne suffit pas. Le filtre Général est réinitialisé si son département ne fait plus partie des accès autorisés. Le bouton retour mobile flottant historique est retiré au profit du retour contextuel commun.
+
+Deux dépendances de navigation sont couvertes : un nouvel article rejoint le comptage sans écraser les saisies existantes ; le département choisi dans Général filtre aussi le rendu existant des anomalies.

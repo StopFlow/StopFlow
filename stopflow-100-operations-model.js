@@ -16,5 +16,6 @@
   fail(e){if(refused(e)&&!this.current?.uncertain)this.clear();else if(this.current){this.current.uncertain=true;this.save();}}
   clear(){this.storage.removeItem(this.key);this.current=null;}
  }
- return {canQuickBooking:(actor,context,response)=>Boolean(actor&&context?.actor===actor&&context.establishmentId&&response?.can_view===true&&response?.can_manage===true),number:n,format:fmt,factor,need,offer,purchase,cheapest,Intent,refused};
+ const mergeProducts=(lines,products)=>{const ids=new Set(lines.map(l=>l.product_id));return [...lines,...products.filter(p=>p.active&&!ids.has(p.id)).map(p=>({product_id:p.id,stock:'',target:String(p.target),offer_id:p.preferred_offer_id||null}))];};
+ return {mergeProducts,canQuickBooking:(actor,context,response)=>Boolean(actor&&context?.actor===actor&&context.establishmentId&&response?.can_view===true&&response?.can_manage===true),number:n,format:fmt,factor,need,offer,purchase,cheapest,Intent,refused};
 });
