@@ -65,6 +65,8 @@ async function scenario(browser,engine,mode){
     assert(await button.isDisabled());assert.equal(await page.evaluate(()=>window.stopflowAuthStatus().code),'SDK_DELAI_DEPASSE');
    }
    if(mode==='initialisation-error')await page.evaluate(()=>window.fixtureRestoreFetch());
+   // Observe the real retry handler without changing its arguments or behavior.
+   await page.evaluate(()=>{const b=document.getElementById('loginRetry'),original=b.onclick;window.fixtureRetryCalls=[];const state=()=>({bootPromise:typeof authBootPromise!=='undefined'&&Boolean(authBootPromise),sdkPromise:typeof sdkLoadPromise!=='undefined'&&Boolean(sdkLoadPromise),sdkAttempt:typeof sdkAttempt!=='undefined'?sdkAttempt:null,...window.stopflowAuthStatus()});b.onclick=function(event){window.fixtureRetryCalls.push({moment:'before',state:state()});const value=original.call(this,event);window.fixtureRetryCalls.push({moment:'after',state:state()});return value;};});
    result.etape='REESSAI_EXPLICITE';
    result.reessai_avant=await page.evaluate(()=>{const n=document.getElementById('loginRetry'),r=n.getBoundingClientRect();return {status:window.stopflowAuthStatus(),disabled:n.disabled,handler:typeof n.onclick,rectangle:{x:r.x,y:r.y,width:r.width,height:r.height},cible_centre:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('button')?.id||null};});
    await retry.tap();await ready();
@@ -84,7 +86,7 @@ async function scenario(browser,engine,mode){
   }
   const diagnostic=await page.locator('#loginDiagnostic').textContent();assert(!diagnostic.includes(email)&&!diagnostic.includes(password));assert.deepEqual(errors,[]);
   result.resultat='PASS';result.etape='TERMINEE';
- }catch(error){result.resultat='ECHEC';result.type=error.name;if(page)result.diagnostic=await page.evaluate(()=>({status:window.stopflowAuthStatus?.(),reessai_evenements:window.fixtureRetryEvents||[],reessai_handler:typeof document.getElementById('loginRetry')?.onclick,scripts_sdk:[...document.querySelectorAll('[data-stopflow-sdk]')].map(n=>({tentative:Number(n.dataset.stopflowSdk)}))})).catch(()=>({lecture:'NON_CONFIRMEE'}));report.resultat='ECHEC';process.exitCode=1;}
+ }catch(error){result.resultat='ECHEC';result.type=error.name;if(page)result.diagnostic=await page.evaluate(()=>({status:window.stopflowAuthStatus?.(),startup_promises:{boot:typeof authBootPromise!=='undefined'&&Boolean(authBootPromise),sdk:typeof sdkLoadPromise!=='undefined'&&Boolean(sdkLoadPromise),sdkAttempt:typeof sdkAttempt!=='undefined'?sdkAttempt:null},reessai_appels:window.fixtureRetryCalls||[],reessai_evenements:window.fixtureRetryEvents||[],reessai_handler:typeof document.getElementById('loginRetry')?.onclick,scripts_sdk:[...document.querySelectorAll('[data-stopflow-sdk]')].map(n=>({tentative:Number(n.dataset.stopflowSdk)}))})).catch(()=>({lecture:'NON_CONFIRMEE'}));report.resultat='ECHEC';process.exitCode=1;}
  finally{releaseSDK?.();await context.close();report.cas.push(result);}
 }
 (async()=>{
