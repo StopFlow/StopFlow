@@ -95,7 +95,8 @@
         }
       ]
     },
-    "relachement_hors_table_sans_dernier_pointermove": "PASS_CHROMIUM_ET_WEBKIT"
+    "relachement_hors_table_sans_dernier_pointermove": "PASS_CHROMIUM_ET_WEBKIT",
+    "changement_reservation_invalide_ancien_choix_partage": "PASS_CHROMIUM_ET_WEBKIT"
   },
   "pilot": {
     "migration": "service_initial_manual_placement_20261122",
