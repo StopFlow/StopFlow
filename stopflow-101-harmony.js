@@ -3,14 +3,14 @@
  'use strict';const target='https://mmrdpyhoawwoplbzqwag.supabase.co';
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const labels={cuisine:'Cuisine',salle:'Salle',nettoyage:'Entretien & hygiène',general:'Général'};
- let backTarget=null;let scheduled=false,ideaSeq=0,ideaActor='',ideaTab='new',activePage='';
+ let quickAccess={key:'',allowed:false};let backTarget=null;let scheduled=false,ideaSeq=0,ideaActor='',ideaTab='new',activePage='';
  const current=()=>[...document.querySelectorAll('#app main.main > .page')].find(n=>!n.classList.contains('hidden'));
  const user=()=>{try{return session?.id||'';}catch{return '';}};
  function permitted(key,dep){return window.stopflow070CardNavigation?.hasPermission(key,dep);}
  function text(node,value){if(node&&node.textContent!==value)node.textContent=value;}
  function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;sync();});}
- function quickActions(home){if(!home)return;const entries=[];const nav=window.stopflow070CardNavigation;
-  if(window.stopflowReservations?.canOpen())entries.push(['booking','Nouvelle réservation']);
+ function quickActions(home){if(!home)return;const ctx=window.stopflowReservations?.bookingContext?.(),who=user(),key=who+':'+(ctx?.establishmentId||'');if(ctx?.actor===who&&who&&ctx.establishmentId&&quickAccess.key!==key){quickAccess={key,allowed:false};void supabaseClient.rpc('reservations_booking_context',{p_establishment_id:ctx.establishmentId}).then(r=>{if(quickAccess.key===key&&user()===who){quickAccess.allowed=!r.error&&window.stopflowOperationsModel.canQuickBooking(who,ctx,r.data);schedule();}}).catch(()=>{});}const entries=[];const nav=window.stopflow070CardNavigation;
+  if(quickAccess.key===key&&quickAccess.allowed&&window.stopflowReservations?.canOpen())entries.push(['booking','Nouvelle réservation']);
   if(['cuisine','salle','nettoyage'].some(d=>permitted('inventory.use',d)))entries.push(['inventory','Reprendre un inventaire']);
   if(permitted('temperatures.use','cuisine'))entries.push(['temperatures','Relevé de températures']);
   if(permitted('ideas.share','global'))entries.push(['idea','Partager une idée']);

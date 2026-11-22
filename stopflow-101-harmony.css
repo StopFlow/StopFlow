@@ -89,3 +89,5 @@ body.sf101-harmony #app .sf54-version,body.sf101-harmony #app .version-pill,body
 /* The old Service header had a more specific label rule: keep exactly one title. */
 body.sf101-harmony:has(#sf91Reservations:not(.hidden) #sf93Service) #sfPilotToolbar .sfPilotServiceLabel{display:none!important}
 body.sf101-harmony .sf70-card-title{box-sizing:border-box;width:100%;padding-right:16px}
+/* Override the old floating phone back control: the shared contextual row owns it. */
+body.sf101-harmony.sf73-mobile-back-active #sf73MobileBack.sf73-top-back:not([hidden]){display:none!important;pointer-events:none!important}

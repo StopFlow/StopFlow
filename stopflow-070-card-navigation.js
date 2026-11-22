@@ -205,7 +205,7 @@
     const node=document.getElementById("sf70ZonePage");
     if(!node)return;
     const cards=generalCards();
-    const selected=runtime.generalDepartment||'';
+    const selected=cards.some(c=>c.scopes?.includes(runtime.generalDepartment))?(runtime.generalDepartment||''):'';runtime.generalDepartment=selected;
     const groups=[['Actions & suivi',['direct:ideas.share','scoped:orders.manage','scoped:alerts.view']],['Gestion',['scoped:suppliers.manage','scoped:articles.manage','users','direct:banners.manage','scoped:checklists.review','scoped:checklists.templates.manage']],['Application & réglages',['direct:settings.manage','installation']]];
     const visible=cards.filter(c=>!c.scopes||!selected||c.scopes.includes(selected));
     node.innerHTML=`<div class="sf70-zone-head"><h2>Général</h2><label>Département<select id="sf101GeneralDepartment"><option value="">Tous les départements</option>${OPERATIONAL.filter(d=>isAdminUser()||cards.some(c=>c.scopes?.includes(d))).map(d=>`<option value="${d}" ${selected===d?'selected':''}>${esc(SCOPE_LABELS[d])}</option>`).join('')}</select></label></div>${groups.map(([title,ids])=>{const list=ids.map(id=>visible.find(c=>c.id===id)).filter(Boolean);return list.length?`<section class="sf101-general-group"><h3>${title}</h3><div class="sf70-card-grid">${list.map(c=>cardHtml(c)).join('')}</div></section>`:'';}).join('')}`;

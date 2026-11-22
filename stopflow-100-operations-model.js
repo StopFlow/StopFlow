@@ -16,5 +16,5 @@
   fail(e){if(refused(e)&&!this.current?.uncertain)this.clear();else if(this.current){this.current.uncertain=true;this.save();}}
   clear(){this.storage.removeItem(this.key);this.current=null;}
  }
- return {number:n,format:fmt,factor,need,offer,purchase,cheapest,Intent,refused};
+ return {canQuickBooking:(actor,context,response)=>Boolean(actor&&context?.actor===actor&&context.establishmentId&&response?.can_view===true&&response?.can_manage===true),number:n,format:fmt,factor,need,offer,purchase,cheapest,Intent,refused};
 });
