@@ -17,7 +17,7 @@
     style.id="stopflow050CorrectionStyles";
     style.textContent=`
       .nav button[data-page="suggestions"]{font-size:0!important}
-      .nav button[data-page="suggestions"]::after{content:"Suggestions du mois"!important;font-size:12.5px;line-height:1.2}
+      .nav button[data-page="suggestions"]::after{content:"Partager une idée"!important;font-size:12.5px;line-height:1.2}
       .monthly-suggestions-notice{margin:0 0 12px;padding:10px 12px;border:1px solid #cfe1ff;border-radius:10px;background:#edf5ff;color:#27547f;line-height:1.4}
       .checklist-rights-note{margin-top:10px;padding:9px 11px;border:1px solid #d9e3ef;border-radius:9px;background:#f7f9fc;color:#536176;font-size:12px}
       @media(max-width:950px){
@@ -28,28 +28,9 @@
   }
 
   function renameMonthlySuggestions(){
-    document.querySelectorAll('[data-page="suggestions"]').forEach(button=>{
-      setText(button,"Suggestions du mois");
-      if(button.title!=="Préparation et validation des suggestions de carte pour le mois suivant"){
-        button.title="Préparation et validation des suggestions de carte pour le mois suivant";
-      }
-    });
-
-    const pageSection=document.getElementById("suggestions");
-    if(pageSection){
-      setText(pageSection.querySelector("h2"),"Suggestions du mois");
-
-      if(!pageSection.querySelector(".monthly-suggestions-notice")){
-        const notice=document.createElement("div");
-        notice.className="monthly-suggestions-notice";
-        notice.innerHTML="<b>Suggestions du mois</b><br>Ce module concerne uniquement la carte, les plats, les desserts et les lunchs préparés pour un mois déterminé. Les propositions de modification d’une checklist se font dans le module <b>Checklists</b>.";
-        pageSection.prepend(notice);
-      }
-    }
-
-    if(document.querySelector('[data-page="suggestions"].active')){
-      setText(document.getElementById("pageTitle"),"Suggestions du mois");
-    }
+    document.querySelectorAll('[data-page="suggestions"]').forEach(button=>{setText(button,"Partager une idée");button.title="Partager une idée avec l’équipe";});
+    document.querySelector('#suggestions .monthly-suggestions-notice')?.remove();
+    if(!document.getElementById('suggestions')?.classList.contains('hidden'))setText(document.getElementById('pageTitle'),"Partager une idée");
   }
 
   function clarifyChecklistSuggestions(){
@@ -106,7 +87,7 @@
     const previousPage=page;
     page=function(id){
       previousPage(id);
-      if(id==="suggestions")setText(document.getElementById("pageTitle"),"Suggestions du mois");
+      if(id==="suggestions")setText(document.getElementById("pageTitle"),"Partager une idée");
       scheduleCorrection();
     };
   }

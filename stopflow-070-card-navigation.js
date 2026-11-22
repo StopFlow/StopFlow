@@ -14,7 +14,7 @@
 
   const DEPARTMENT_CARDS={
     cuisine:[
-      {key:"inventory.use",title:"Inventaires",description:"Fournisseurs, stocks et nouvel inventaire",icon:"▦",tone:"blue",action:"inventory"},
+      {key:"inventory.use",title:"Inventaires",description:"Compter les produits puis préparer les commandes",icon:"▦",tone:"blue",action:"inventory"},
       {key:"checklists.run",title:"Checklists",description:"Ouverture, fermeture et procédures",icon:"✓",tone:"green",action:"checklists"},
       {key:"temperatures.use",title:"Températures",description:"Encoder et consulter les relevés",icon:"°",tone:"amber",action:"temperatures"},
       {key:"history.view",title:"Historique",description:"Inventaires et commandes du département",icon:"◷",tone:"slate",action:"history"},
@@ -22,12 +22,12 @@
       {key:"monthly_suggestions.view",title:"Suggestions du mois",description:"Consulter les suggestions Cuisine",icon:"✧",tone:"violet",action:"suggestions-month"}
     ],
     salle:[
-      {key:"inventory.use",title:"Inventaires",description:"Fournisseurs, stocks et nouvel inventaire",icon:"▦",tone:"blue",action:"inventory"},
+      {key:"inventory.use",title:"Inventaires",description:"Compter les produits puis préparer les commandes",icon:"▦",tone:"blue",action:"inventory"},
       {key:"checklists.run",title:"Checklists",description:"Ouverture, fermeture et procédures",icon:"✓",tone:"green",action:"checklists"},
       {key:"history.view",title:"Historique",description:"Inventaires et commandes du département",icon:"◷",tone:"slate",action:"history"}
     ],
     nettoyage:[
-      {key:"inventory.use",title:"Inventaires",description:"Produits, stocks et nouvel inventaire",icon:"▦",tone:"blue",action:"inventory"},
+      {key:"inventory.use",title:"Inventaires",description:"Compter les produits puis préparer les commandes",icon:"▦",tone:"blue",action:"inventory"},
       {key:"checklists.run",title:"Checklists",description:"Entretien, contrôles et procédures",icon:"✓",tone:"green",action:"checklists"},
       {key:"history.view",title:"Historique",description:"Inventaires et commandes du département",icon:"◷",tone:"slate",action:"history"}
     ]
@@ -72,6 +72,8 @@
     refreshMenus,
     refresh:refreshAll,
     openZone,
+    openInventory,
+    runDepartmentCard,
     openHome
   };
 
@@ -167,13 +169,13 @@
     if(!pageNode)return;
     const visibleZones=OPERATIONAL.filter(zone=>zoneVisible(zone));
     const cards=[...visibleZones.map(zone=>({
-      id:`zone:${zone}`,title:ZONES[zone].label,description:`${zoneCards(zone).length} fonction${zoneCards(zone).length>1?"s":""} disponible${zoneCards(zone).length>1?"s":""}`,icon:ZONES[zone].icon,tone:ZONES[zone].tone
-    })),...(window.stopflowReservations?.canOpen()?[{id:'zone:reservations',title:'Réservations',description:'Salles, tables et plan de salle',icon:'▦',tone:'green'}]:[]),{id:"zone:general",title:"Général",description:"Fonctions communes et outils de gestion autorisés",icon:ZONES.general.icon,tone:ZONES.general.tone}];
+      id:`zone:${zone}`,title:ZONES[zone].label,description:({cuisine:"Préparations, relevés et commandes",salle:"Service, comptage et suivi",nettoyage:"Nettoyage, contrôles et produits"})[zone],icon:ZONES[zone].icon,tone:ZONES[zone].tone
+    })),...(window.stopflowReservations?.canOpen()?[{id:'zone:reservations',title:'Réservations',description:'Salles, tables et plan de salle',icon:'▦',tone:'green'}]:[]),{id:"zone:general",title:"Général",description:"Équipe, suivi et gestion",icon:ZONES.general.icon,tone:ZONES.general.tone}];
     const banner=activeBanner();
     pageNode.innerHTML=`
       ${banner?`<div class="sf70-home-banner ${esc(banner.level||"")}"><strong>${esc(banner.title||"Message d’équipe")}</strong>${banner.message?`<div style="margin-top:4px">${esc(banner.message)}</div>`:""}</div>`:""}
-      <div class="sf70-home-intro"><h2>Accueil</h2><p class="muted">Choisissez l’espace dans lequel vous souhaitez travailler.</p></div>
-      <div class="sf70-card-grid">${cards.map(card=>cardHtml(card,"Ouvrir")).join("")}</div>`;
+      <div class="sf70-home-intro"><p class="sf101-establishment"></p></div>
+      <div class="sf70-card-grid">${cards.map(card=>cardHtml(card)).join("")}</div>`;
     pageNode.querySelectorAll("[data-sf70-card]").forEach(button=>button.onclick=()=>{
       const value=button.dataset.sf70Card||"";
       if(value.startsWith("zone:"))openZone(value.slice(5));
@@ -184,7 +186,7 @@
     const node=document.getElementById("sf70ZonePage");
     if(!node)return;
     const cards=zoneCards(zone);
-    node.innerHTML=`<div class="sf70-zone-head"><div><h2>${esc(ZONES[zone].label)}</h2><p class="muted">Choisissez directement l’action à effectuer.</p></div><span class="sf70-zone-count">${cards.length} fonction${cards.length>1?"s":""}</span></div>${cards.length?`<div class="sf70-card-grid">${cards.map(card=>cardHtml(card,"Ouvrir")).join("")}</div>`:'<div class="sf70-empty">Aucune fonction n’est autorisée dans cet espace.</div>'}`;
+    node.innerHTML=`<div class="sf70-zone-head"><div><h2>${esc(ZONES[zone].label)}</h2><p class="muted">Choisissez directement l’action à effectuer.</p></div><span class="sf70-zone-count">${cards.length} fonction${cards.length>1?"s":""}</span></div>${cards.length?`<div class="sf70-card-grid">${cards.map(card=>cardHtml(card)).join("")}</div>`:'<div class="sf70-empty">Aucune fonction n’est autorisée dans cet espace.</div>'}`;
     node.querySelectorAll("[data-sf70-card]").forEach(button=>{
       const card=cards.find(item=>(item.key||item.target)===button.dataset.sf70Card);
       if(card)button.onclick=()=>runDepartmentCard(zone,card);
@@ -203,12 +205,11 @@
     const node=document.getElementById("sf70ZonePage");
     if(!node)return;
     const cards=generalCards();
-    node.innerHTML=`<div class="sf70-zone-head"><div><h2>Général</h2><p class="muted">Fonctions communes et outils de gestion disponibles pour votre profil.</p></div><span class="sf70-zone-count">${cards.length} fonction${cards.length>1?"s":""}</span></div><div class="sf70-card-grid">${cards.map(card=>{
-      const meta=card.scopes?.length?card.scopes.map(scope=>`<span class="sf70-scope-pill">${esc(SCOPE_LABELS[scope])}</span>`).join(""):"Ouvrir";
-      const html=cardHtml(card,card.scopes?.length?"":meta);
-      if(!card.scopes?.length)return html;
-      return html.replace('<span class="sf70-card-meta"><span></span>',`<span class="sf70-card-meta"><span class="sf70-scope-pills">${meta}</span>`);
-    }).join("")}</div>`;
+    const selected=runtime.generalDepartment||'';
+    const groups=[['Actions & suivi',['direct:ideas.share','scoped:orders.manage','scoped:alerts.view']],['Gestion',['scoped:suppliers.manage','scoped:articles.manage','users','direct:banners.manage','scoped:checklists.review','scoped:checklists.templates.manage']],['Application & réglages',['direct:settings.manage','installation']]];
+    const visible=cards.filter(c=>!c.scopes||!selected||c.scopes.includes(selected));
+    node.innerHTML=`<div class="sf70-zone-head"><h2>Général</h2><label>Département<select id="sf101GeneralDepartment"><option value="">Tous les départements</option>${OPERATIONAL.filter(d=>isAdminUser()||cards.some(c=>c.scopes?.includes(d))).map(d=>`<option value="${d}" ${selected===d?'selected':''}>${esc(SCOPE_LABELS[d])}</option>`).join('')}</select></label></div>${groups.map(([title,ids])=>{const list=ids.map(id=>visible.find(c=>c.id===id)).filter(Boolean);return list.length?`<section class="sf101-general-group"><h3>${title}</h3><div class="sf70-card-grid">${list.map(c=>cardHtml(c)).join('')}</div></section>`:'';}).join('')}`;
+    node.querySelector('#sf101GeneralDepartment').onchange=e=>{runtime.generalDepartment=e.target.value;renderGeneral();};
     node.querySelectorAll("[data-sf70-card]").forEach(button=>{
       const card=cards.find(item=>item.id===button.dataset.sf70Card||item.key===button.dataset.sf70Card||item.target===button.dataset.sf70Card);
       if(card)button.onclick=()=>runGeneralCard(card);
@@ -237,6 +238,7 @@
   }
 
   function openInventory(zone){
+    if(window.stopflowOperations?.active)return window.stopflowOperations.open(zone);
     if(!has("inventory.use",zone))return;
     S.state.department=zone;
     if(typeof page==="function")page("sf54Department");
@@ -261,6 +263,7 @@
     runtime.currentZone="general";
     clearInventoryFocus();
     if(card.scopes?.length){
+      if(runtime.generalDepartment&&card.scopes.includes(runtime.generalDepartment))return runScopedGeneral(card,runtime.generalDepartment);
       if(card.scopes.length===1)return runScopedGeneral(card,card.scopes[0]);
       renderGeneralDetail(card);
       setTitle(card.title);
@@ -273,6 +276,7 @@
   function runScopedGeneral(card,scope){
     if(!scope||!has(card.key,scope))return;
     runtime.currentZone="general";
+    if(window.stopflowOperations?.active&&["orders","articles","suppliers"].includes(card.target))return window.stopflowOperations.open(scope,card.target==="orders"?"documents":card.target);
     if(card.target==="orders"){
       S.state.history=scope;
       if(typeof page==="function")page("history");
@@ -437,7 +441,7 @@
         const result=previousPage(target);
         // Reservations has no historical [data-page] button. Remember entering
         // or leaving it, without changing other modules' restoration behavior.
-        if(typeof rememberStopFlowPage==="function"&&(target==="sf91Reservations"||rememberedStopFlowPage()==="sf91Reservations")){
+        if(typeof rememberStopFlowPage==="function"){
           rememberStopFlowPage(target==="sf70Home"?"dashboard":target);
         }
         if(target==="sf70Home"){runtime.currentZone="home";renderHome();setTitle("Accueil")}

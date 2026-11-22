@@ -258,7 +258,7 @@
     const action=event.target.closest?.('[data-pilot-action]')?.dataset.pilotAction; if(!action)return;
     event.preventDefault();event.stopImmediatePropagation();document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');
     if(action==='home'&&await leave())window.stopflow070CardNavigation?.openHome();
-    if(action==='back'&&await leave())window.stopflow070BackNavigation?.back();
+    if(action==='back'&&await leave()){const contextual=window.stopflowHarmony?.backTarget?.();if(contextual)contextual.click();else window.stopflow070BackNavigation?.back();}
     if(action==='service-closures')void window.stopflowService?.openClosures?.();if(action==='service-clients')void window.stopflowService?.openClients?.();if(action==='service-manage'&&await leave())document.querySelector('#sf91Reservations [data-action=manage]')?.click();if(action==='service-establishment'){const f=document.querySelector('#sf91Reservations .sf91-filters');f?.classList.toggle('sf93-show-establishment');}if(action==='profile')profile();
     if(action==='install')showQR('install');
     if(action==='invite')showQR('invite');

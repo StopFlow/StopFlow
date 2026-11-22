@@ -27,8 +27,8 @@
     setText(cards[0]?.querySelector('h2'),"Partager une idée");
     setText(cards[0]?.querySelector('p.muted'),"Une idée, un problème ou une amélioration pour simplifier le travail au restaurant ou améliorer StopFlow.");
     setText(section.querySelector('#suggestionForm button[type="submit"]'),"Partager l’idée");
-    setText(cards[1]?.querySelector('h2'),"Idées et améliorations partagées");
-    if(!section.classList.contains('hidden'))setText(document.getElementById('pageTitle'),"Idées et améliorations");
+    setText(cards[1]?.querySelector('h2'),"Idées partagées");
+    if(!section.classList.contains('hidden'))setText(document.getElementById('pageTitle'),"Partager une idée");
   }
 
   function applyWording(){

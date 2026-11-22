@@ -157,7 +157,7 @@
       button.addEventListener('click',event=>{
         event.preventDefault();
         event.stopPropagation();
-        open();
+        if(window.stopflowOperations?.active)window.stopflowOperations.open(ZONE);else open();
       });
       inventory.prepend(button);
     }
@@ -270,7 +270,7 @@
     button.dataset.sf73SalleInventory='1';
     button.onclick=event=>{
       event?.preventDefault?.();
-      open();
+      if(window.stopflowOperations?.active)window.stopflowOperations.open(ZONE);else open();
     };
   }
 

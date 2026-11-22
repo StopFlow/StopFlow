@@ -59,7 +59,7 @@
   const pref=(zone,cardKey)=>state.prefs.get(prefKey(zone,cardKey))||null;
   const pageFor=zone=>zone==="home"?document.getElementById("sf70Home"):document.getElementById("sf70ZonePage");
   const gridFor=zone=>pageFor(zone)?.querySelector(":scope > .sf70-card-grid")||pageFor(zone)?.querySelector(".sf70-card-grid")||null;
-  const cardsFor=zone=>[...(gridFor(zone)?.children||[])].filter(node=>node.matches?.(".sf70-action-card[data-sf70-card]"));
+  const cardsFor=zone=>[...(pageFor(zone)?.querySelectorAll(".sf70-card-grid > .sf70-action-card[data-sf70-card]")||[])];
   const cardTitle=card=>card.querySelector(".sf70-card-title")?.textContent?.trim()||card.dataset.sf70Card||"Carte";
 
   function sortedCards(zone){
@@ -136,7 +136,7 @@
     const grid=gridFor(zone);if(!grid)return;
     const editing=state.editingZone===zone;
     grid.classList.toggle("sf70-personalizing",editing);
-    const cards=sortedCards(zone);cards.forEach(card=>grid.appendChild(card));
+    const cards=sortedCards(zone);cards.forEach(card=>(zone==="general"?card.parentElement:grid).appendChild(card));
     cards.forEach(card=>{
       const p=pref(zone,card.dataset.sf70Card||"");
       card.querySelector(":scope > .sf70-edit-strip")?.remove();

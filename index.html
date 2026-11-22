@@ -179,16 +179,16 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
   </section>
 
   <section id="suggestions" class="page hidden">
-   <div class="card">
-    <h2>Proposer une amélioration</h2><p class="muted">Une idée, un problème ou une simplification à apporter à StopFlow.</p>
-    <form id="suggestionForm">
-      <div class="field"><label>Titre</label><input class="input" id="sugTitle" required></div>
-      <div class="field" style="margin-top:12px"><label>Description</label><textarea class="input" id="sugDesc" rows="4" required></textarea></div>
-      <div class="filters" style="grid-template-columns:1fr 1fr;margin-top:12px"><div class="field"><label>Catégorie</label><select id="sugCategory" class="input"><option>Idée</option><option>Problème</option><option>Ergonomie</option><option>Article manquant</option></select></div><div class="field"><label>Priorité ressentie</label><select id="sugPriority" class="input"><option>Normale</option><option>Importante</option><option>Urgente</option></select></div></div>
-      <button class="btn primary" type="submit">Envoyer la suggestion</button>
-    </form>
-   </div>
-   <div class="card"><h2>Suggestions enregistrées</h2><div id="suggestionList"></div></div>
+   <header class="sf101-page-heading"><button class="btn ghost" type="button" data-sf101-general>← Général</button><h1>Partager une idée</h1></header>
+   <p>Une amélioration, un problème ou une simplification à partager avec l’équipe.</p>
+   <nav class="sf100-tabs" aria-label="Idées"><button class="btn primary" type="button" data-idea-tab="new">Nouvelle idée</button><button class="btn ghost" type="button" data-idea-tab="history">Idées partagées</button></nav>
+   <form id="suggestionForm" class="sf101-idea-form">
+    <label for="sugTitle">Titre <span class="sf100-required">*</span></label><input class="input" id="sugTitle" required maxlength="160">
+    <label for="sugDesc">Description <span class="sf100-required">*</span></label><textarea class="input" id="sugDesc" rows="5" required maxlength="4000"></textarea>
+    <div class="sf101-two-fields"><label>Catégorie<select id="sugCategory" class="input"><option>Idée</option><option>Problème</option><option>Ergonomie</option><option>Article manquant</option></select></label><label>Priorité<select id="sugPriority" class="input"><option>Normale</option><option>Importante</option><option>Urgente</option></select></label></div>
+    <button class="btn primary" type="submit">Partager l’idée</button>
+   </form>
+   <section id="sf101IdeaHistory" hidden><p role="status">Chargement des idées partagées…</p><div id="suggestionList"></div></section>
   </section>
 
   <section id="settings" class="page hidden">
@@ -238,11 +238,11 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
 
 <script src="stopflow-environment-config.js?v=091-env1"></script>
 <script src="stopflow-environment.js?v=091-env1"></script>
-<script src="supabase-orders.js?v=20261122-controls1"></script>
-<script src="supabase-catalog.js?v=20261122-controls1"></script>
+<script src="supabase-orders.js?v=20261122-harmony1"></script>
+<script src="supabase-catalog.js?v=20261122-harmony1"></script>
 <script src="supabase-article-tools.js"></script>
-<script src="supabase-users.js?v=20261122-controls1"></script>
-<script src="supabase-user-delete.js?v=20261122-controls1"></script>
+<script src="supabase-users.js?v=20261122-harmony1"></script>
+<script src="supabase-user-delete.js?v=20261122-harmony1"></script>
 <script>
 // Text and quoted HTML attributes only; keep the original values for storage and PDF generation.
 function escapeHTML(value){
@@ -878,20 +878,25 @@ $("#resetData").onclick=async()=>{if(isCloudMode())return alert("La réinitialis
 window.stopflowPilotStart = () => bootstrapAuth();
 </script>
 <link rel="stylesheet" href="stopflow-091-reservations.css?v=20261111-booking-v1">
-<script defer src="stopflow-097-dialogs.js?v=20261122-controls1"></script>
-<script defer src="stopflow-091-reservations.js?v=20261122-controls1"></script>
-<script defer src="stopflow-092-bookings.js?v=20261122-controls1"></script>
-<link rel="stylesheet" href="stopflow-093-service.css?v=20261122-controls1">
-<script defer src="stopflow-093-service-model.js?v=20261122-controls1"></script>
-<link rel="stylesheet" href="stopflow-094-plan-editor.css?v=20261122-controls1">
-<script defer src="stopflow-095-plan-reference.js?v=20261122-controls1"></script>
-<script defer src="stopflow-094-plan-editor.js?v=20261122-controls1"></script>
-<script defer src="stopflow-093-service.js?v=20261122-controls1"></script>
-<script defer src="stopflow-pilot-password.js?v=20261122-controls1"></script>
-<script defer src="stopflow-pilot.js?v=20261117-pilot1"></script>
+<script defer src="stopflow-097-dialogs.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-091-reservations.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-092-bookings.js?v=20261122-harmony1"></script>
+<link rel="stylesheet" href="stopflow-093-service.css?v=20261122-harmony1">
+<script defer src="stopflow-093-service-model.js?v=20261122-harmony1"></script>
+<link rel="stylesheet" href="stopflow-094-plan-editor.css?v=20261122-harmony1">
+<script defer src="stopflow-095-plan-reference.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-094-plan-editor.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-093-service.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-pilot-password.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-pilot.js?v=20261122-harmony1"></script>
 <link rel="stylesheet" href="stopflow-pilot-team.css?v=20261118-team1">
 <script defer src="stopflow-qr.js?v=2.0.4"></script>
-<script defer src="stopflow-pilot-team.js?v=20261122-controls1"></script>
-<link rel="stylesheet" href="stopflow-096-service-pilot.css?v=20261122-controls1">
+<script defer src="stopflow-pilot-team.js?v=20261122-harmony1"></script>
+<link rel="stylesheet" href="stopflow-096-service-pilot.css?v=20261122-harmony1">
 
+<script defer src="stopflow-100-operations-model.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-100-operations-pdf.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-100-operations.js?v=20261122-harmony1"></script>
+<script defer src="stopflow-101-harmony.js?v=20261122-harmony1"></script>
+<link rel="stylesheet" href="stopflow-101-harmony.css?v=20261122-harmony1">
 </body></html>

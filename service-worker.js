@@ -1,5 +1,5 @@
 /* StopFlow 0.5.1 — service worker d’installation sans cache applicatif. */
-const STOPFLOW_SW_VERSION = "0.5.1-installation-20260804";
+const STOPFLOW_SW_VERSION = "20261122-harmony1-installation";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

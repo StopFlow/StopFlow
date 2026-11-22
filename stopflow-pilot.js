@@ -54,7 +54,8 @@
       if (identity() !== actor) return;
       sessionStorage.removeItem(key);
       if (JSON.stringify(payload(form)) === JSON.stringify(intent.args)) form.reset();
-      status(form, 'Idée envoyée et relue sur le serveur de test.');
+      status(form, 'Idée partagée et relue sur le serveur du pilote.');
+      window.dispatchEvent(new CustomEvent('stopflow-idea-saved'));
     } catch {
       if (identity() === actor) status(form, 'Envoi non confirmé. Votre saisie et le même reçu sont conservés ; réessayez à l’identique.');
     } finally {

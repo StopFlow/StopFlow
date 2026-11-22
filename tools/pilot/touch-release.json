@@ -1,12 +1,12 @@
 {
-  "edition": "20261122-controls1",
+  "edition": "20261122-harmony1",
   "r3_reference": "e160453537460c5b05e501d68d2376724b030317",
   "assets": {
     "stopflow-054-final.js": "997cb9b5507208047ec2ea4be61da7a1c9d4a710e5823698482aac30a2aa9921",
     "stopflow-070-profile-permissions-reload-fix.js": "9631635734cefaf58c8648e263928f6beff9317346573e0f5fc39c44e801adf0",
     "stopflow-checklists.js": "5375d9e4078c81c35bccbf4a0fc3a37937e883e265a413ef3dddbf4da36ee673",
     "supabase-users.js": "f80f410c7daaddebc31ab84e285332c802320917d078058a61d6cb11d6636c80",
-    "stopflow-070-card-personalization.js": "702e26bafbc2df0cd385003e8b9665d0b32519cb7cae6f5c601c3141bbbcd341",
+    "stopflow-070-card-personalization.js": "a1d678def1e39c9640ead96abb079bbc904672846c1eff6100aa5a98a43c234d",
     "stopflow-070-profile-permissions.js": "02ee56ba1737131088533a3439cde8695b48f60997b92cbd00405d22e4cf29a3",
     "stopflow-050-history.js": "f7f3a22b7a28d3c5a0d8b9f33df437ebf0704dd5e1002b1600d6d34ed13ca292",
     "stopflow-070-temperature-v3.js": "cdb3df7e0fe589ecac72a48482ddc69797766ba0007b2090980fdb80add07827",
@@ -16,11 +16,22 @@
     "stopflow-060-multi-departments.js": "79b3eb19c01408ee4dd81af78b9ef8d06a390163bd9aec71bec56259351eb246",
     "stopflow-060-menu-auth-fix.js": "4c4ab2a59fd5d738e95752c87f102e7649823edb1602b6768b9c76e6564257b6",
     "supabase-orders.js": "5e1810324d750dc6541cdb82822423de70fe93c06c988ad9e9c8733077a56734",
+    "stopflow-050-correction.js": "5469a73e425b4941e2c5555d908325ff45b679e135b36d4c831b5b4ecf8109c5",
+    "stopflow-100-operations-model.js": "edd799bf878d85f2bd9365ea6d295e9a968e65227558a952821bed0e88c292f5",
+    "stopflow-100-operations-pdf.js": "db13a3d79d9ff1fdea296b81c8d0530b9ad5035b07319e6c29c3d961d4cab3d1",
+    "stopflow-100-operations.js": "5b3fa239c703a802621e414a4bf836ba6b5219791d51e2543d630851cc7aef13",
+    "stopflow-101-harmony.js": "8c142f5f1fc92b9e81d5fc06789aeb7551f002a1673a878365d41e1820ac5e6b",
+    "stopflow-101-harmony.css": "7527d134dd4c34708c9159d960d367113e0cad06fa2b28a4a0704a6d38af41bb",
+    "stopflow-070-card-navigation.js": "522d48c772edacdc643934de3ea4c023b2e60ed06c2e8c3977ce556b25c5831a",
+    "stopflow-073-salle-inventory.js": "72fdf78b452b76e9010c232400683af5490a29e1036affca114e05fa01cc6334",
+    "stopflow-060-ideas-wording.js": "1506dd21b2f5e9fee161debd2288bce1ebcf74765105d791481d52a4bf56206e",
+    "stopflow-pilot.js": "1915e29d30367279721226ee0e6569ce16b29789331614c03aed2dd0e6502f94",
+    "service-worker.js": "341c34be6d4192c47fcee1ce598f09c15dd6d8f91f578fab3db243fbae307187",
     "stopflow-097-dialogs.js": "0a845790c514a8715bbe0ef45eeea9a132e506cbe9476a8b22f6a298f5ce9a7e",
     "stopflow-092-bookings.js": "aa0b54320d9079f0a2bb6cbc4ae74a09f8a7f97d4c3763b329590dfc2147eda3",
-    "index.html": "d0a519da9ecc1d5efee1a21f978fd0f240257073158d607cd89372e868ff9ce4",
+    "index.html": "62a7b0f435e5710bc5eb07c8a3485497358bea71967820dd37a064cc7297fd74",
     "stopflow-091-reservations.js": "fc02943242ba57801708657fcc5272186b07581d19220547cf3a275ae44e3dc1",
-    "stopflow-093-service.js": "12343952aff4b0d9b92bca9237dedc4a9dbdb2e86e14628d8609564a274acfd8",
+    "stopflow-093-service.js": "4b16fc6f976cc279482a7c7fb5bde13a3ad1999cf55fa992b43c46c4f25a06d5",
     "stopflow-093-service.css": "ea9d776b6c464e27c3e932c66afd03cf29c71f068d97ba7aca370a20dd90244b",
     "stopflow-096-service-pilot.css": "daacbb4bb3b038ab7a69ca3d2e5f7becf0a33d8124375ee6ea66f4c3975d4a95",
     "stopflow-093-service-model.js": "4dbab5ce07a8050132833d3543557fb472719887406638ce9dfc37eee711aa4a",
@@ -28,6 +39,6 @@
     "stopflow-094-plan-editor.js": "d693e85a2062cec573a776c041a8391a533166150c3831af888a9931b86a7374",
     "stopflow-094-plan-editor.css": "ad65c950392ef05096999b37883a467211331dbae68c86496076530259998f7f",
     "stopflow-pilot-password.js": "fed05d2eae87853a5676eb0ee14592a9053b1a99c8e89f9296ea3d1bd4c99d0b",
-    "stopflow-pilot-team.js": "6e34ce398822506e11756932d7f4a1e261f744c81a566bdb9a6a5995b038b2d2"
+    "stopflow-pilot-team.js": "a1a4a2c9df7f996266737562c571d9d030cb4c83fc3ed28055f99c62722385c3"
   }
 }
