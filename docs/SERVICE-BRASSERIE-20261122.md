@@ -29,10 +29,10 @@ Rapport détaillé : `VERIFICATION-BRASSERIE-20261122.json`.
 
 | Niveau | Résultat |
 |---|---|
-| PostgreSQL 17 jetable, Auth simulée | PASS, 27 groupes ; deux transactions indépendantes, présence, partage, remplacement exact, droits, fermetures, reprise et anciens chemins |
-| Modèles / DOM / RPC simulés | PASS : Service 27 groupes, éditeur 21, équipe 7, livraison 4 |
-| Page complète Chromium 156.0.8078.4 | PASS : 17 étapes gestionnaire + 4 employé ; tactile émulé, HTTP Auth/RPC interceptés |
-| Page complète WebKit 27.2 | PASS : mêmes 17 + 4 étapes, toucher navigateur ; HTTP Auth/RPC interceptés |
+| PostgreSQL 17 jetable, Auth simulée | PASS, 27 groupes + 7 ciblés sur le départ informatif ; deux transactions indépendantes, présence, partage, remplacement exact, droits, fermetures, reprise et anciens chemins |
+| Modèles / DOM / RPC simulés | PASS : Service 29 groupes, éditeur 21, équipe 7, livraison 4 |
+| Page complète Chromium 156.0.8078.4 | PASS : 18 étapes gestionnaire + 4 employé ; tactile émulé, HTTP Auth/RPC interceptés |
+| Page complète WebKit 27.2 | PASS : mêmes 18 + 4 étapes, toucher navigateur ; HTTP Auth/RPC interceptés |
 | Régression éditeur | PASS Chromium 17 étapes / WebKit 16, sauvegarde/relecture simulées, gestes, brouillon et conflits |
 | Serveur pilote réel | Migration confirmée, index et droits contrôlés ; empreintes des 12 réservations historiques, tables, éléments, plans et appartenances inchangées |
 
@@ -48,7 +48,7 @@ Les sessions navigateur et le cluster jetable sont arrêtés et nettoyés ; la
 sandbox dédiée a été arrêtée, supprimée et son absence confirmée (404).
 
 Captures tablette WebKit conservées localement dans
-`.pilot-private/verification-brasserie-20261122/` : `service-webkit-1024x768.png`,
+`.pilot-private/verification-brasserie-20261122-r3/` : `service-webkit-1024x768.png`,
 `placement-webkit-1024x768.png`, `fermetures-webkit-1024x768.png`.
 Le build de l'aperçu republie ses captures Chromium fictives dans
 `/pilot-touch/service/captures.json`, avec leurs empreintes.
@@ -62,3 +62,12 @@ remplacent pas. Aucun contrôle ici ne prétend valider cet appareil physique.
 
 Aucune fusion main, production, base active locale ni intervention Zenchef.
 Les droits existants sont conservés ; aucun droit temporaire n'est ajouté.
+
+Le premier build a bloqué un chevauchement de police. L’édition
+`20261122-service2` réserve des lignes distinctes (numéro, capacité, nom,
+couverts), agrandit la hauteur minimale d’affichage à 80 unités et vérifie
+également DejaVu sans aucune tolérance de chevauchement. Les badges de
+présence gardent une taille compacte ; les cinq réservations de Midi restent
+visibles même avec cette police. Le départ informatif conserve le placement
+existant et les anciennes réservations d’un plan retiré ne sont pas
+réaffectées silencieusement lors d’une modification.

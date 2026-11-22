@@ -62,6 +62,7 @@
           "MENU_PROFIL_INSTALLATION_FICHES_CLIENTS",
           "EDITEUR_PLEINE_PAGE_BROUILLON_PRESERVE_AUCUNE_CREATION_DOUBLE",
           "ORDINATEUR_SANS_DEBORDEMENT",
+          "POLICE_DEJAVU_QUATRE_LIGNES_SANS_CHEVAUCHEMENT",
           "ACCUEIL_DROITS_ET_PLAN_INCHANGES"
         ],
         "erreurs": [],
@@ -185,6 +186,7 @@
           "MENU_PROFIL_INSTALLATION_FICHES_CLIENTS",
           "EDITEUR_PLEINE_PAGE_BROUILLON_PRESERVE_AUCUNE_CREATION_DOUBLE",
           "ORDINATEUR_SANS_DEBORDEMENT",
+          "POLICE_DEJAVU_QUATRE_LIGNES_SANS_CHEVAUCHEMENT",
           "ACCUEIL_DROITS_ET_PLAN_INCHANGES"
         ],
         "erreurs": [],
@@ -381,5 +383,28 @@
       }
     ]
   },
-  "sdk_sha256": "8816af04d9915dbba1882d6f84f0b402dc40268063a63d9c66d24f52f371c263"
+  "sdk_sha256": "8816af04d9915dbba1882d6f84f0b402dc40268063a63d9c66d24f52f371c263",
+  "departure_info": {
+    "resultat": "PASS",
+    "groupes": 7,
+    "controles": [
+      "depart_prevu_automatique_conserve_table_partagee",
+      "depart_prevu_manuel_conserve_attribution_decision",
+      "preuve_historique_non_reecrite",
+      "reponse_perdue_reprise_identique",
+      "capacite_reste_a_reconfirmer",
+      "depart_info_ne_reoccupe_pas_parti",
+      "autre_partage_reste_occupe"
+    ],
+    "moteur": "PG17_JETABLE",
+    "auth": "SIMULEE",
+    "pilote": false
+  },
+  "edition": "20261122-service2",
+  "simulations": {
+    "service": 29,
+    "editeur": 21,
+    "equipe": 7,
+    "livraison": 4
+  }
 }

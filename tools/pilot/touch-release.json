@@ -1,5 +1,5 @@
 {
-  "edition": "20261122-service1",
+  "edition": "20261122-service2",
   "r3_reference": "e160453537460c5b05e501d68d2376724b030317",
   "assets": {
     "stopflow-054-final.js": "997cb9b5507208047ec2ea4be61da7a1c9d4a710e5823698482aac30a2aa9921",
@@ -18,12 +18,12 @@
     "supabase-orders.js": "5e1810324d750dc6541cdb82822423de70fe93c06c988ad9e9c8733077a56734",
     "stopflow-097-dialogs.js": "0a845790c514a8715bbe0ef45eeea9a132e506cbe9476a8b22f6a298f5ce9a7e",
     "stopflow-092-bookings.js": "aa0b54320d9079f0a2bb6cbc4ae74a09f8a7f97d4c3763b329590dfc2147eda3",
-    "index.html": "b59755d0e30f2d0cbadb9a375be9a77a725691fec2dcb2e3edbe3d03c8497545",
+    "index.html": "e2e7eb4966aa97e3343245843f653393bc2d0cecc1c93d17699dc29640804190",
     "stopflow-091-reservations.js": "fc02943242ba57801708657fcc5272186b07581d19220547cf3a275ae44e3dc1",
-    "stopflow-093-service.js": "96ca035026b44d9c3788969e431da545df072bf17740f2ce97cf93379406f1f1",
+    "stopflow-093-service.js": "3d1e59b8de431ec08505a58561c9664724e49ad150c3f659a5b0e21e1a792743",
     "stopflow-093-service.css": "e1f9f31b1affb79ac45b66b65422d833e1bae0533841fb3bdab3082626c3fea3",
-    "stopflow-096-service-pilot.css": "03230d1991806d355333c8f1bafe11978c25ac8e0433de304c11a3d7f723da8b",
-    "stopflow-093-service-model.js": "7244a302b612e30ea77d6e1e5212f77fc9187b5a30d37bf69ab496574d553a04",
+    "stopflow-096-service-pilot.css": "69c82cc5d1fcf73be8cecbc4310e19ef24d117c4ee26e04c332d018ab96597f6",
+    "stopflow-093-service-model.js": "6f23ffedc5d1910522d0e023265ef690c10ef59f4312a27fee84c3de8a41f403",
     "stopflow-095-plan-reference.js": "e4dcb8ce1f26cd5d71267d1028e4917848b3fcae85cd70a65b1069455e47f1aa",
     "stopflow-094-plan-editor.js": "d693e85a2062cec573a776c041a8391a533166150c3831af888a9931b86a7374",
     "stopflow-094-plan-editor.css": "ad65c950392ef05096999b37883a467211331dbae68c86496076530259998f7f",
