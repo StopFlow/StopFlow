@@ -62,3 +62,25 @@ En cas de problème, corriger en avant. Ne pas réinstaller les anciennes foncti
 sans départ. Un retour d'interface doit conserver la compatibilité avec ce
 modèle. Recharger les anciens onglets après livraison de la nouvelle interface.
 Les données et autorisations antérieures restent conservées.
+
+## Départ communiqué : conservation du placement
+
+Le contrôle complémentaire a reproduit un refus 23P01 lorsqu'un départ prévu
+était renseigné sur une attribution automatique déjà partagée manuellement.
+Le correctif `service-departure-information.sql` conserve les deux fonctions
+et leurs droits ; il retire uniquement la fin informative des comparaisons
+qui lient une décision de placement. Salle, identifiants, arrivée et couverts
+restent contrôlés. Les preuves historiques de partage ne sont pas réécrites.
+Les demandes et leur résultat restent liés à leur payload complet et leur
+version : cette évolution ne permet pas de réutiliser un reçu avec une autre fin.
+
+`tests/service-departure-information-pg17.py` : ancien refus reproduit, puis
+PASS de 7 contrôles sur un nouveau PG17 jetable. Départ informatif automatique
+et manuel sans réattribution, preuve inchangée, reprise identique, changement
+de capacité toujours refusé sans confirmation, absence de réoccupation après
+« Parti » et maintien de l'autre partage. Les deux clusters ont été arrêtés
+et supprimés. Les 27 contrôles antérieurs n'ont pas été rejoués.
+
+Ce second correctif a été appliqué uniquement au pilote après cette validation,
+avec préconditions sur les empreintes des deux fonctions. Les empreintes des
+données métier, du plan et des appartenances sont encore identiques après lui.
