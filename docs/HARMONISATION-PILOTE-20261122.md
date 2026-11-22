@@ -37,3 +37,5 @@ L’essai physique iPad/iPhone, le clavier iOS réel et le PDF Safari physique n
 Le raccourci Nouvelle réservation attend une capacité de gestion explicitement relue par `reservations_booking_context` ; le simple droit de consulter le plan ne suffit pas. Le filtre Général est réinitialisé si son département ne fait plus partie des accès autorisés. Le bouton retour mobile flottant historique est retiré au profit du retour contextuel commun.
 
 Deux dépendances de navigation sont couvertes : un nouvel article rejoint le comptage sans écraser les saisies existantes ; le département choisi dans Général filtre aussi le rendu existant des anomalies.
+
+Le dernier recoupement WebKit a identifié un défaut de la fixture HTTP : `Authorization` n’est pas couvert par le joker CORS (voir [Fetch Standard](https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name)). Les deux scénarios HTTP utilisent désormais une liste explicite d’en-têtes, sans ignorer l’erreur navigateur ni modifier la configuration Supabase. Le parcours propriétaire concerné est revérifié ; les autres profils WebKit sont acquis sur les mêmes fichiers applicatifs.
