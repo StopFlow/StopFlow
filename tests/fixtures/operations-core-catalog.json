@@ -1,0 +1,1059 @@
+{
+  "enums": [
+    {
+      "name": "stopflow_order_status",
+      "values": [
+        "Brouillon",
+        "À valider",
+        "Validé",
+        "Commandé",
+        "Annulé"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "name": "articles",
+      "columns": [
+        {
+          "name": "id",
+          "null": false,
+          "type": "bigint",
+          "default": null,
+          "identity": "d"
+        },
+        {
+          "name": "name",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "supplier",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "category",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "unit",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "target",
+          "null": false,
+          "type": "integer",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "active",
+          "null": false,
+          "type": "boolean",
+          "default": "true",
+          "identity": ""
+        },
+        {
+          "name": "sort_order",
+          "null": false,
+          "type": "integer",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "supplier_id",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "purchase_price",
+          "null": true,
+          "type": "numeric(12,2)",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "department",
+          "null": false,
+          "type": "text",
+          "default": "'salle'::text",
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "articles_department_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text, 'bureau'::text])))"
+        },
+        {
+          "name": "articles_department_operational_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text])))"
+        },
+        {
+          "name": "articles_name_check",
+          "definition": "CHECK ((btrim(name) <> ''::text))"
+        },
+        {
+          "name": "articles_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "articles_purchase_price_non_negative",
+          "definition": "CHECK (((purchase_price IS NULL) OR (purchase_price >= (0)::numeric)))"
+        },
+        {
+          "name": "articles_supplier_check",
+          "definition": "CHECK ((btrim(supplier) <> ''::text))"
+        },
+        {
+          "name": "articles_supplier_id_fkey",
+          "definition": "FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON UPDATE CASCADE ON DELETE RESTRICT"
+        },
+        {
+          "name": "articles_supplier_name_key",
+          "definition": "UNIQUE (supplier, name)"
+        },
+        {
+          "name": "articles_target_check",
+          "definition": "CHECK ((target >= 0))"
+        },
+        {
+          "name": "articles_updated_by_fkey",
+          "definition": "FOREIGN KEY (updated_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+        }
+      ]
+    },
+    {
+      "name": "order_lines",
+      "columns": [
+        {
+          "name": "id",
+          "null": false,
+          "type": "bigint",
+          "default": null,
+          "identity": "a"
+        },
+        {
+          "name": "order_id",
+          "null": false,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "line_position",
+          "null": false,
+          "type": "integer",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "article_id",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "article_name",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "category",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "unit",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "target",
+          "null": false,
+          "type": "numeric",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "stock",
+          "null": false,
+          "type": "numeric",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "proposed",
+          "null": false,
+          "type": "numeric",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "quantity",
+          "null": false,
+          "type": "numeric",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "purchase_price",
+          "null": true,
+          "type": "numeric",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "line_total",
+          "null": true,
+          "type": "numeric",
+          "default": null,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "order_lines_line_position_check",
+          "definition": "CHECK ((line_position >= 0))"
+        },
+        {
+          "name": "order_lines_order_id_fkey",
+          "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "order_lines_order_id_line_position_key",
+          "definition": "UNIQUE (order_id, line_position)"
+        },
+        {
+          "name": "order_lines_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "order_lines_proposed_check",
+          "definition": "CHECK ((proposed >= (0)::numeric))"
+        },
+        {
+          "name": "order_lines_quantity_check",
+          "definition": "CHECK ((quantity >= (0)::numeric))"
+        },
+        {
+          "name": "order_lines_stock_check",
+          "definition": "CHECK ((stock >= (0)::numeric))"
+        },
+        {
+          "name": "order_lines_target_check",
+          "definition": "CHECK ((target >= (0)::numeric))"
+        }
+      ]
+    },
+    {
+      "name": "orders",
+      "columns": [
+        {
+          "name": "id",
+          "null": false,
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "identity": ""
+        },
+        {
+          "name": "number",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "supplier",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "status",
+          "null": false,
+          "type": "stopflow_order_status",
+          "default": "'Brouillon'::stopflow_order_status",
+          "identity": ""
+        },
+        {
+          "name": "author_id",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "author_name",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "validator_id",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "validator_name",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "note",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "stocks",
+          "null": false,
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": ""
+        },
+        {
+          "name": "adjustments",
+          "null": false,
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": ""
+        },
+        {
+          "name": "inventory_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "validated_at",
+          "null": true,
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "revision",
+          "null": false,
+          "type": "bigint",
+          "default": "1",
+          "identity": ""
+        },
+        {
+          "name": "last_edited_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "last_edited_name",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "supplier_email",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "estimated_total",
+          "null": true,
+          "type": "numeric",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "sent_at",
+          "null": true,
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "sent_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "sent_by_name",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "delivered_at",
+          "null": true,
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "delivery_note",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "department",
+          "null": false,
+          "type": "text",
+          "default": "'salle'::text",
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "orders_adjustments_check",
+          "definition": "CHECK ((jsonb_typeof(adjustments) = 'object'::text))"
+        },
+        {
+          "name": "orders_author_id_fkey",
+          "definition": "FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "orders_department_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text, 'bureau'::text])))"
+        },
+        {
+          "name": "orders_department_operational_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text])))"
+        },
+        {
+          "name": "orders_last_edited_by_fkey",
+          "definition": "FOREIGN KEY (last_edited_by) REFERENCES profiles(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "orders_number_format",
+          "definition": "CHECK (((number IS NULL) OR (number ~ '^BC-[0-9]{6,}$'::text)))"
+        },
+        {
+          "name": "orders_number_key",
+          "definition": "UNIQUE (number)"
+        },
+        {
+          "name": "orders_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "orders_revision_positive",
+          "definition": "CHECK ((revision >= 1))"
+        },
+        {
+          "name": "orders_sent_by_fkey",
+          "definition": "FOREIGN KEY (sent_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "orders_stocks_check",
+          "definition": "CHECK ((jsonb_typeof(stocks) = 'object'::text))"
+        },
+        {
+          "name": "orders_supplier_check",
+          "definition": "CHECK ((btrim(supplier) <> ''::text))"
+        },
+        {
+          "name": "orders_validation_consistency",
+          "definition": "CHECK ((((status = ANY (ARRAY['Brouillon'::stopflow_order_status, 'À valider'::stopflow_order_status])) AND (validated_at IS NULL)) OR (status = ANY (ARRAY['Validé'::stopflow_order_status, 'Commandé'::stopflow_order_status, 'Annulé'::stopflow_order_status]))))"
+        },
+        {
+          "name": "orders_validator_id_fkey",
+          "definition": "FOREIGN KEY (validator_id) REFERENCES profiles(id) ON DELETE SET NULL"
+        }
+      ]
+    },
+    {
+      "name": "pilot_registration_requests",
+      "columns": [
+        {
+          "name": "profile_id",
+          "null": false,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "status",
+          "null": false,
+          "type": "text",
+          "default": "'pending'::text",
+          "identity": ""
+        },
+        {
+          "name": "version",
+          "null": false,
+          "type": "bigint",
+          "default": "1",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "decided_at",
+          "null": true,
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "decided_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "pilot_registration_requests_decided_by_fkey",
+          "definition": "FOREIGN KEY (decided_by) REFERENCES profiles(id)"
+        },
+        {
+          "name": "pilot_registration_requests_pkey",
+          "definition": "PRIMARY KEY (profile_id)"
+        },
+        {
+          "name": "pilot_registration_requests_profile_id_fkey",
+          "definition": "FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "pilot_registration_requests_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'revoked'::text])))"
+        },
+        {
+          "name": "pilot_registration_requests_version_check",
+          "definition": "CHECK ((version > 0))"
+        }
+      ]
+    },
+    {
+      "name": "profile_permissions",
+      "columns": [
+        {
+          "name": "profile_id",
+          "null": false,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "permission_key",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "scope",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "created_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "profile_permissions_created_by_fkey",
+          "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "profile_permissions_key_scope_check",
+          "definition": "CHECK ((((permission_key = ANY (ARRAY['ideas.share'::text, 'banners.manage'::text, 'settings.manage'::text])) AND (scope = 'global'::text)) OR ((permission_key = ANY (ARRAY['temperatures.use'::text, 'temperatures.readings.use'::text, 'temperatures.equipment.manage'::text, 'lunchs.view'::text, 'lunchs.manage'::text, 'monthly_suggestions.view'::text, 'monthly_suggestions.manage'::text])) AND (scope = 'cuisine'::text)) OR ((permission_key = ANY (ARRAY['inventory.use'::text, 'history.view'::text, 'checklists.run'::text, 'orders.manage'::text, 'checklists.review'::text, 'checklists.templates.manage'::text, 'alerts.view'::text, 'suppliers.manage'::text, 'articles.manage'::text])) AND (scope = ANY (ARRAY['cuisine'::text, 'salle'::text, 'nettoyage'::text])))))"
+        },
+        {
+          "name": "profile_permissions_pkey",
+          "definition": "PRIMARY KEY (profile_id, permission_key, scope)"
+        },
+        {
+          "name": "profile_permissions_profile_id_fkey",
+          "definition": "FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "profile_permissions_scope_check",
+          "definition": "CHECK ((scope = ANY (ARRAY['global'::text, 'cuisine'::text, 'salle'::text, 'nettoyage'::text])))"
+        }
+      ]
+    },
+    {
+      "name": "profiles",
+      "columns": [
+        {
+          "name": "id",
+          "null": false,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "email",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "prenom",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "nom",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "role",
+          "null": false,
+          "type": "text",
+          "default": "'employe'::text",
+          "identity": ""
+        },
+        {
+          "name": "actif",
+          "null": false,
+          "type": "boolean",
+          "default": "true",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "departement",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "profiles_departement_check",
+          "definition": "CHECK (((departement IS NULL) OR (departement = ANY (ARRAY['nettoyage'::text, 'salle'::text, 'cuisine'::text, 'bureau'::text]))))"
+        },
+        {
+          "name": "profiles_department_known_check",
+          "definition": "CHECK (((departement IS NULL) OR (departement = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text, 'bureau'::text]))))"
+        },
+        {
+          "name": "profiles_email_key",
+          "definition": "UNIQUE (email)"
+        },
+        {
+          "name": "profiles_id_fkey",
+          "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "profiles_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "profiles_role_check",
+          "definition": "CHECK ((role = ANY (ARRAY['admin'::text, 'responsable'::text, 'employe'::text])))"
+        }
+      ]
+    },
+    {
+      "name": "suppliers",
+      "columns": [
+        {
+          "name": "id",
+          "null": false,
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "identity": ""
+        },
+        {
+          "name": "code",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "name",
+          "null": false,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "description",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "contact_name",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "email",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "phone",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "address",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "vat_number",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "delivery_notes",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "logo_path",
+          "null": false,
+          "type": "text",
+          "default": "''::text",
+          "identity": ""
+        },
+        {
+          "name": "active",
+          "null": false,
+          "type": "boolean",
+          "default": "true",
+          "identity": ""
+        },
+        {
+          "name": "sort_order",
+          "null": false,
+          "type": "integer",
+          "default": "0",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "null": false,
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": ""
+        },
+        {
+          "name": "updated_by",
+          "null": true,
+          "type": "uuid",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "order_day",
+          "null": true,
+          "type": "smallint",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "order_deadline_time",
+          "null": true,
+          "type": "time without time zone",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "delivery_day",
+          "null": true,
+          "type": "smallint",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "minimum_order",
+          "null": true,
+          "type": "numeric",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "order_email",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "order_rules",
+          "null": true,
+          "type": "text",
+          "default": null,
+          "identity": ""
+        },
+        {
+          "name": "department",
+          "null": false,
+          "type": "text",
+          "default": "'salle'::text",
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "suppliers_code_format",
+          "definition": "CHECK ((code ~ '^[a-z0-9][a-z0-9-]*$'::text))"
+        },
+        {
+          "name": "suppliers_code_key",
+          "definition": "UNIQUE (code)"
+        },
+        {
+          "name": "suppliers_code_lowercase",
+          "definition": "CHECK ((code = lower(code)))"
+        },
+        {
+          "name": "suppliers_code_not_blank",
+          "definition": "CHECK ((btrim(code) <> ''::text))"
+        },
+        {
+          "name": "suppliers_department_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text, 'bureau'::text])))"
+        },
+        {
+          "name": "suppliers_department_operational_check",
+          "definition": "CHECK ((department = ANY (ARRAY['salle'::text, 'cuisine'::text, 'nettoyage'::text])))"
+        },
+        {
+          "name": "suppliers_name_not_blank",
+          "definition": "CHECK ((btrim(name) <> ''::text))"
+        },
+        {
+          "name": "suppliers_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "suppliers_sort_order_check",
+          "definition": "CHECK ((sort_order >= 0))"
+        },
+        {
+          "name": "suppliers_updated_by_fkey",
+          "definition": "FOREIGN KEY (updated_by) REFERENCES auth.users(id) ON DELETE SET NULL"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    "CREATE OR REPLACE FUNCTION private.can_access_order(p_order_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists(\n    select 1 from public.orders o\n    where o.id=p_order_id\n      and (\n        private.has_permission('history.view',o.department)\n        or private.has_permission('orders.manage',o.department)\n        or (o.author_id=auth.uid() and private.has_permission('inventory.use',o.department))\n      )\n  );\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.can_edit_order_lines(p_order_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists(\n    select 1 from public.orders o\n    where o.id=p_order_id and o.status='Brouillon'\n      and (\n        private.has_permission('orders.manage',o.department)\n        or (o.author_id=auth.uid() and private.has_permission('inventory.use',o.department))\n      )\n  );\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.can_read_catalog_department(p_department text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select private.has_permission('inventory.use',p_department)\n      or private.has_permission('suppliers.manage',p_department)\n      or private.has_permission('articles.manage',p_department)\n      or private.has_permission('orders.manage',p_department);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.cancel_order_impl(p_order_id uuid)\n RETURNS orders\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_order public.orders;\nbegin\n  select * into v_order from public.orders o where o.id=p_order_id and o.status<>'Annulé' for update;\n  if v_order.id is null or not private.has_permission('orders.manage',v_order.department) then\n    raise exception 'Document introuvable ou permission absente.' using errcode='42501';\n  end if;\n  update public.orders set status='Annulé' where id=p_order_id returning * into v_order;\n  return v_order;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.\"current_role\"()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select p.role\n  from public.profiles p\n  where p.id = (select auth.uid())\n    and p.actif = true\n  limit 1;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT EXISTS(SELECT FROM public.profiles WHERE id=auth.uid() AND role='admin' AND private.pilot_account_active(id));\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.has_permission(p_permission_key text, p_scope text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select private.has_permission_for_user(auth.uid(),p_permission_key,p_scope);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.is_active_user()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select exists (\n    select 1\n    from public.profiles p\n    where p.id = (select auth.uid())\n      and p.actif = true\n  );\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.mark_ordered_impl(p_order_id uuid)\n RETURNS orders\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_order public.orders;\nbegin\n  select * into v_order from public.orders o where o.id=p_order_id and o.status='Validé' for update;\n  if v_order.id is null or not private.has_permission('orders.manage',v_order.department) then\n    raise exception 'Bon validé introuvable ou permission absente.' using errcode='42501';\n  end if;\n  update public.orders set status='Commandé' where id=p_order_id returning * into v_order;\n  return v_order;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.submit_order_impl(p_order_id uuid)\n RETURNS orders\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_order public.orders;\nbegin\n  if not private.is_active_user() then raise exception 'Compte StopFlow inactif.' using errcode='42501'; end if;\n  update public.orders o set status='À valider',inventory_at=now()\n  where o.id=p_order_id and o.status='Brouillon'\n    and (\n      (o.author_id=auth.uid() and private.has_permission('inventory.use',o.department))\n      or private.has_permission('orders.manage',o.department)\n    )\n  returning o.* into v_order;\n  if v_order.id is null then raise exception 'Brouillon introuvable, déjà envoyé ou inaccessible.' using errcode='42501'; end if;\n  return v_order;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.validate_order_impl(p_order_id uuid)\n RETURNS orders\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_order public.orders;v_validator_name text;v_number text;\nbegin\n  select * into v_order from public.orders o where o.id=p_order_id and o.status='À valider' for update;\n  if v_order.id is null or not private.has_permission('orders.manage',v_order.department) then\n    raise exception 'Document introuvable ou permission de validation absente.' using errcode='42501';\n  end if;\n  select nullif(btrim(concat_ws(' ',p.prenom,p.nom)),'') into v_validator_name from public.profiles p where p.id=auth.uid();\n  v_validator_name:=coalesce(v_validator_name,'Responsable StopFlow');\n  v_number:='BC-'||lpad(nextval('public.order_number_seq')::text,6,'0');\n  update public.orders set status='Validé',number=v_number,validator_id=auth.uid(),validator_name=v_validator_name,validated_at=now()\n  where id=p_order_id returning * into v_order;\n  return v_order;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION public.cancel_order(p_order_id uuid)\n RETURNS orders\n LANGUAGE sql\n SET search_path TO ''\nAS $function$\n  select private.cancel_order_impl(p_order_id);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION public.mark_ordered(p_order_id uuid)\n RETURNS orders\n LANGUAGE sql\n SET search_path TO ''\nAS $function$\n  select private.mark_ordered_impl(p_order_id);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION public.submit_order(p_order_id uuid)\n RETURNS orders\n LANGUAGE sql\n SET search_path TO ''\nAS $function$\n  select private.submit_order_impl(p_order_id);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION public.validate_order(p_order_id uuid)\n RETURNS orders\n LANGUAGE sql\n SET search_path TO ''\nAS $function$\n  select private.validate_order_impl(p_order_id);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.stopflow_060_apply_order_department()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  v_supplier public.suppliers;\nbegin\n  select s.* into v_supplier\n  from public.suppliers s\n  where lower(s.name) = lower(btrim(coalesce(new.supplier,'')))\n  limit 1;\n\n  if v_supplier.id is null then\n    raise exception 'Fournisseur introuvable pour cette commande.' using errcode = '23503';\n  end if;\n\n  if tg_op = 'INSERT' and v_supplier.active is not true then\n    raise exception 'Ce fournisseur est désactivé.' using errcode = '23514';\n  end if;\n\n  if not private.is_operational_department(v_supplier.department) then\n    raise exception 'Le département du fournisseur est invalide.' using errcode = '23514';\n  end if;\n\n  new.supplier := v_supplier.name;\n  new.department := v_supplier.department;\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.set_catalog_audit()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin\n  new.updated_at := now();\n  new.updated_by := (select auth.uid());\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.sync_article_supplier()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  resolved_id uuid;\n  resolved_name text;\nbegin\n  if new.supplier_id is not null then\n    select s.id, s.name\n      into resolved_id, resolved_name\n    from public.suppliers s\n    where s.id = new.supplier_id;\n\n    if resolved_id is null then\n      raise exception 'Fournisseur introuvable.';\n    end if;\n\n    new.supplier := resolved_name;\n  elsif btrim(coalesce(new.supplier, '')) <> '' then\n    select s.id, s.name\n      into resolved_id, resolved_name\n    from public.suppliers s\n    where lower(s.name) = lower(btrim(new.supplier))\n       or s.code = lower(btrim(new.supplier))\n    order by s.active desc, s.sort_order, s.name\n    limit 1;\n\n    if resolved_id is not null then\n      new.supplier_id := resolved_id;\n      new.supplier := resolved_name;\n    end if;\n  end if;\n\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.stopflow_060_apply_article_department()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  v_supplier public.suppliers;\nbegin\n  if new.supplier_id is not null then\n    select s.* into v_supplier\n    from public.suppliers s\n    where s.id = new.supplier_id\n    limit 1;\n  else\n    select s.* into v_supplier\n    from public.suppliers s\n    where lower(s.name) = lower(btrim(coalesce(new.supplier,'')))\n    limit 1;\n  end if;\n\n  if v_supplier.id is null then\n    raise exception 'Fournisseur introuvable pour cet article.' using errcode = '23503';\n  end if;\n\n  if not private.is_operational_department(v_supplier.department) then\n    raise exception 'Le département du fournisseur est invalide.' using errcode = '23514';\n  end if;\n\n  new.supplier_id := v_supplier.id;\n  new.supplier := v_supplier.name;\n  new.department := v_supplier.department;\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.stopflow_060_cascade_supplier_department()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n  if new.name is distinct from old.name\n     or new.department is distinct from old.department then\n    update public.articles\n    set supplier = new.name,\n        department = new.department\n    where supplier_id = new.id;\n\n    update public.orders\n    set supplier = new.name,\n        department = new.department\n    where status = 'Brouillon'\n      and lower(supplier) = lower(old.name);\n  end if;\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.sync_supplier_name_to_articles()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n  if new.name is distinct from old.name then\n    update public.articles\n    set supplier = new.name\n    where supplier_id = new.id;\n  end if;\n\n  return new;\nend;\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.has_permission_for_user(p_user_id uuid, p_permission_key text, p_scope text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT private.is_known_permission_key(p_permission_key) AND private.is_valid_permission_scope(p_permission_key,p_scope)\n AND private.pilot_account_active(p_user_id) AND (\n EXISTS(SELECT FROM public.profiles p WHERE p.id=p_user_id AND p.role='admin') OR\n EXISTS(SELECT FROM public.profile_permissions p WHERE p.profile_id=p_user_id AND p.permission_key=p_permission_key AND p.scope=p_scope));\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.is_operational_department(p_department text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select coalesce(p_department in ('salle','cuisine','nettoyage'), false);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.pilot_account_active(p_user uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT EXISTS(SELECT FROM public.profiles p WHERE p.id=p_user AND p.actif\n AND NOT EXISTS(SELECT FROM public.pilot_registration_requests r WHERE r.profile_id=p.id AND r.status<>'approved')\n AND NOT EXISTS(SELECT FROM private.pilot_owner_config c WHERE c.owner_id=p.id AND NOT c.activation_complete));\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.is_known_permission_key(p_permission_key text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select coalesce(p_permission_key in (\n    'inventory.use','history.view','checklists.run',\n    'temperatures.use','temperatures.readings.use','temperatures.equipment.manage',\n    'lunchs.view','lunchs.manage','monthly_suggestions.view','monthly_suggestions.manage',\n    'ideas.share','orders.manage','checklists.review','checklists.templates.manage',\n    'alerts.view','banners.manage','suppliers.manage','articles.manage','settings.manage'\n  ),false);\n$function$\n",
+    "CREATE OR REPLACE FUNCTION private.is_valid_permission_scope(p_permission_key text, p_scope text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select case\n    when p_permission_key in ('ideas.share','banners.manage','settings.manage') then p_scope='global'\n    when p_permission_key in (\n      'temperatures.use','temperatures.readings.use','temperatures.equipment.manage',\n      'lunchs.view','lunchs.manage','monthly_suggestions.view','monthly_suggestions.manage'\n    ) then p_scope='cuisine'\n    when p_permission_key in (\n      'inventory.use','history.view','checklists.run','orders.manage',\n      'checklists.review','checklists.templates.manage','alerts.view',\n      'suppliers.manage','articles.manage'\n    ) then private.is_operational_department(p_scope)\n    else false\n  end;\n$function$\n"
+  ],
+  "triggers": [
+    {
+      "name": "orders_set_updated_at",
+      "relation": "orders",
+      "definition": "CREATE TRIGGER orders_set_updated_at BEFORE UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "name": "stopflow_060_order_department",
+      "relation": "orders",
+      "definition": "CREATE TRIGGER stopflow_060_order_department BEFORE INSERT OR UPDATE OF supplier, department ON public.orders FOR EACH ROW EXECUTE FUNCTION private.stopflow_060_apply_order_department()"
+    },
+    {
+      "name": "articles_set_catalog_audit",
+      "relation": "articles",
+      "definition": "CREATE TRIGGER articles_set_catalog_audit BEFORE UPDATE ON public.articles FOR EACH ROW EXECUTE FUNCTION private.set_catalog_audit()"
+    },
+    {
+      "name": "articles_sync_supplier",
+      "relation": "articles",
+      "definition": "CREATE TRIGGER articles_sync_supplier BEFORE INSERT OR UPDATE OF supplier, supplier_id ON public.articles FOR EACH ROW EXECUTE FUNCTION private.sync_article_supplier()"
+    },
+    {
+      "name": "stopflow_060_article_department",
+      "relation": "articles",
+      "definition": "CREATE TRIGGER stopflow_060_article_department BEFORE INSERT OR UPDATE OF supplier_id, supplier, department ON public.articles FOR EACH ROW EXECUTE FUNCTION private.stopflow_060_apply_article_department()"
+    },
+    {
+      "name": "order_lines_set_updated_at",
+      "relation": "order_lines",
+      "definition": "CREATE TRIGGER order_lines_set_updated_at BEFORE UPDATE ON public.order_lines FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "name": "stopflow_060_supplier_department_cascade",
+      "relation": "suppliers",
+      "definition": "CREATE TRIGGER stopflow_060_supplier_department_cascade AFTER UPDATE OF name, department ON public.suppliers FOR EACH ROW EXECUTE FUNCTION private.stopflow_060_cascade_supplier_department()"
+    },
+    {
+      "name": "suppliers_set_catalog_audit",
+      "relation": "suppliers",
+      "definition": "CREATE TRIGGER suppliers_set_catalog_audit BEFORE UPDATE ON public.suppliers FOR EACH ROW EXECUTE FUNCTION private.set_catalog_audit()"
+    },
+    {
+      "name": "suppliers_sync_article_names",
+      "relation": "suppliers",
+      "definition": "CREATE TRIGGER suppliers_sync_article_names AFTER UPDATE OF name ON public.suppliers FOR EACH ROW EXECUTE FUNCTION private.sync_supplier_name_to_articles()"
+    }
+  ]
+}
