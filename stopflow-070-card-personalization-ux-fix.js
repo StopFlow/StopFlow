@@ -40,7 +40,7 @@
 
     const zone=nav?.runtime?.currentZone||"home";
     if(!["home","cuisine","salle","nettoyage","general"].includes(zone))return;
-    if(!confirm("Réinitialiser l’ordre et réafficher toutes les cartes de cet espace ?"))return;
+    if(!await window.stopflowDialogs.confirm("Réinitialiser l’ordre et réafficher toutes les cartes de cet espace ?"))return;
 
     const status=document.querySelector(".sf70-personalize-status");
     if(status)status.textContent="Réinitialisation…";
@@ -95,7 +95,7 @@
 (function(){
   if(document.querySelector('script[data-stopflow-070-temperature-v3="0.7.0"]'))return;
   const script=document.createElement('script');
-  script.src='stopflow-070-temperature-v3.js?v=0703';
+  script.src='stopflow-070-temperature-v3.js?v=20261122-service1';
   script.async=false;
   script.dataset.stopflow070TemperatureV3='0.7.0';
   document.head.appendChild(script);

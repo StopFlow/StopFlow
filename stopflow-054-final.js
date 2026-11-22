@@ -59,7 +59,7 @@
   const loadFix=()=>{
     if(document.querySelector('script[data-stopflow-060-menu-auth-fix="0.6.0"]'))return;
     const fix=document.createElement("script");
-    fix.src="stopflow-060-menu-auth-fix.js?v=0602";
+    fix.src="stopflow-060-menu-auth-fix.js?v=20261122-service1";
     fix.async=false;
     fix.dataset.stopflow060MenuAuthFix="0.6.0";
     document.head.appendChild(fix);
@@ -71,7 +71,7 @@
     return;
   }
   const script=document.createElement("script");
-  script.src="stopflow-060-multi-departments.js?v=0601";
+  script.src="stopflow-060-multi-departments.js?v=20261122-service1";
   script.async=false;
   script.dataset.stopflow060MultiDepartments="0.6.0";
   script.onload=loadFix;
@@ -124,7 +124,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-profile-permissions="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-profile-permissions.js?v=0702";
+    script.src="stopflow-070-profile-permissions.js?v=20261122-service1";
     script.async=false;
     script.dataset.stopflow070ProfilePermissions="0.7.0";
     script.onload=()=>{
@@ -149,7 +149,7 @@
   const load=()=>{
     if(document.querySelector('script[data-stopflow-070-profile-permissions-reload-fix="0.7.0"]'))return;
     const script=document.createElement("script");
-    script.src="stopflow-070-profile-permissions-reload-fix.js?v=0900";
+    script.src="stopflow-070-profile-permissions-reload-fix.js?v=20261122-service1";
     script.async=false;
     script.dataset.stopflow070ProfilePermissionsReloadFix="0.7.0";
     document.head.appendChild(script);

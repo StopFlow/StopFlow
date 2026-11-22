@@ -28,7 +28,7 @@ showEditUserModal=function(id){
     const typed=prompt(`Suppression irréversible.\n\nRecopiez exactement l’adresse e-mail suivante pour confirmer :\n${user.email}`);
     if(typed===null)return;
     if(String(typed).trim().toLowerCase()!==expected){alert("L’adresse saisie ne correspond pas. Le compte n’a pas été supprimé.");return}
-    if(!confirm(`Supprimer définitivement ${user.email} ?\n\nCette adresse pourra ensuite être utilisée pour créer un nouveau compte.`))return;
+    if(!await window.stopflowDialogs.confirm(`Supprimer définitivement ${user.email} ?\n\nCette adresse pourra ensuite être utilisée pour créer un nouveau compte.`))return;
     const button=document.querySelector("#deleteUserButton");button.disabled=true;button.textContent="Suppression…";
     try{await invokeUserAdmin("delete",{id:user.id,confirmationEmail:typed});await loadSharedUsers();renderUsers();document.querySelector("#modal").classList.add("hidden");alert(`Le compte ${user.email} a été supprimé. L’adresse e-mail est de nouveau disponible.`)}
     catch(error){alert(userAdminErrorMessage(error,"Suppression impossible."));button.disabled=false;button.textContent="Supprimer définitivement ce compte"}
@@ -41,13 +41,13 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
 /* Charge les modules validés jusqu’à StopFlow 0.6.0. */
 (function(){
   if(document.querySelector('script[data-stopflow-checklists="0.5.0"]'))return;
-  const script=document.createElement("script");script.src="stopflow-checklists.js?v=0500";script.async=false;script.dataset.stopflowChecklists="0.5.0";
+  const script=document.createElement("script");script.src="stopflow-checklists.js?v=20261122-service1";script.async=false;script.dataset.stopflowChecklists="0.5.0";
   script.onload=()=>{
     if(document.querySelector('script[data-stopflow-checklists-correction="0.5.0"]'))return;
     const correction=document.createElement("script");correction.src="stopflow-050-correction.js?v=0500c2";correction.async=false;correction.dataset.stopflowChecklistsCorrection="0.5.0";
     correction.onload=()=>{
       if(document.querySelector('script[data-stopflow-checklists-history="0.5.0"]'))return;
-      const history=document.createElement("script");history.src="stopflow-050-history.js?v=0500h2";history.async=false;history.dataset.stopflowChecklistsHistory="0.5.0";
+      const history=document.createElement("script");history.src="stopflow-050-history.js?v=20261122-service1";history.async=false;history.dataset.stopflowChecklistsHistory="0.5.0";
       history.onload=()=>{
         if(document.querySelector('script[data-stopflow-checklists-history-pdf="0.5.0"]'))return;
         const historyPdf=document.createElement("script");historyPdf.src="stopflow-050-history-pdf.js?v=0500p1";historyPdf.async=false;historyPdf.dataset.stopflowChecklistsHistoryPdf="0.5.0";
@@ -80,7 +80,7 @@ if(usersDescription)usersDescription.textContent="Créer les comptes, attribuer 
                           const menu=document.createElement("script");menu.src="stopflow-054-menu.js?v=0542";menu.async=false;menu.dataset.stopflowDepartmentMenu="0.5.4";
                           menu.onload=()=>{
                             if(document.querySelector('script[data-stopflow-department-final="0.5.4"]'))return;
-                            const finalChecks=document.createElement("script");finalChecks.src="stopflow-054-final.js?v=0545";finalChecks.async=false;finalChecks.dataset.stopflowDepartmentFinal="0.5.4";document.head.appendChild(finalChecks);
+                            const finalChecks=document.createElement("script");finalChecks.src="stopflow-054-final.js?v=20261122-service1";finalChecks.async=false;finalChecks.dataset.stopflowDepartmentFinal="0.5.4";document.head.appendChild(finalChecks);
                           };
                           document.head.appendChild(menu);
                         };

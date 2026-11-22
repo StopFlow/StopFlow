@@ -460,7 +460,7 @@ function supplierModal(id){
       active:box.querySelector("#supplierEnabled").checked
     };
     if(!next.name)return alert("Le nom du fournisseur est obligatoire.");
-    if(existing?.active&&!next.active&&!confirm(`Désactiver ${existing.name} ? Il ne sera plus proposé pour un nouvel inventaire.`))return;
+    if(existing?.active&&!next.active&&!await window.stopflowDialogs.confirm(`Désactiver ${existing.name} ? Il ne sera plus proposé pour un nouvel inventaire.`))return;
     button.disabled=true;
     button.textContent="Enregistrement…";
     try{

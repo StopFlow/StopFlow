@@ -184,7 +184,7 @@
     document.getElementById('sf70CopyPassword').onclick=async()=>{await navigator.clipboard.writeText(input.value);document.getElementById('sf70CopyPassword').textContent='Copié'};
     document.getElementById('sf70ResetPasswordButton').onclick=async()=>{
       const password=String(input.value||'');if(password.length<10)return alert('Le mot de passe temporaire doit contenir au moins 10 caractères.');
-      if(!confirm(`Réinitialiser le mot de passe de ${user.email} ?`))return;
+      if(!await window.stopflowDialogs.confirm(`Réinitialiser le mot de passe de ${user.email} ?`))return;
       const button=document.getElementById('sf70ResetPasswordButton');button.disabled=true;button.textContent='Réinitialisation…';
       try{await invokeUserAdmin('reset_password',{id:user.id,password});document.getElementById('sf70PasswordStatus').innerHTML='<b>Mot de passe réinitialisé.</b> Copie-le avant de fermer cette fenêtre.';button.textContent='Mot de passe appliqué'}
       catch(error){alert(userAdminErrorMessage(error,'Réinitialisation impossible.'));button.disabled=false;button.textContent='Appliquer le nouveau mot de passe'}
@@ -197,7 +197,7 @@
       const expected=String(user.email||'').toLowerCase();
       const typed=prompt(`Suppression irréversible.\n\nRecopiez exactement l’adresse e-mail suivante pour confirmer :\n${user.email}`);
       if(typed===null)return;if(String(typed).trim().toLowerCase()!==expected)return alert('L’adresse saisie ne correspond pas. Le compte n’a pas été supprimé.');
-      if(!confirm(`Supprimer définitivement ${user.email} ?`))return;
+      if(!await window.stopflowDialogs.confirm(`Supprimer définitivement ${user.email} ?`))return;
       button.disabled=true;button.textContent='Suppression…';
       try{await invokeUserAdmin('delete',{id:user.id,confirmationEmail:typed});await loadSharedUsers();renderUsers();document.getElementById('modal').classList.add('hidden');alert(`Le compte ${user.email} a été supprimé.`)}
       catch(error){alert(userAdminErrorMessage(error,'Suppression impossible.'));button.disabled=false;button.textContent='Supprimer définitivement ce compte'}
@@ -246,7 +246,7 @@
     bindPasswordReset(user);bindDelete(user);
     document.getElementById('saveUserButton').onclick=async()=>{
       const button=document.getElementById('saveUserButton');const role=protectedAccount?user.role:document.getElementById('editUserRole').value;const actif=protectedAccount?user.actif:document.getElementById('editUserActive').checked;
-      if(user.actif&&!actif&&!confirm('Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow.'))return;
+      if(user.actif&&!actif&&!await window.stopflowDialogs.confirm('Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow.'))return;
       const payload={id:user.id,prenom:document.getElementById('editUserFirstName').value.trim(),nom:document.getElementById('editUserLastName').value.trim(),role,actif,permissions:readPermissions(box.querySelector('.sf70-permissions-holder'),role)};
       if(!payload.prenom||!payload.nom)return alert('Le prénom et le nom sont obligatoires.');
       button.disabled=true;button.textContent='Enregistrement…';

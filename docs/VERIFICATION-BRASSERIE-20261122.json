@@ -1,0 +1,385 @@
+{
+  "postgresql": {
+    "resultat": "PASS",
+    "groupes": 27,
+    "controles": [
+      "historique_inchange",
+      "ancien_horaire_conserve_apres_note",
+      "depart_inconnu_NULL",
+      "apres_plus_de_deux_heures_reste_occupe",
+      "separation_midi_soir",
+      "arrive_auteur_horodatage",
+      "double_clic_idempotent",
+      "lecteur_presence_refuse",
+      "autre_etablissement_presence_refuse",
+      "version_perimee_refusee",
+      "parti_conserve_historique",
+      "parti_libere_table",
+      "note_ne_reoccupe_pas",
+      "totaux_historique_conserves",
+      "partage_meme_service_preuve",
+      "depart_un_partage_ne_libere_pas_autre",
+      "remplacement_exact_123_135",
+      "placement_concurrent_refuse",
+      "confirmations_concurrentes_une_attribution",
+      "arrive_reste_a_placer",
+      "anonyme_presence_refusee",
+      "ecriture_directe_refusee",
+      "fermeture_sans_table_refusee",
+      "aucune_fin_cachee_acceptee",
+      "ancienne_rpc_sans_faux_depart",
+      "disponibilites_anciennes_meme_service",
+      "aucun_nouveau_range_artificiel"
+    ],
+    "moteur": "PG17_JETABLE",
+    "auth": "SIMULEE",
+    "pilote": false
+  },
+  "service": {
+    "resultat": "PASS",
+    "page": "INDEX_COMPLET_ENVELOPPE_ET_MODULES_REELS",
+    "transport": "AUTH_ET_RPC_HTTP_SIMULES",
+    "donnees_pilote_modifiees": false,
+    "tests": [
+      {
+        "engine": "chromium",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "156.0.8078.4",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "PROPORTIONS_ET_28_OBJETS_VISIBLES_5_RESERVATIONS",
+          "RECHERCHE_SELECTION_JUMELAGE_DETAIL",
+          "DATE_SERVICES_RESERVATION_ANCIEN_PLAN_CONSERVEE",
+          "CREATION_ET_RELECTURE_SIMULEES_SANS_CHANGER_PLAN",
+          "LIMITES_MIDI_SOIR_16H30_FORMULAIRE_SANS_DEBORDEMENT",
+          "CONFIRMATION_JUMELAGE_AUTORISE_SIMULE",
+          "A_PLACER_SELECTION_TACTILE_PARTAGE_EXPLICITE_DETAIL_MULTIPLE",
+          "ARRIVE_PARTI_PARTAGE_CONSERVE_ET_ANNULATION_ANNULEE_SANS_ECRITURE",
+          "REMPLACEMENT_EXACT_123_VERS_135_ANNULER_PRESERVE_INITIAL",
+          "FERMETURE_REOUVERTURE_SANS_ANNULATION_FORMULAIRE_BLOQUE",
+          "CLAVIER_HAUTEUR_REDUITE_DEFILEMENT_VERTICAL_SEUL",
+          "MENU_PROFIL_INSTALLATION_FICHES_CLIENTS",
+          "EDITEUR_PLEINE_PAGE_BROUILLON_PRESERVE_AUCUNE_CREATION_DOUBLE",
+          "ORDINATEUR_SANS_DEBORDEMENT",
+          "ACCUEIL_DROITS_ET_PLAN_INCHANGES"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "surface": {
+          "navigation": {
+            "x": 0,
+            "y": 0,
+            "width": 1024,
+            "height": 56,
+            "ratio": 0.07291666666666667
+          },
+          "commandes": {
+            "x": 0,
+            "y": 56,
+            "width": 1024,
+            "height": 66,
+            "ratio": 0.0859375
+          },
+          "liste": {
+            "x": 0,
+            "y": 122,
+            "width": 235.515625,
+            "height": 646,
+            "ratio": 0.19345994790395102
+          },
+          "plan": {
+            "x": 235.515625,
+            "y": 122,
+            "width": 788.484375,
+            "height": 646,
+            "ratio": 0.6476858854293823
+          },
+          "svg": {
+            "x": 235.515625,
+            "y": 180,
+            "width": 788.484375,
+            "height": 528,
+            "ratio": 0.5293779373168945
+          },
+          "outside": false,
+          "objectsOutside": 0
+        },
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      },
+      {
+        "engine": "chromium",
+        "profil": "EMPLOYE",
+        "version": "156.0.8078.4",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "PROPORTIONS_ET_28_OBJETS_VISIBLES_5_RESERVATIONS",
+          "EMPLOYE_SANS_EDITEUR_NI_EQUIPE_RESERVATION_ACCESSIBLE"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "surface": {
+          "navigation": {
+            "x": 0,
+            "y": 0,
+            "width": 1024,
+            "height": 56,
+            "ratio": 0.07291666666666667
+          },
+          "commandes": {
+            "x": 0,
+            "y": 56,
+            "width": 1024,
+            "height": 66,
+            "ratio": 0.0859375
+          },
+          "liste": {
+            "x": 0,
+            "y": 122,
+            "width": 235.515625,
+            "height": 646,
+            "ratio": 0.19345994790395102
+          },
+          "plan": {
+            "x": 235.515625,
+            "y": 122,
+            "width": 788.484375,
+            "height": 646,
+            "ratio": 0.6476858854293823
+          },
+          "svg": {
+            "x": 235.515625,
+            "y": 180,
+            "width": 788.484375,
+            "height": 528,
+            "ratio": 0.5293779373168945
+          },
+          "outside": false,
+          "objectsOutside": 0
+        },
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      },
+      {
+        "engine": "webkit",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "27.2",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "PROPORTIONS_ET_28_OBJETS_VISIBLES_5_RESERVATIONS",
+          "RECHERCHE_SELECTION_JUMELAGE_DETAIL",
+          "DATE_SERVICES_RESERVATION_ANCIEN_PLAN_CONSERVEE",
+          "CREATION_ET_RELECTURE_SIMULEES_SANS_CHANGER_PLAN",
+          "LIMITES_MIDI_SOIR_16H30_FORMULAIRE_SANS_DEBORDEMENT",
+          "CONFIRMATION_JUMELAGE_AUTORISE_SIMULE",
+          "A_PLACER_SELECTION_TACTILE_PARTAGE_EXPLICITE_DETAIL_MULTIPLE",
+          "ARRIVE_PARTI_PARTAGE_CONSERVE_ET_ANNULATION_ANNULEE_SANS_ECRITURE",
+          "REMPLACEMENT_EXACT_123_VERS_135_ANNULER_PRESERVE_INITIAL",
+          "FERMETURE_REOUVERTURE_SANS_ANNULATION_FORMULAIRE_BLOQUE",
+          "CLAVIER_HAUTEUR_REDUITE_DEFILEMENT_VERTICAL_SEUL",
+          "MENU_PROFIL_INSTALLATION_FICHES_CLIENTS",
+          "EDITEUR_PLEINE_PAGE_BROUILLON_PRESERVE_AUCUNE_CREATION_DOUBLE",
+          "ORDINATEUR_SANS_DEBORDEMENT",
+          "ACCUEIL_DROITS_ET_PLAN_INCHANGES"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "surface": {
+          "navigation": {
+            "x": 0,
+            "y": 0,
+            "width": 1024,
+            "height": 56,
+            "ratio": 0.07291666666666667
+          },
+          "commandes": {
+            "x": 0,
+            "y": 56,
+            "width": 1024,
+            "height": 66,
+            "ratio": 0.0859375
+          },
+          "liste": {
+            "x": 0,
+            "y": 122,
+            "width": 235.515625,
+            "height": 646,
+            "ratio": 0.19345994790395102
+          },
+          "plan": {
+            "x": 235.515625,
+            "y": 122,
+            "width": 788.484375,
+            "height": 646,
+            "ratio": 0.6476858854293823
+          },
+          "svg": {
+            "x": 235.515625,
+            "y": 180,
+            "width": 788.484375,
+            "height": 528,
+            "ratio": 0.5293779373168945
+          },
+          "outside": false,
+          "objectsOutside": 0
+        },
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      },
+      {
+        "engine": "webkit",
+        "profil": "EMPLOYE",
+        "version": "27.2",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "PROPORTIONS_ET_28_OBJETS_VISIBLES_5_RESERVATIONS",
+          "EMPLOYE_SANS_EDITEUR_NI_EQUIPE_RESERVATION_ACCESSIBLE"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "surface": {
+          "navigation": {
+            "x": 0,
+            "y": 0,
+            "width": 1024,
+            "height": 56,
+            "ratio": 0.07291666666666667
+          },
+          "commandes": {
+            "x": 0,
+            "y": 56,
+            "width": 1024,
+            "height": 66,
+            "ratio": 0.0859375
+          },
+          "liste": {
+            "x": 0,
+            "y": 122,
+            "width": 235.515625,
+            "height": 646,
+            "ratio": 0.19345994790395102
+          },
+          "plan": {
+            "x": 235.515625,
+            "y": 122,
+            "width": 788.484375,
+            "height": 646,
+            "ratio": 0.6476858854293823
+          },
+          "svg": {
+            "x": 235.515625,
+            "y": 180,
+            "width": 788.484375,
+            "height": 528,
+            "ratio": 0.5293779373168945
+          },
+          "outside": false,
+          "objectsOutside": 0
+        },
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      }
+    ]
+  },
+  "editeur": {
+    "resultat": "PASS",
+    "tests": [
+      {
+        "navigateur": "chromium 156.0.8078.4",
+        "interaction": "TACTILE_EMULE_CDP",
+        "backend": "RPC_SIMULES",
+        "base_pilote": false,
+        "etapes": [
+          "OEIL_CONSERVE",
+          "28_OBJETS_ENTIEREMENT_VISIBLES_COMMANDES_SANS_RECOUVREMENT",
+          "GRANDE_PAGE_25_TABLES_3_REPERES",
+          "PROPRIETES_REPLIABLES",
+          "FOCUS_CLAVIER_CONTENU_DANS_EDITEUR",
+          "GLISSER_UNE_ACTION_ANNULER_RETABLIR",
+          "COORDONNEES_STABLES_AU_ZOOM",
+          "VUE_DISTINCTE_DES_OBJETS",
+          "PINCEMENT_DEUX_DOIGTS",
+          "MENU_TROIS_CHOIX_PLAN_VIDE_CIBLE_IMMEDIATE",
+          "SAUVEGARDE_RELECTURE_25_NOUVELLES_TABLES_ANCIENNES_INCHANGEES",
+          "QUITTER_CONSERVE_ABANDON_REVIENT_AU_DERNIER_ENREGISTRE",
+          "RENOMMER_ARCHIVER_RESTAURER_IDENTIFIANTS_CONSERVES",
+          "RECHARGEMENT_RELECTURE_POSITIONS",
+          "ROTATION_ET_ORDINATEUR_SANS_DEBORDEMENT",
+          "CONFLIT_CONSERVE_BROUILLON_SANS_ECRITURE",
+          "PERSONNEL_SANS_EDITION"
+        ],
+        "reseau_externe": [],
+        "erreurs": [],
+        "surface": {
+          "x": 8,
+          "y": 185.1875,
+          "largeur": 1008,
+          "hauteur": 574.8125,
+          "fraction_fenetre": 0.7367591857910156,
+          "editeur": {
+            "x": 0,
+            "y": 0,
+            "largeur": 1024,
+            "hauteur": 768
+          },
+          "tables": 25,
+          "reperes": 3
+        },
+        "resultat": "PASS",
+        "nettoyage": "NAVIGATEUR_FERME_PROFIL_SUPPRIME"
+      },
+      {
+        "navigateur": "webkit 27.2",
+        "interaction": "TOUCHER_NATIF_WEBKIT_GLISSER_POINTEUR",
+        "backend": "RPC_SIMULES",
+        "base_pilote": false,
+        "etapes": [
+          "OEIL_CONSERVE",
+          "28_OBJETS_ENTIEREMENT_VISIBLES_COMMANDES_SANS_RECOUVREMENT",
+          "GRANDE_PAGE_25_TABLES_3_REPERES",
+          "PROPRIETES_REPLIABLES",
+          "FOCUS_CLAVIER_CONTENU_DANS_EDITEUR",
+          "GLISSER_UNE_ACTION_ANNULER_RETABLIR",
+          "COORDONNEES_STABLES_AU_ZOOM",
+          "VUE_DISTINCTE_DES_OBJETS",
+          "MENU_TROIS_CHOIX_PLAN_VIDE_CIBLE_IMMEDIATE",
+          "SAUVEGARDE_RELECTURE_25_NOUVELLES_TABLES_ANCIENNES_INCHANGEES",
+          "QUITTER_CONSERVE_ABANDON_REVIENT_AU_DERNIER_ENREGISTRE",
+          "RENOMMER_ARCHIVER_RESTAURER_IDENTIFIANTS_CONSERVES",
+          "RECHARGEMENT_RELECTURE_POSITIONS",
+          "ROTATION_ET_ORDINATEUR_SANS_DEBORDEMENT",
+          "CONFLIT_CONSERVE_BROUILLON_SANS_ECRITURE",
+          "PERSONNEL_SANS_EDITION"
+        ],
+        "reseau_externe": [],
+        "erreurs": [],
+        "surface": {
+          "x": 8,
+          "y": 190.1875,
+          "largeur": 1008,
+          "hauteur": 569.8125,
+          "fraction_fenetre": 0.7303504943847656,
+          "editeur": {
+            "x": 0,
+            "y": 0,
+            "largeur": 1024,
+            "hauteur": 768
+          },
+          "tables": 25,
+          "reperes": 3
+        },
+        "resultat": "PASS",
+        "nettoyage": "NAVIGATEUR_FERME_PROFIL_SUPPRIME"
+      }
+    ]
+  },
+  "sdk_sha256": "8816af04d9915dbba1882d6f84f0b402dc40268063a63d9c66d24f52f371c263"
+}

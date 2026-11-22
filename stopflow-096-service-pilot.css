@@ -79,3 +79,22 @@ body:has(#sf93Service) #sfPilotToolbar{flex-shrink:0}
 @media(min-width:741px){#sf93Service .sf93-layout:has(.sf93-placement),#sf93Service .sf93-layout:has(.sf93-closure-panel){grid-template-columns:minmax(300px,32%) minmax(0,1fr)}}
 #sf93Service .sf93-reservations:has(.sf93-placement)>.sf93-list,#sf93Service .sf93-reservations:has(.sf93-closure-panel)>.sf93-list{display:none}
 @media(display-mode:standalone){body:has(#sf93Service) #app{padding-top:max(env(safe-area-inset-top,0px),24px)}}
+
+/* Brasserie: stable table hierarchy; visual magnification never edits the saved plan. */
+#sf93Service .sf93-table .sf93-table-number,#sf93Service .sf93-table.reserved .sf93-table-number{font-size:22px;font-weight:900;fill:#123451}
+#sf93Service .sf93-table-capacity{font-size:11px;font-weight:600;fill:#425970}
+#sf93Service .sf93-table-guest{font-size:12px;font-weight:700}
+#sf93Service .sf93-table-party{font-size:10px;font-weight:600}
+#sf93Service .sf93-table.arrived .sf93-table-top{fill:#cceeea;stroke:#08796e;stroke-width:3}
+#sf93Service .sf93-table.selected .sf93-table-top{stroke:#2059b4;stroke-width:4}
+#sf93Service .sf93-legend i.arrived{background:#cceeea;border-color:#08796e}
+#sf93Service .sf93-presence{display:inline-block;font-weight:700;color:#425970}
+#sf93Service .sf93-presence.arrived{color:#08796e}#sf93Service .sf93-presence.departed{color:#657080}
+#sf93Service .sf93-booking-meta{flex-wrap:wrap}
+#sf93Service .btn,.sf97-dialog .btn{display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;white-space:normal}
+#sf93Service [data-service-action=placement-confirm]{background:#19518b;color:#fff;font-weight:800;min-height:50px}
+#sf93Service .sf93-new-selection{padding:10px;border:2px solid #2059b4;border-radius:9px;color:#194b82;font-weight:700}
+#sf93Service .sf93-closure-panel form{gap:12px}#sf93Service .sf93-closure-panel label{display:grid;gap:5px}
+#sf93Service .sf93-closure-panel .input{box-sizing:border-box;width:100%;min-width:0;height:46px;font-size:16px}
+.sf97-dialog{box-sizing:border-box;width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow-y:auto;border:1px solid #cddbea;border-radius:16px;padding:24px;color:#18334e;background:#fff;box-shadow:0 20px 70px #102d4b44}
+.sf97-dialog::backdrop{background:#10243c88}.sf97-dialog h2{font-size:22px;margin:0 0 14px}.sf97-dialog p{white-space:pre-line;overflow-wrap:anywhere;line-height:1.5}.sf97-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:20px}.sf97-actions .btn{min-width:110px;min-height:48px}.sf97-actions .danger{background:#b91c2e;color:#fff;border-color:#b91c2e}

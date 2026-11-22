@@ -121,12 +121,12 @@
     return g.x>=0&&g.y>=0&&g.x+g.width/2-ex>=-1e-6&&g.y+g.height/2-ey>=-1e-6&&g.x+g.width/2+ex<=l.width+1e-6&&g.y+g.height/2+ey<=l.height+1e-6;
   }
   function clearEditor(){editor.draft=null;editor.dirty=false;editor.drag=null;editor.uncertain=false}
-  function leaveDraft(){
-    if(window.stopflowService?.confirmLeave?.()===false)return false;
-    if(window.stopflowBookingsV1?.confirmLeave?.()===false)return false;
+  async function leaveDraft(){
+    if(await window.stopflowService?.confirmLeave?.()===false)return false;
+    if(await window.stopflowBookingsV1?.confirmLeave?.()===false)return false;
     if(state.busy&&editor.draft){message('Attendez le résultat de l’enregistrement avant de quitter le plan.',true);return false}
     if(editor.uncertain){message('Résultat du dernier enregistrement indéterminé. Relisez le plan avant de quitter.',true);return false}
-    if(editor.dirty&&!confirm('Le plan contient des modifications non enregistrées. Les abandonner ?'))return false;
+    if(editor.dirty&&!await window.stopflowDialogs.confirm('Le plan contient des modifications non enregistrées. Les abandonner ?'))return false;
     clearEditor();return true;
   }
   function changed(){editor.dirty=JSON.stringify(editor.draft.map(geometryPayload))!==editor.baseline}
@@ -266,16 +266,16 @@
       void write('reservations_save_table',{p_room_id:state.roomId,p_id:id,p_expected_version:version,p_label:String(data.get('label')).trim(),p_capacity:Number(data.get('capacity')),p_shape:String(data.get('shape')),p_active:t?.active??true});
     }
   }
-  function onChange(event){
+  async function onChange(event){
     if(state.busy)return;
     if(event.target.hasAttribute?.('data-layout-grid')){editor.snap=event.target.checked;render();return}
     const type=event.target.dataset.filter;if(!type)return;
-    if(!leaveDraft()){event.target.value=type==='room'?state.roomId:state.establishmentId;return}
+    if(!await leaveDraft()){event.target.value=type==='room'?state.roomId:state.establishmentId;return}
     state.roomForm=false;state.tableForm=false;state.roomEdit='';state.tableEdit='';state.selectedTable='';state.message='';
     if(type==='establishment'){state.establishmentId=event.target.value;state.roomId='';state.loaded=false;state.data={rooms:[],tables:[],layouts:[],elements:[]};render();void load()}
     if(type==='room'){state.roomId=event.target.value;render()}
   }
-  function onClick(event){
+  async function onClick(event){
     const target=event.target.closest?.('button[data-action]');if(!target||!root().contains(target))return;
     const {action,id}=target.dataset;
     const key=action+':'+(id||'');
@@ -284,17 +284,17 @@
     if(event.isTrusted&&event.detail>0&&window.matchMedia('(max-width:950px)').matches&&syntheticAction?.key===key&&Date.now()-syntheticAction.at<800){syntheticAction=null;event.preventDefault();return}
     if(state.busy)return;
     if(!event.isTrusted)syntheticAction={key,at:Date.now()};
-    if(action==='view-agenda'){if(!leaveDraft())return;state.booking=true;state.manage=false;render();return}
-    if(action==='home'){if(leaveDraft())window.stopflow070CardNavigation?.openHome();return}
-    if(action==='refresh'){if(leaveDraft())void load();return}
-    if(action==='reconcile-plan'){if(confirm('Relire le plan enregistré et abandonner le brouillon seulement si la lecture réussit ?'))void load(true);return}
-    if(action==='edit-plan'){if(window.stopflowPlanEditor&&window.stopflowService?.openEditor){if(!leaveDraft())return;state.booking=true;state.manage=false;render();void window.stopflowService.openEditor(state.roomId);return;}beginEdit();return}
+    if(action==='view-agenda'){if(!await leaveDraft())return;state.booking=true;state.manage=false;render();return}
+    if(action==='home'){if(await leaveDraft())window.stopflow070CardNavigation?.openHome();return}
+    if(action==='refresh'){if(await leaveDraft())void load();return}
+    if(action==='reconcile-plan'){if(await window.stopflowDialogs.confirm('Relire le plan enregistré et abandonner le brouillon seulement si la lecture réussit ?'))void load(true);return}
+    if(action==='edit-plan'){if(window.stopflowPlanEditor&&window.stopflowService?.openEditor){if(!await leaveDraft())return;state.booking=true;state.manage=false;render();void window.stopflowService.openEditor(state.roomId);return;}beginEdit();return}
     if(action==='save-plan')return void savePlan();
-    if(action==='cancel-plan'){if(leaveDraft()){render();message('Brouillon annulé. Le dernier plan enregistré est affiché.')}return}
+    if(action==='cancel-plan'){if(await leaveDraft()){render();message('Brouillon annulé. Le dernier plan enregistré est affiché.')}return}
     if(action==='zoom-in'||action==='zoom-out'){editor.zoom=Math.max(0.5,Math.min(3,editor.zoom+(action==='zoom-in'?0.25:-0.25)));render();return}
     if(action==='center-plan'){editor.zoom=1;render();const viewport=root().querySelector('.sf91-plan-viewport');if(viewport){viewport.scrollLeft=0;viewport.scrollTop=0}return}
     if(action==='select-layout-table'){state.selectedTable=id;render();return}
-    if(['manage','view-plan','new-room','create-room','edit-room','new-table','edit-table','archive-room','archive-table'].includes(action)&&!leaveDraft())return;
+    if(['manage','view-plan','new-room','create-room','edit-room','new-table','edit-table','archive-room','archive-table'].includes(action)&&!await leaveDraft())return;
     if(action==='access')return void refreshAccess();
     if(action==='manage'&&(allowed('can_manage_rooms')||allowed('can_manage_tables'))){state.booking=false;state.manage=true;}
     if(action==='view-plan'){state.booking=false;state.manage=false;state.roomForm=false;state.tableForm=false;state.roomEdit='';state.tableEdit=''}
@@ -307,11 +307,11 @@
     if(action==='properties')state.selectedTable=id;
     if(action==='close-properties')state.selectedTable='';
     if(action==='archive-room'&&allowed('can_manage_rooms')){
-      const r=state.data.rooms.find(r=>r.id===id);if(!r||!confirm(r.active?'Archiver cette salle sans supprimer ses tables ?':'Réactiver cette salle ?'))return;
+      const r=state.data.rooms.find(r=>r.id===id);if(!r||!await window.stopflowDialogs.confirm(r.active?'Archiver cette salle sans supprimer ses tables ?':'Réactiver cette salle ?'))return;
       return void write('reservations_save_room',{p_id:r.id,p_expected_version:r.version,p_name:r.name,p_description:r.description,p_sort_order:r.sort_order,p_active:!r.active});
     }
     if(action==='archive-table'&&allowed('can_manage_tables')){
-      const t=state.data.tables.find(t=>t.id===id);if(!t||!confirm(t.active?'Archiver cette table ?':'Réactiver cette table ?'))return;
+      const t=state.data.tables.find(t=>t.id===id);if(!t||!await window.stopflowDialogs.confirm(t.active?'Archiver cette table ?':'Réactiver cette table ?'))return;
       return void write('reservations_save_table',{p_room_id:t.room_id,p_id:t.id,p_expected_version:t.version,p_label:t.label,p_capacity:t.capacity,p_shape:t.shape,p_active:!t.active});
     }
     render();
@@ -329,8 +329,11 @@
     void refreshAccess();return true;
   }
   window.addEventListener?.('beforeunload',event=>{if(editor.dirty||editor.uncertain||(window.stopflowBookingsV1?.dirty?.()||window.stopflowService?.dirty?.())){event.preventDefault();event.returnValue=''}});
-  const originalPage=page;page=function(id){if(id!=='sf91Reservations'&&(editor.dirty||editor.uncertain||(window.stopflowBookingsV1?.dirty?.()||window.stopflowService?.dirty?.()))&&!leaveDraft())return;return originalPage.apply(this,arguments)};
-  document.addEventListener?.('click',event=>{if(!editor.dirty&&!editor.uncertain&&!(window.stopflowBookingsV1?.dirty?.()||window.stopflowService?.dirty?.()))return;const target=event.target.closest?.('[data-sf70-zone],[data-sf70-card],[data-page],#logout,#home');if(target?.id==='logout'&&!editor.dirty&&!editor.uncertain){window.stopflowBookingsV1?.reset?.();window.stopflowService?.reset?.();return}if(target&&!root()?.contains(target)&&!leaveDraft()){event.preventDefault();event.stopImmediatePropagation()}},true);
+  const originalPage=page;page=async function(id){if(id!=='sf91Reservations'&&(editor.dirty||editor.uncertain||window.stopflowBookingsV1?.dirty?.()||window.stopflowService?.dirty?.())&&!await leaveDraft())return;return originalPage.apply(this,arguments)};
+  let replayNavigation=null;
+  document.addEventListener?.('click',event=>{const target=event.target.closest?.('[data-sf70-zone],[data-sf70-card],[data-page],#logout,#home');if(replayNavigation===target){replayNavigation=null;return;}if(!target||root()?.contains(target)||!editor.dirty&&!editor.uncertain&&!window.stopflowBookingsV1?.dirty?.()&&!window.stopflowService?.dirty?.())return;
+   event.preventDefault();event.stopImmediatePropagation();const who=actor();void leaveDraft().then(allowed=>{if(allowed&&actor()===who&&target.isConnected){replayNavigation=target;target.click();replayNavigation=null;}});
+  },true);
   let attempts=0;
   const timer=setInterval(()=>{if(install()||++attempts>=100)clearInterval(timer)},100);
 })();

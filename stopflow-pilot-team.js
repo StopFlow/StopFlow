@@ -23,9 +23,9 @@
   const who = () => typeof session !== 'undefined' ? session?.id || '' : '';
   const validEnvironment = () => window.stopflowEnvironment?.environment === 'development' && window.stopflowEnvironment?.supabaseUrl === TARGET;
   const hasDraft = () => state.dirty || window.stopflowService?.dirty?.() || window.stopflowBookingsV1?.dirty?.();
-  function leave() {
-    if (state.dirty && !confirm('Abandonner les modifications de droits non enregistrées ?')) return false;
-    if (window.stopflowReservations?.confirmLeave && !window.stopflowReservations.confirmLeave()) return false;
+  async function leave() {
+    if (state.dirty && !await window.stopflowDialogs.confirm('Abandonner les modifications de droits non enregistrées ?')) return false;
+    if (window.stopflowReservations?.confirmLeave && !await window.stopflowReservations.confirmLeave()) return false;
     state.dirty = false; return true;
   }
   async function rpc(name, args = {}) {
@@ -108,8 +108,8 @@
     const permitted=new Set((row?.permissions||[]).map(x=>x.permission_key+'|'+x.scope));
     node.innerHTML=`<div class="sfPilotHeading"><div><h1>Équipe</h1><p>${state.context.pending_count||0} demande(s) en attente</p></div><div><button class="btn primary" data-pilot-action="invite">Inviter l’équipe</button><button class="btn ghost" data-pilot-action="refresh-team">Actualiser</button></div></div><p id="sfPilotTeamStatus" role="status">${esc(state.message)}</p><div class="sfPilotTeamGrid"><div class="card"><h2>Demandes et accès</h2>${rows.length?rows.map(x=>`<button class="sfPilotPerson" data-pilot-person="${esc(x.profile_id)}"><strong>${esc(x.first)} ${esc(x.last)}</strong><span>${esc(x.email)}</span><b>${esc(LABELS[x.status])}</b></button>`).join(''):'<p>Aucune demande pour le moment. Le QR code permet de s’inscrire.</p>'}</div><div>${row?`<form id="sfPilotReview" class="card"><fieldset ${state.busy||state.uncertain?'disabled':''}><legend>Accès de ${esc(row.first)} ${esc(row.last)}</legend><label>Profil<select class="input" name="role"><option value="employe" ${row.role==='employe'?'selected':''}>Employé</option><option value="responsable" ${row.role==='responsable'?'selected':''}>Responsable</option></select></label><p>Aucun droit Administrateur n’est attribué par ce formulaire.</p><div class="sfPilotPermissionGrid">${GROUPS.map(([label,scope,items])=>`<section><h3>${esc(label)}</h3>${items.map(([key,title])=>`<label class="sfPilotCheck"><input type="checkbox" data-pilot-permission="${esc(key)}" data-scope="${esc(scope)}"${checked(permitted.has(key+'|'+scope))}>${esc(title)}</label>`).join('')}</section>`).join('')}<section><h3>Réservations</h3>${RESERVATIONS.map(([key,title])=>`<label class="sfPilotCheck"><input type="checkbox" data-pilot-reservation="${key}"${checked(row.reservations?.[key])}>${esc(title)}</label>`).join('')}</section></div><div class="sfPilotDecisions"><button class="btn primary" type="submit">${row.status==='approved'?'Enregistrer les accès':'Accepter avec ces accès'}</button>${row.status!=='approved'?'<button class="btn ghost" type="button" data-pilot-action="reject">Refuser</button>':'<button class="btn danger" type="button" data-pilot-action="revoke">Retirer les accès</button>'}</div></fieldset></form>`:'<div class="card"><p>Sélectionnez une personne pour examiner sa demande ou modifier ses accès.</p></div>'}</div></div>`;
   }
-  function openTeam() {
-    if (!state.context?.is_owner || !leave()) return;
+  async function openTeam() {
+    if (!state.context?.is_owner || !await leave()) return;
     let node=document.getElementById('sfPilotTeam');
     if (!node) {node=document.createElement('section'); node.id='sfPilotTeam'; node.className='page hidden'; document.querySelector('#app main.main').appendChild(node); try {STOPFLOW_STABLE_PAGES.add(node.id);} catch {}}
     page('sfPilotTeam'); if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent='Général — Équipe';
@@ -117,7 +117,7 @@
   }
   async function refreshTeam() {
     if (state.busy) return;
-    if (state.dirty && !state.uncertain && !confirm('Relire les droits enregistrés et abandonner les changements non enregistrés ?')) return;
+    if (state.dirty && !state.uncertain && !await window.stopflowDialogs.confirm('Relire les droits enregistrés et abandonner les changements non enregistrés ?')) return;
     try {await context(); state.uncertain=false; state.dirty=false;
       if (!selectedRow()) state.selected=(state.context.requests||[]).find(x=>x.status==='pending')?.profile_id || state.context.requests?.[0]?.profile_id || '';
       renderTeam(); toolbar();
@@ -138,7 +138,7 @@
   async function review(decision) {
     if (state.busy || state.uncertain || !state.context?.is_owner) return;
     const args=decisionPayload(decision); if (!args) return;
-    if (decision!=='approved' && !confirm(decision==='rejected'?'Refuser cette demande ?':'Retirer tous les accès de cette personne ?')) return;
+    if (decision!=='approved' && !await window.stopflowDialogs.confirm(decision==='rejected'?'Refuser cette demande ?':'Retirer tous les accès de cette personne ?')) return;
     const actor=who();
     state.busy=true; notice('Enregistrement de la décision…');
     document.querySelector('#sfPilotReview fieldset')?.setAttribute('disabled','');
@@ -248,24 +248,24 @@
   },true);
   document.addEventListener('input',event=>{if(event.target.closest?.('#sfPilotReview'))state.dirty=true;});
   document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');});
-  document.addEventListener('click',event=>{
+  document.addEventListener('click',async event=>{
     if(!event.target.closest?.('#sfPilotToolbar .sfPilotMore'))document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');
     const team=event.target.closest?.('[data-sf70-card="users"]');
     if(team){event.preventDefault();event.stopImmediatePropagation();openTeam();return;}
     const person=event.target.closest?.('[data-pilot-person]');
-    if(person){event.preventDefault();if(!state.dirty||confirm('Abandonner les changements non enregistrés ?')){state.selected=person.dataset.pilotPerson;state.dirty=false;state.message='';renderTeam();}return;}
+    if(person){event.preventDefault();if(!state.dirty||await window.stopflowDialogs.confirm('Abandonner les changements non enregistrés ?')){state.selected=person.dataset.pilotPerson;state.dirty=false;state.message='';renderTeam();}return;}
     const action=event.target.closest?.('[data-pilot-action]')?.dataset.pilotAction; if(!action)return;
     event.preventDefault();event.stopImmediatePropagation();document.querySelector('#sfPilotToolbar details')?.removeAttribute('open');
-    if(action==='home'&&leave())window.stopflow070CardNavigation?.openHome();
-    if(action==='back'&&leave())window.stopflow070BackNavigation?.back();
-    if(action==='service-clients')void window.stopflowService?.openClients?.();if(action==='service-manage'&&leave())document.querySelector('#sf91Reservations [data-action=manage]')?.click();if(action==='service-establishment'){const f=document.querySelector('#sf91Reservations .sf91-filters');f?.classList.toggle('sf93-show-establishment');}if(action==='profile')profile();
+    if(action==='home'&&await leave())window.stopflow070CardNavigation?.openHome();
+    if(action==='back'&&await leave())window.stopflow070BackNavigation?.back();
+    if(action==='service-clients')void window.stopflowService?.openClients?.();if(action==='service-manage'&&await leave())document.querySelector('#sf91Reservations [data-action=manage]')?.click();if(action==='service-establishment'){const f=document.querySelector('#sf91Reservations .sf91-filters');f?.classList.toggle('sf93-show-establishment');}if(action==='profile')profile();
     if(action==='install')showQR('install');
     if(action==='invite')showQR('invite');
     if(action==='team')openTeam();
     if(action==='refresh-team')void refreshTeam();
     if(action==='reject')void review('rejected');
     if(action==='revoke')void review('revoked');
-    if(action==='logout'&&leave())document.getElementById('logout')?.click();
+    if(action==='logout'&&await leave())document.getElementById('logout')?.click();
     if(action==='gate-logout'){void client()?.auth.signOut().then(()=>{location.href=PUBLIC_ORIGIN+'/';});}
     if(action==='login'){delete document.body.dataset.pilotEntry;gate?.classList.add('hidden');history.replaceState(null,'',location.pathname);showLogin();}
     if(action==='refresh-account'){void refreshAccount().then(async value=>{if(value?.status==='approved'){const u=await client().auth.getUser();if(u.data?.user)await loadAuthenticatedProfile(u.data.user);}}).catch(()=>gateMessage('Statut non confirmé. Réessayez plus tard.',true));}

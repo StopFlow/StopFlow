@@ -133,7 +133,7 @@
 
   async function toggleEquipment(id){
     const equipment=state.equipment.find(e=>e.id===id);if(!equipment)return;
-    const active=equipment.active===false;if(!active&&!confirm(`Désactiver « ${equipment.name} » ? Il disparaîtra des prochains relevés.`))return;
+    const active=equipment.active===false;if(!active&&!await window.stopflowDialogs.confirm(`Désactiver « ${equipment.name} » ? Il disparaîtra des prochains relevés.`))return;
     try{const {error}=await supabaseClient.from('temperature_equipment').update({active}).eq('id',id);if(error)throw error;await loadDashboard()}catch(error){console.warn('StopFlow 0.7.0 — Températures V3 activation',error);alert(error?.message||'Impossible de modifier cet équipement.')}
   }
 

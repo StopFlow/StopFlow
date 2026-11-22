@@ -325,8 +325,8 @@ function stopFlowRenderRecovery(){
   }
   box.innerHTML=`<div class="flex between wrap"><div><b>Saisie locale à récupérer</b><br><span style="font-size:11px">${escapeHTML(local.order.supplier)} · enregistrée sur cet appareil le ${escapeHTML(stopFlowDateTime(local.savedAt))}</span></div><div class="flex wrap"><button class="btn small secondary" id="stopflowResumeLocal">Reprendre</button><button class="btn small ghost" id="stopflowDeleteLocal">Supprimer la copie</button></div></div>`;
   box.querySelector("#stopflowResumeLocal").onclick=()=>stopFlowResumeOrder(local.order,"local");
-  box.querySelector("#stopflowDeleteLocal").onclick=()=>{
-    if(confirm("Supprimer la copie locale de cette saisie ?"))stopFlowClearLocalDraft();
+  box.querySelector("#stopflowDeleteLocal").onclick=async()=>{
+    if(await window.stopflowDialogs.confirm("Supprimer la copie locale de cette saisie ?"))stopFlowClearLocalDraft();
   };
 }
 

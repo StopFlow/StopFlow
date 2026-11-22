@@ -238,11 +238,11 @@ table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:13px 14p
 
 <script src="stopflow-environment-config.js?v=091-env1"></script>
 <script src="stopflow-environment.js?v=091-env1"></script>
-<script src="supabase-orders.js"></script>
-<script src="supabase-catalog.js"></script>
+<script src="supabase-orders.js?v=20261122-service1"></script>
+<script src="supabase-catalog.js?v=20261122-service1"></script>
 <script src="supabase-article-tools.js"></script>
-<script src="supabase-users.js"></script>
-<script src="supabase-user-delete.js"></script>
+<script src="supabase-users.js?v=20261122-service1"></script>
+<script src="supabase-user-delete.js?v=20261122-service1"></script>
 <script>
 // Text and quoted HTML attributes only; keep the original values for storage and PDF generation.
 function escapeHTML(value){
@@ -628,7 +628,7 @@ function showDetail(id){
  };
  if($("#cancelOrder"))$("#cancelOrder").onclick=async()=>{
    if(!canValidateOrders())return alert("Action non autorisée.");
-   if(!confirm("Annuler ce document ?"))return;
+   if(!await window.stopflowDialogs.confirm("Annuler ce document ?"))return;
    try{
      if(isCloudMode())await updateSharedOrderStatus("cancel_order",o.id);else{o.status="Annulé";save()}
      $("#modal").classList.add("hidden");renderHistory();renderDashboard();
@@ -832,7 +832,7 @@ $("#saveDraft").onclick=async()=>{
 };
 $("#showSummary").onclick=async()=>{
  const missing=Object.values(current.stocks).some(v=>v===null||v==="");
- if(missing&&!confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;
+ if(missing&&!await window.stopflowDialogs.confirm("Certains articles ne sont pas saisis. Ils seront considérés à 0. Continuer ?"))return;
  const filled=Object.values(current.stocks).filter(v=>v!==null&&v!=="").length,total=activeArticles().length;
  if(isEmployee()&&filled===total){
    try{await upsertOrder(orderSnapshot("À valider"));alert("Inventaire envoyé pour validation.");page("dashboard")}
@@ -869,25 +869,26 @@ $("#saveSettings").onclick=async()=>{
 };
 $("#exportData").onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="StopFlow_v0.3.2_donnees.json";a.click();URL.revokeObjectURL(a.href)};
 $("#importData").onchange=e=>{if(isCloudMode()){e.target.value="";return alert("L’import global est désactivé en mode partagé afin de protéger les données Supabase.")}const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=migrate(r.result);save();alert("Import terminé.");page("dashboard")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
-$("#resetData").onclick=()=>{if(isCloudMode())return alert("La réinitialisation est désactivée en mode partagé afin de protéger les données Supabase.");if(confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
+$("#resetData").onclick=async()=>{if(isCloudMode())return alert("La réinitialisation est désactivée en mode partagé afin de protéger les données Supabase.");if(await window.stopflowDialogs.confirm("Effacer toutes les données locales et revenir à la démonstration initiale ?")){db=defaultData();save();location.reload()}};
 
 // The pilot gate must install before restoring an Auth session.
 window.stopflowPilotStart = () => bootstrapAuth();
 </script>
 <link rel="stylesheet" href="stopflow-091-reservations.css?v=20261111-booking-v1">
-<script defer src="stopflow-091-reservations.js?v=20261119-touch1"></script>
-<script defer src="stopflow-092-bookings.js?v=20261117-service-r1"></script>
-<link rel="stylesheet" href="stopflow-093-service.css?v=20261117-service-r3">
-<script defer src="stopflow-093-service-model.js?v=20261121-service2"></script>
-<link rel="stylesheet" href="stopflow-094-plan-editor.css?v=20261121-plan2">
-<script defer src="stopflow-095-plan-reference.js?v=20261121-plan2"></script>
-<script defer src="stopflow-094-plan-editor.js?v=20261121-plan2"></script>
-<script defer src="stopflow-093-service.js?v=20261121-service2"></script>
-<script defer src="stopflow-pilot-password.js?v=20261119-touch1"></script>
+<script defer src="stopflow-097-dialogs.js?v=20261122-service1"></script>
+<script defer src="stopflow-091-reservations.js?v=20261122-service1"></script>
+<script defer src="stopflow-092-bookings.js?v=20261122-service1"></script>
+<link rel="stylesheet" href="stopflow-093-service.css?v=20261122-service1">
+<script defer src="stopflow-093-service-model.js?v=20261122-service1"></script>
+<link rel="stylesheet" href="stopflow-094-plan-editor.css?v=20261122-service1">
+<script defer src="stopflow-095-plan-reference.js?v=20261122-service1"></script>
+<script defer src="stopflow-094-plan-editor.js?v=20261122-service1"></script>
+<script defer src="stopflow-093-service.js?v=20261122-service1"></script>
+<script defer src="stopflow-pilot-password.js?v=20261122-service1"></script>
 <script defer src="stopflow-pilot.js?v=20261117-pilot1"></script>
 <link rel="stylesheet" href="stopflow-pilot-team.css?v=20261118-team1">
 <script defer src="stopflow-qr.js?v=2.0.4"></script>
-<script defer src="stopflow-pilot-team.js?v=20261121-service2"></script>
-<link rel="stylesheet" href="stopflow-096-service-pilot.css?v=20261121-service2">
+<script defer src="stopflow-pilot-team.js?v=20261122-service1"></script>
+<link rel="stylesheet" href="stopflow-096-service-pilot.css?v=20261122-service1">
 
 </body></html>

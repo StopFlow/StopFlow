@@ -253,7 +253,7 @@
     if(!managerAccess())return alert("Cette action est réservée aux Responsables et Administrateurs.");
     const note=String(document.querySelector(`[data-resolution-note="${itemId}"]`)?.value||"").trim();
     if(!note)return alert("Indiquez l’action réalisée avant de résoudre l’anomalie.");
-    if(!confirm("Marquer cette anomalie comme résolue ?"))return;
+    if(!await window.stopflowDialogs.confirm("Marquer cette anomalie comme résolue ?"))return;
     try{
       const {data,error}=await supabaseClient.rpc("resolve_checklist_anomaly",{p_item_id:itemId,p_resolution_note:note});
       if(error)throw error;

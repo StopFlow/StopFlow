@@ -221,7 +221,7 @@
     document.querySelector("#sf60ResetPasswordButton").onclick=async()=>{
       const password=String(input.value||"");
       if(password.length<10)return alert("Le mot de passe temporaire doit contenir au moins 10 caractères.");
-      if(!confirm(`Réinitialiser le mot de passe de ${user.email} ?`))return;
+      if(!await window.stopflowDialogs.confirm(`Réinitialiser le mot de passe de ${user.email} ?`))return;
       const button=document.querySelector("#sf60ResetPasswordButton");
       button.disabled=true;button.textContent="Réinitialisation…";
       try{

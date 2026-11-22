@@ -175,7 +175,7 @@
       button.onclick=async()=>{
         const protectedAccount=user.protege===true;
         const actif=protectedAccount?user.actif:document.querySelector("#editUserActive").checked;
-        if(user.actif&&!actif&&!confirm("Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow."))return;
+        if(user.actif&&!actif&&!await window.stopflowDialogs.confirm("Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow."))return;
         const payload={id:user.id,prenom:document.querySelector("#editUserFirstName").value.trim(),nom:document.querySelector("#editUserLastName").value.trim(),role:protectedAccount?user.role:document.querySelector("#editUserRole").value,actif};
         try{Object.assign(payload,readAccess("edit",payload.role))}catch(error){return alert(error.message)}
         button.disabled=true;button.textContent="Enregistrement…";

@@ -391,7 +391,7 @@
     const template=state.templates.find(item=>item.id===templateId);
     if(!template)return alert("Checklist introuvable.");
     if(!session.id)return alert("Une connexion Supabase est nécessaire.");
-    if(!confirm(`Commencer « ${template.name} » ?`))return;
+    if(!await window.stopflowDialogs.confirm(`Commencer « ${template.name} » ?`))return;
     try{
       const {data:run,error}=await supabaseClient.from("checklist_runs").insert({
         template_id:template.id,
@@ -509,7 +509,7 @@
       alert(`${missing.length} tâche(s) obligatoire(s) ne sont pas cochée(s).`);
       return;
     }
-    if(!confirm("Terminer cette checklist ? Elle sera enregistrée comme validée dans l’historique."))return;
+    if(!await window.stopflowDialogs.confirm("Terminer cette checklist ? Elle sera enregistrée comme validée dans l’historique."))return;
     const now=new Date().toISOString();
     const {error}=await supabaseClient.from("checklist_runs").update({
       status:"validee",completed_at:now,validated_by:null,validated_by_name:null,validated_at:null,validator_note:"",updated_at:now

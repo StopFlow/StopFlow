@@ -38,7 +38,7 @@ function harness(status='approved',hash='') {
   }groups++;
   const h=harness();assert.equal(h.bootstrap,1);await h.box.loadAuthenticatedProfile({id:'owner'});assert.equal(h.original,1);
   assert.equal(h.calls[0][0],'pilot_team_context');groups++;
-  h.click('home');h.click('back');h.click('install');assert(h.calls.includes('home')&&h.calls.includes('back')&&h.calls.includes('dialog'));
+  h.click('home');h.click('back');h.click('install');await new Promise(setImmediate);assert(h.calls.includes('home')&&h.calls.includes('back')&&h.calls.includes('dialog'));
   assert(h.nodes.get('sfPilotToolbar').innerHTML.includes('Mon profil'));assert(h.nodes.get('sfPilotToolbar').innerHTML.includes('Déconnexion'));groups++;
   const a=harness('activation_required','#pilot_activation='+'a'.repeat(64)+'&type=invite');
   assert.equal(a.bootstrap,0);assert(a.calls.includes('strip-link'));assert.equal(a.box.document.body.dataset.pilotEntry,'activation');

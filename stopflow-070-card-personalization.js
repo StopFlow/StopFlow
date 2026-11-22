@@ -218,7 +218,7 @@
 
   async function resetZone(zone){
     if(!state.profileId||typeof supabaseClient==="undefined"||!supabaseClient)return;
-    if(!confirm("Réinitialiser l’ordre et réafficher toutes les cartes de cet espace ?"))return;
+    if(!await window.stopflowDialogs.confirm("Réinitialiser l’ordre et réafficher toutes les cartes de cet espace ?"))return;
     status("Réinitialisation…");
     const {error}=await supabaseClient.from("profile_card_preferences").delete().eq("profile_id",state.profileId).eq("zone",zone);
     if(error){console.warn("StopFlow 0.7.0 — réinitialisation cartes",error);status("Erreur");return}

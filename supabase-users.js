@@ -145,7 +145,7 @@ function showEditUserModal(id){
   $("#saveUserButton").onclick=async()=>{
     const button=$("#saveUserButton");
     const actif=protectedAccount?user.actif:$("#editUserActive").checked;
-    if(user.actif&&!actif&&!confirm("Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow."))return;
+    if(user.actif&&!actif&&!await window.stopflowDialogs.confirm("Désactiver ce compte ? La personne ne pourra plus se connecter à StopFlow."))return;
     const payload={
       id:user.id,
       prenom:$("#editUserFirstName").value.trim(),
