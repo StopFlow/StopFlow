@@ -94,7 +94,8 @@
           "phases": 4
         }
       ]
-    }
+    },
+    "relachement_hors_table_sans_dernier_pointermove": "PASS_CHROMIUM_ET_WEBKIT"
   },
   "pilot": {
     "migration": "service_initial_manual_placement_20261122",
