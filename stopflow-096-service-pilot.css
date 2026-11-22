@@ -104,3 +104,18 @@ body:has(#sf93Service) #sfPilotToolbar{flex-shrink:0}
 #sf93Service .sf93-booking-meta .sf93-presence.arrived{background:#cceeea}
 #sf93Service .sf93-booking-meta .sf93-presence.departed{background:#f0f0f2}
 #sf93Service .sf93-reservations:has(.sf93-placement) .sf93-search,#sf93Service .sf93-reservations:has(.sf93-closure-panel) .sf93-search{display:none}
+/* One manual selection flow for form, button and booking drag. */
+#sf93Service .sf93-placement{border:2px solid #16736b;border-radius:14px;padding:12px;background:#effaf7}
+#sf93Service .sf93-placement-actions{display:flex;flex-direction:column;gap:8px}
+#sf93Service .sf93-placement-actions .btn,#sf93Service .sf93-form-placement .btn{min-height:46px;white-space:normal;line-height:1.3;text-align:center;justify-content:center}
+#sf93Service [data-service-action=placement-confirm]{background:#12675f;color:white;font-weight:750}
+#sf93Service .sf93-new-selection{font-size:16px;color:#084d46}
+#sf93Service .sf93-selection-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 0;min-width:0}
+#sf93Service .sf93-selection-chips span{display:inline-flex;padding:6px 9px;border:1px solid #16736b;border-radius:9px;background:white;color:#084d46;font-weight:700}
+#sf93Service .sf93-selection-check{pointer-events:none;fill:#12675f}
+#sf93Service .sf93-selection-check text{fill:white;font-size:17px;font-weight:800}
+#sf93Service .sf93-form-placement{grid-column:1/-1;border:1px solid #c0d9d2;border-radius:12px;padding:10px;min-width:0}
+#sf93Service .sf93-booking-grip{touch-action:none;-webkit-touch-callout:none;cursor:grab;-webkit-user-select:none;user-select:none}
+#sf93Service .sf93-grip-hit{pointer-events:all}
+#sf93Service .sf93-drop-target .sf93-table-top{stroke:#e17c00;stroke-width:5;fill:#fff2cf}
+#sf93Service .sf93-drag-hint{font-size:12px;line-height:1.3;margin:4px 10px;min-height:16px;color:#365661}

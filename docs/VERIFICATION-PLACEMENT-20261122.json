@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-22",
+  "edition": "20261122-placement1",
+  "database": {
+    "moteur": "PG17_JETABLE",
+    "groupes": 14,
+    "auth": "SIMULEE",
+    "resultat": "PASS",
+    "nettoyage": "CLUSTER_ARRETE_REPERTOIRE_SUPPRIME"
+  },
+  "dom": {
+    "groupes": 33,
+    "resultat": "PASS"
+  },
+  "release": {
+    "groupes": 4,
+    "resultat": "PASS"
+  },
+  "browser": {
+    "backend": "AUTH_ET_RPC_HTTP_SIMULES",
+    "touch": {
+      "chromium": "CDP_TOUCH_EVENTS_NATIFS",
+      "webkit": "POINTER_EVENTS_TACTILES_SYNTHETIQUES_DANS_DOM_REEL"
+    },
+    "placement": [
+      {
+        "type": "report",
+        "engine": "chromium",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "156.0.8078.4",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "CHOIX_FORMULAIRE_ENREGISTRE_ET_RELU",
+          "GESTE_COURT_ANNULE_HORS_DESTINATION_SANS_ECRITURE",
+          "GLISSER_ZOOME_PROPOSE_PUIS_REMPLACE_SOURCE_SEULE_ET_RELIT",
+          "SOURCE_PARTAGEE_CHOIX_EXPLICITE_ET_ABANDON_SANS_ECRITURE",
+          "PARTAGE_REFUSE_SANS_ECRITURE_PUIS_CONFIRMATION_EXPLICITE",
+          "GEOMETRIE_IDENTIFIANTS_ET_DROITS_INCHANGES"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      },
+      {
+        "type": "report",
+        "engine": "webkit",
+        "profil": "PROPRIETAIRE_SIMULE",
+        "version": "27.2",
+        "etapes": [
+          "CONNEXION_FICTIVE_SDK_REEL_ENVELOPPE_COMPLETE",
+          "DEUX_BANDEAUX_PLAN_ENREGISTRE_UNIQUE_25_TABLES_3_EMP",
+          "CHOIX_FORMULAIRE_ENREGISTRE_ET_RELU",
+          "GESTE_COURT_ANNULE_HORS_DESTINATION_SANS_ECRITURE",
+          "GLISSER_ZOOME_PROPOSE_PUIS_REMPLACE_SOURCE_SEULE_ET_RELIT",
+          "SOURCE_PARTAGEE_CHOIX_EXPLICITE_ET_ABANDON_SANS_ECRITURE",
+          "PARTAGE_REFUSE_SANS_ECRITURE_PUIS_CONFIRMATION_EXPLICITE",
+          "GEOMETRIE_IDENTIFIANTS_ET_DROITS_INCHANGES"
+        ],
+        "erreurs": [],
+        "ressources_echec": [],
+        "resultat": "PASS",
+        "lectures_inattendues": [],
+        "nettoyage": "CONTEXTE_ET_NAVIGATEUR_FERMES"
+      }
+    ],
+    "regression": {
+      "resultat": "PASS",
+      "tests": [
+        {
+          "engine": "chromium",
+          "profil": "PROPRIETAIRE_SIMULE",
+          "resultat": "PASS",
+          "phases": 18
+        },
+        {
+          "engine": "chromium",
+          "profil": "EMPLOYE",
+          "resultat": "PASS",
+          "phases": 4
+        },
+        {
+          "engine": "webkit",
+          "profil": "PROPRIETAIRE_SIMULE",
+          "resultat": "PASS",
+          "phases": 18
+        },
+        {
+          "engine": "webkit",
+          "profil": "EMPLOYE",
+          "resultat": "PASS",
+          "phases": 4
+        }
+      ]
+    }
+  },
+  "pilot": {
+    "migration": "service_initial_manual_placement_20261122",
+    "function_md5": "c3ce22e7684a6f8a487d7f30ad4bbc6d",
+    "anonymous_execute": false,
+    "authenticated_execute": true,
+    "business_data_and_membership_fingerprints_unchanged": true,
+    "written_test_bookings": false
+  },
+  "physical_ipad": "NON_VERIFIE",
+  "project_ref": "mmrdpyhoawwoplbzqwag"
+}
