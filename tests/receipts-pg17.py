@@ -17,7 +17,7 @@ def main():
     sql(src)
    sql('ALTER TABLE public.suppliers ENABLE ROW LEVEL SECURITY;ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;GRANT SELECT,INSERT,UPDATE ON public.suppliers,public.articles TO authenticated;')
    sql("CREATE SCHEMA storage;GRANT USAGE,CREATE ON SCHEMA storage TO postgres;GRANT USAGE ON SCHEMA storage TO authenticated;CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);ALTER TABLE storage.buckets OWNER TO postgres;CREATE TABLE storage.objects(bucket_id text,name text);ALTER TABLE storage.objects OWNER TO postgres;ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;GRANT SELECT,INSERT ON storage.objects TO authenticated;")
-   for f in ['receipts-supplier-scopes.sql','receipts-documents.sql']:stage=f;sql('SET SESSION AUTHORIZATION postgres;'+(ROOT/'supabase/pilot'/f).read_text(),label=f)
+   for f in ['receipts-supplier-scopes.sql','receipts-documents.sql','receipts-supplier-edit-scope.sql']:stage=f;sql('SET SESSION AUTHORIZATION postgres;'+(ROOT/'supabase/pilot'/f).read_text(),label=f)
    owner,cuisine,salle,outsider=[uid() for _ in range(4)]
    for u in [owner,cuisine,salle,outsider]:sql(f"INSERT INTO auth.users VALUES('{u}','{u}@example.invalid');INSERT INTO public.profiles(id,email,prenom,nom,role,actif) VALUES('{u}','{u}@example.invalid','Fictif','Fixture','employe',true)")
    for u,deps,keys in [(owner,['cuisine','salle','nettoyage'],['inventory.use','articles.manage','suppliers.manage','orders.manage','history.view']),(cuisine,['cuisine'],['inventory.use']),(salle,['salle'],['inventory.use'])]:
@@ -42,6 +42,13 @@ def main():
    r=op('inventory_save',dict(id=uid(),lines=[dict(product_id=ps['id'],stock='0',target='8',offer_id=offer['id'])],notes={}),department='salle',who=salle)
    ctx=op('context',{},department='salle',who=salle);r=op('prepare',dict(id=r['id'],version=r['revision'],lines=r['payload']['lines'],notes={},versions={x['id']:x['version'] for key in ['products','offers','suppliers'] for x in ctx[key]}),department='salle',who=salle);check('commande_partagee_conserve_salle',op('documents',{},department='salle',who=salle)[0]['order']['department']=='salle')
    denied('rattachement_utilise_non_supprime',lambda:op('supplier',dict(id=vendor,version=1,name='Fournisseur fictif 2',order_email='commande@example.invalid',departments=['cuisine'])),'23514')
+   detachable=op('supplier',dict(id=uid(),name='Rattachement modifiable fictif',order_email='fixture@example.invalid',departments=['cuisine','salle']))
+   detached=op('supplier',dict(id=detachable['id'],version=detachable['version'],name='Rattachement modifiable fictif',order_email='fixture@example.invalid',departments=['salle']),department='salle')
+   edited=op('supplier',dict(id=detachable['id'],version=detached['version'],name='Identité préservée fictive',order_email='fixture@example.invalid',departments=['salle']),department='salle')
+   check('retrait_scope_inutilise_fiche_toujours_modifiable',edited['id']==detachable['id'])
+   sql(f"INSERT INTO public.profile_permissions(profile_id,permission_key,scope) VALUES('{salle}','suppliers.manage','salle')")
+   sql('BEGIN;SET LOCAL ROLE authenticated;SET LOCAL request.jwt.claim.sub='+q(salle)+";UPDATE public.suppliers SET contact_name='Contact fictif' WHERE id="+q(detachable['id'])+";COMMIT;")
+   check('contact_legacy_modifiable_selon_scopes_actuels',sql('SELECT contact_name FROM public.suppliers WHERE id='+q(detachable['id']))=='Contact fictif')
    stage='RECEIPT';doc=call('create',dict(id=uid(),kind='delivery'),who=cuisine)
    line=dict(department='cuisine',type='product',product_id=p['id'],description='Produit fictif',supplier_reference='C-1',received_quantity='2',temperature='',conformity='',pack_price='')
    def save(d,lines,**values):return call('save',dict(id=d['id'],version=d['revision'],departments=values.pop('departments',['cuisine']),document={'kind':d['kind'],'supplier_id':vendor,'number':'F-'+d['id'],'date':'2026-11-23','received_at':'2026-11-23T10:00:00+01:00','lines':lines,**values}))
