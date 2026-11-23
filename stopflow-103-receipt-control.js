@@ -45,13 +45,14 @@ async function execute(flow){
  if(blob){if(await hash(blob)!==file.sha256)throw Error('ORIGINAL_HASH_MISMATCH');const r=await Promise.race([supabaseClient.storage.from('pilot-receipts-private').upload(file.path,new Uint8Array(await blob.arrayBuffer()),{contentType:file.mime,upsert:false}),new Promise((_,reject)=>setTimeout(()=>reject(Error('ORIGINAL_UPLOAD_UNCONFIRMED')),30000))]);if(r.error){try{await privateBytes(file);}catch{throw r.error;}}}
  const privateOriginal=await privateBytes(file);same(a,d);cap.stage='uploaded';storeCapture();
  let fresh=await H.api('read',{id:cap.result.document_id});same(a,d);S.tab='receipt';H.currentData(fresh);S.dirty=false;if(file.mime.startsWith('image/')){if(S.objectUrl)URL.revokeObjectURL(S.objectUrl);S.objectUrl=URL.createObjectURL(privateOriginal);S.previewName=file.name;}
- if(window.stopflowReceiptReading&&['start','catalogue','append'].includes(cap.flow)){const readable=await window.stopflowReceiptReading.readAll();if(cap.flow==='start'&&readable!==false)await window.stopflowReceiptReading.start();else if(cap.flow==='catalogue')window.stopflowReceiptReading.mode='catalogue';fresh=S.doc;}
+ if(window.stopflowReceiptReading&&['start','catalogue','append'].includes(cap.flow)){const readable=await window.stopflowReceiptReading.readAll();cap.reading_result=readable;if(cap.flow==='start'&&readable?.can_start===true)await window.stopflowReceiptReading.start();else if(cap.flow==='catalogue')window.stopflowReceiptReading.mode='catalogue';fresh=S.doc;}
  else if(cap.flow==='start'&&fresh.receipt_state==='awaiting_control'){
  if(!cap.start_payload){cap.start_payload={id:fresh.id,version:fresh.revision};storeCapture();}
  await write('start',cap.start_payload,cap.start_id);
  if(!S.data.lines.length)S.data.lines=[window.stopflowReceiptsModel.line(d)];
  }
  if(cap.flow==='only'){S.doc=null;S.data=null;S.tab='documents';await H.refreshList();H.status(fresh.receipt_state==='complete'?'Document déjà enregistré : son contrôle terminé est conservé. Aucun dossier en double.':'Original enregistré — À contrôler. La réception et sa fiche restent disponibles dans les documents enregistrés.');}
+ else if(cap.reading_result)H.status(window.stopflowReceiptReading.readMessage(cap.reading_result),!cap.reading_result.can_start);
  else if(cap.flow==='append')H.status('Page ajoutée explicitement à ce document. Aucun autre dossier créé.');
  else if(fresh.receipt_state==='complete')H.status('Document déjà enregistré : fiche et contrôle terminé conservés, sans doublon.');else H.status('Document associé ouvert. Vérifiez les lignes proposées ; quantité reçue, température et conformité restent à renseigner. Le contrôle n’est pas terminé.');
  await photo('delete',cap.blobKey);same(a,d);C.capture=null;storeCapture();C.picking=false;
@@ -64,7 +65,7 @@ async function saveControl(){if(C.pendingPDF.current)throw Error('RECONCILIATION
 async function generate(replay=false){
  if(C.running||H.S.busy)return;C.running=true;H.render();const S=H.S,a=S.actor,d=S.dep,receipt=C.pendingPDF;let i;
  try{
- if(!replay){if(receipt.current)throw Error('RECONCILIATION_REQUIRED');if(!await stopflowDialogs.confirm('Valider ce contrôle humain et produire le bon PDF avec ses originaux en annexe ?'))return;if(S.dirty)await H.save();const id=uuid();i=receipt.begin('pdf',{department:d,id:S.doc.id,version:S.doc.revision,request_id:id},id);}else{i=receipt.current;if(!i)return;}
+ if(!replay){if(receipt.current)throw Error('RECONCILIATION_REQUIRED');if(!await stopflowDialogs.confirm('Terminer le contrôle humain ? Vous confirmez les quantités du bon pour les lignes sans écart, les emballages et les températures. Les lignes sans réserve seront déclarées conformes. Le PDF conservera les originaux en annexe.'))return;if(window.stopflowReceiptReading&&!await window.stopflowReceiptReading.beforeFinish())return;if(S.dirty)await H.save();const id=uuid();i=receipt.begin('pdf',{department:d,id:S.doc.id,version:S.doc.revision,request_id:id},id);}else{i=receipt.current;if(!i)return;}
  H.status('Production et enregistrement du bon de contrôle… Les originaux restent inchangés.');
  const auth=await supabaseClient.auth.getSession();same(a,d);const token=auth.data?.session?.access_token;if(!token)throw Error('CONTROL_PDF_UNCONFIRMED');
  const response=await fetch('/api/receipt-control-pdf',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(i.payload),signal:AbortSignal.timeout(60000)});let out;try{out=await response.json();}catch{throw Error('CONTROL_PDF_UNCONFIRMED');}same(a,d);

@@ -5,14 +5,14 @@ const decimal=s=>/^\d+(?:[.,]\d+)?$/.test(String(s).trim())?String(s).trim():'';
 function parse(rows,page=1){
  const out={supplier_candidate:'',number:'',date:'',lines:[],unclassified:[],review_required:true};let columns=null,previous=null;
  for(const row of rows){const text=row.words.map(w=>w.text).join(' '),s=clean(text);let m;
-  if((m=text.match(/fournisseur\s*:\s*(.+)/i)))out.supplier_candidate=m[1].trim();
-  if((m=text.match(/(?:bon(?:\s+de\s+livraison)?|facture)\s*(?:n[°o.]?\s*)?[:#]\s*(\S+)/i)))out.number=m[1];
-  if((m=text.match(/(?:date[^:]*:)\s*(\d{2})[/.\-](\d{2})[/.\-](\d{4})/i)))out.date=`${m[3]}-${m[2]}-${m[1]}`;
-  if((m=text.match(/(?:date[^:]*:)\s*(\d{4}-\d{2}-\d{2})/i)))out.date=m[1];
-  if(/(?:designation|description)/.test(s)&&/(?:ref|code)/.test(s)&&/(?:qte|quantite)/.test(s)){
-   columns=[];for(const w of row.words){const t=clean(w.text).replace(/[.:]/g,'');let key=/^(ref|reference|code)/.test(t)?'supplier_reference':/^(designation|description|article)/.test(t)?'description':/^(qte|quantite)/.test(t)?'quantity':/^(unite|unites|un|u|colis|cond|conditionnement)$/.test(t)?'unit':/^(pu|prix)$/.test(t)?'unit_price':/^(montant|total)$/.test(t)?'line_total':null;if(key&&!columns.some(c=>c.key===key))columns.push({key,x:w.bbox.x0-12});}columns.sort((a,b)=>a.x-b.x);columns.header=text;const pu=columns.find(c=>c.key==='unit_price'),next=pu&&columns.find(c=>c.x>pu.x);const priceHeading=pu?row.words.filter(w=>w.bbox.x0>=pu.x&&w.bbox.x0<(next?.x||Infinity)).map(w=>w.text).join(' '):'';columns.priceBasis=/\bHT\b/i.test(priceHeading)&&!/\bTTC\b/i.test(priceHeading)?'HT':/\bTTC\b/i.test(priceHeading)&&!/\bHT\b/i.test(priceHeading)?'TTC':'';previous=null;continue;
+  if((m=text.match(/(?:fournisseur|exp[eé]diteur)\s*:\s*(.+)/i)))out.supplier_candidate=m[1].trim();
+  if((m=text.match(/(?:bon(?:\s+de\s+livraison)?|facture|bordereau)\s*(?:n[°o.]?\s*[:#]?|[:#])\s*(\S+)/i)))out.number=m[1];
+  if((m=text.match(/(?:date(?:\s+du\s+bon)?\s*:?\s*)(\d{2})[/.\-](\d{2})[/.\-](\d{4})/i)))out.date=`${m[3]}-${m[2]}-${m[1]}`;
+  if((m=text.match(/(?:date(?:\s+du\s+bon)?\s*:?\s*)(\d{4}-\d{2}-\d{2})/i)))out.date=m[1];
+  if(/(?:designation|description|libelle|produit)/.test(s)&&/(?:ref|code|article)/.test(s)&&/(?:qte|quantite|livre|commande)/.test(s)){
+   out.unclassified=[];columns=[];for(const w of row.words){const t=clean(w.text).replace(/[.:]/g,'');let key=/^(ref|reference|code)/.test(t)?'supplier_reference':/^(designation|description|libelle|produit)/.test(t)?'description':/^(qte|quantite|livre|commande)$/.test(t)?'quantity':/^(unite|unites|un|u|uv|colis|cond|conditionnement)$/.test(t)?'unit':/^(pu|prix|prixnet)$/.test(t)?'unit_price':/^(montant|total)$/.test(t)?'line_total':null;if(key&&!columns.some(c=>c.key===key))columns.push({key,x:w.bbox.x0-12});}columns.sort((a,b)=>a.x-b.x);columns.header=text;const pu=columns.find(c=>c.key==='unit_price'),next=pu&&columns.find(c=>c.x>pu.x);const priceHeading=pu?row.words.filter(w=>w.bbox.x0>=pu.x&&w.bbox.x0<(next?.x||Infinity)).map(w=>w.text).join(' '):'';columns.priceBasis=/\bHT\b/i.test(priceHeading)&&!/\bTTC\b/i.test(priceHeading)?'HT':/\bTTC\b/i.test(priceHeading)&&!/\bHT\b/i.test(priceHeading)?'TTC':'';previous=null;continue;
   }
-  if(!columns)continue;
+  if(!columns){if(text.trim())out.unclassified.push({page,row:row.index,text:text.slice(0,300)});continue;}
   if(/^(sous[ -]?total|total\b|tva\b|net\s+a\s+payer|merci\b|page\s+\d)/.test(s)){previous=null;continue;}
   const fields={},weak=[];for(const w of row.words){const col=columns.filter(c=>w.bbox.x0>=c.x).at(-1);if(col){fields[col.key]=(fields[col.key]?fields[col.key]+' ':'')+w.text;if(w.confidence<70&&!weak.includes(col.key))weak.push(col.key);}}
   if(!fields.supplier_reference&&fields.description&&previous&&!fields.quantity&&!fields.unit_price&&!fields.line_total){previous.description+=' '+fields.description;previous.source_rows.push(row.index);continue;}

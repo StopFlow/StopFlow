@@ -14,7 +14,7 @@ async function recognize(bytes,rotation=0){
   const words=(result.data.blocks||[]).flatMap(b=>b.paragraphs||[]).flatMap(p=>p.lines||[]).flatMap(l=>l.words||[]);const rows=rowsFromWords(words),candidates=parse(rows);
   const heights=words.map(w=>w.bbox.y1-w.bbox.y0).sort((a,b)=>a-b);if(words.length>=8&&heights[Math.floor(heights.length/2)]<10)return {status:'RECAPTURE_REQUIRED',quality:{...quality,accepted:false,reasons:['Texte trop petit dans la photo : rapprochez-vous en conservant toute la feuille.']},candidates:null,engine:'Tesseract.js 6.0.1 / fra',manual_entry:true};
   if(words.length<8||result.data.confidence<25)return {status:'RECAPTURE_REQUIRED',quality:{...quality,accepted:false,reasons:['Le texte ne peut pas être lu avec assez de fiabilité : rapprochez-vous, éclairez et reprenez la feuille entière.']},candidates:null,engine:'Tesseract.js 6.0.1 / fra',manual_entry:true};
-  return {status:'OCR_EXTRACTED_REVIEW_REQUIRED',quality,candidates,text:result.data.text.slice(0,60000),confidence:result.data.confidence,engine:'Tesseract.js 6.0.1 / fra',manual_entry:true};
+  return {status:candidates.lines.length?'OCR_EXTRACTED_REVIEW_REQUIRED':'NO_PRODUCTS_RECOGNIZED',recognized_count:candidates.lines.length,quality,candidates,text:result.data.text.slice(0,60000),confidence:result.data.confidence,engine:'Tesseract.js 6.0.1 / fra',manual_entry:true};
  }finally{closed=true;clearTimeout(timer);await worker?.terminate();}
 }
 module.exports={recognize};
