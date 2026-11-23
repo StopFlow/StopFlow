@@ -1,0 +1,1 @@
+{"name":"stopflow-pilot","private":true,"version":"0.0.0","engines":{"node":">=22"},"dependencies":{"unpdf":"1.4.0"}}

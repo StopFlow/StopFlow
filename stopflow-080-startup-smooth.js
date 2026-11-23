@@ -2,7 +2,7 @@
 (function(){
   if(window.stopflow080StartupSmooth?.active)return;
 
-  const state={timer:null,startedAt:0,observing:false};
+  const state={timer:null,startedAt:0,observing:false,wasHidden:true};
   const app=()=>document.getElementById('app');
 
   function injectStyles(){
@@ -97,9 +97,11 @@
     ensureScreen();
     if(!state.observing){
       state.observing=true;
+      state.wasHidden=root.classList.contains('hidden');
       new MutationObserver(()=>{
-        if(root.classList.contains('hidden'))reset();
-        else begin();
+        const hidden=root.classList.contains('hidden');
+        if(hidden!==state.wasHidden){state.wasHidden=hidden;if(hidden)reset();else begin();}
+        // Responsive layout classes are not a new login. Keep the current route/draft.
       }).observe(root,{attributes:true,attributeFilter:['class']});
     }
     if(!root.classList.contains('hidden'))begin();

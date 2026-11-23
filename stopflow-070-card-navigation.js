@@ -14,6 +14,7 @@
 
   const DEPARTMENT_CARDS={
     cuisine:[
+      {id:"receipts",key:"inventory.use",title:"Réception marchandises",description:"Contrôler les livraisons et retrouver les documents",icon:"▣",tone:"blue",action:"receipts"},
       {key:"inventory.use",title:"Inventaires",description:"Compter les produits puis préparer les commandes",icon:"▦",tone:"blue",action:"inventory"},
       {key:"checklists.run",title:"Checklists",description:"Ouverture, fermeture et procédures",icon:"✓",tone:"green",action:"checklists"},
       {key:"temperatures.use",title:"Températures",description:"Encoder et consulter les relevés",icon:"°",tone:"amber",action:"temperatures"},
@@ -22,6 +23,7 @@
       {key:"monthly_suggestions.view",title:"Suggestions du mois",description:"Consulter les suggestions Cuisine",icon:"✧",tone:"violet",action:"suggestions-month"}
     ],
     salle:[
+      {id:"receipts",key:"inventory.use",title:"Réception marchandises",description:"Contrôler les livraisons et retrouver les documents",icon:"▣",tone:"blue",action:"receipts"},
       {key:"inventory.use",title:"Inventaires",description:"Compter les produits puis préparer les commandes",icon:"▦",tone:"blue",action:"inventory"},
       {key:"checklists.run",title:"Checklists",description:"Ouverture, fermeture et procédures",icon:"✓",tone:"green",action:"checklists"},
       {key:"history.view",title:"Historique",description:"Inventaires et commandes du département",icon:"◷",tone:"slate",action:"history"}
@@ -188,7 +190,7 @@
     const cards=zoneCards(zone);
     node.innerHTML=`<div class="sf70-zone-head"><div><h2>${esc(ZONES[zone].label)}</h2><p class="muted">Choisissez directement l’action à effectuer.</p></div><span class="sf70-zone-count">${cards.length} fonction${cards.length>1?"s":""}</span></div>${cards.length?`<div class="sf70-card-grid">${cards.map(card=>cardHtml(card)).join("")}</div>`:'<div class="sf70-empty">Aucune fonction n’est autorisée dans cet espace.</div>'}`;
     node.querySelectorAll("[data-sf70-card]").forEach(button=>{
-      const card=cards.find(item=>(item.key||item.target)===button.dataset.sf70Card);
+      const card=cards.find(item=>(item.id||item.key||item.target)===button.dataset.sf70Card);
       if(card)button.onclick=()=>runDepartmentCard(zone,card);
     });
   }
@@ -229,6 +231,7 @@
   function runDepartmentCard(zone,card){
     runtime.currentZone=zone;
     clearInventoryFocus();
+    if(card.action==="receipts")return window.stopflowReceipts?.open(zone);
     if(card.action==="inventory")return openInventory(zone);
     if(card.action==="checklists")return S.action("checklists",zone);
     if(card.action==="history")return S.action("history",zone);
