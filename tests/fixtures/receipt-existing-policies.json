@@ -1,0 +1,98 @@
+[
+  {
+    "cmd": "INSERT",
+    "qual": null,
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "articles",
+    "permissive": "PERMISSIVE",
+    "policyname": "articles_insert_permissions",
+    "schemaname": "public",
+    "with_check": "(private.has_permission('articles.manage'::text, department) AND private.is_operational_department(department))"
+  },
+  {
+    "cmd": "SELECT",
+    "qual": "(private.can_read_catalog_department(department) AND ((active = true) OR private.has_permission('articles.manage'::text, department)))",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "articles",
+    "permissive": "PERMISSIVE",
+    "policyname": "articles_select_permissions",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "UPDATE",
+    "qual": "private.has_permission('articles.manage'::text, department)",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "articles",
+    "permissive": "PERMISSIVE",
+    "policyname": "articles_update_permissions",
+    "schemaname": "public",
+    "with_check": "(private.has_permission('articles.manage'::text, department) AND private.is_operational_department(department))"
+  },
+  {
+    "cmd": "ALL",
+    "qual": "private.pilot_account_active(auth.uid())",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "articles",
+    "permissive": "RESTRICTIVE",
+    "policyname": "pilot_approved_account",
+    "schemaname": "public",
+    "with_check": "private.pilot_account_active(auth.uid())"
+  },
+  {
+    "cmd": "ALL",
+    "qual": "private.pilot_account_active(auth.uid())",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "suppliers",
+    "permissive": "RESTRICTIVE",
+    "policyname": "pilot_approved_account",
+    "schemaname": "public",
+    "with_check": "private.pilot_account_active(auth.uid())"
+  },
+  {
+    "cmd": "INSERT",
+    "qual": null,
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "suppliers",
+    "permissive": "PERMISSIVE",
+    "policyname": "suppliers_insert_permissions",
+    "schemaname": "public",
+    "with_check": "(private.has_permission('suppliers.manage'::text, department) AND private.is_operational_department(department))"
+  },
+  {
+    "cmd": "SELECT",
+    "qual": "(private.can_read_catalog_department(department) AND ((active = true) OR private.has_permission('suppliers.manage'::text, department) OR private.has_permission('articles.manage'::text, department)))",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "suppliers",
+    "permissive": "PERMISSIVE",
+    "policyname": "suppliers_select_permissions",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "UPDATE",
+    "qual": "private.has_permission('suppliers.manage'::text, department)",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "suppliers",
+    "permissive": "PERMISSIVE",
+    "policyname": "suppliers_update_permissions",
+    "schemaname": "public",
+    "with_check": "(private.has_permission('suppliers.manage'::text, department) AND private.is_operational_department(department))"
+  }
+]
