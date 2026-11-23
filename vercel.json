@@ -86,5 +86,10 @@
     }
   ],
   "buildCommand": "node scripts/build-pilot.cjs",
-  "outputDirectory": ".stopflow-dist"
+  "outputDirectory": ".stopflow-dist",
+  "functions": {
+    "api/receipt-control-pdf.js": {
+      "maxDuration": 60
+    }
+  }
 }

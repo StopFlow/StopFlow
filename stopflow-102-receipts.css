@@ -33,3 +33,6 @@
 @media(max-width:1100px){.sf102-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.sf102-workspace{grid-template-columns:minmax(205px,25%) minmax(0,1fr)}}
 @media(max-width:680px){#sf102Receipts{padding:10px}.sf102-workspace,.sf102-price-grid{grid-template-columns:1fr}.sf102-workspace>aside{position:static}.sf102-fields{grid-template-columns:1fr}.sf102-documents{grid-template-columns:1fr}.sf102-steps span{font-size:12px;padding:8px}.sf102-actions>.btn{flex:1 1 140px}.sf102-line-head>strong{width:100%}}
 #sf100Operations #sf100Edit .sf102-check{display:flex;flex-direction:row;align-items:center;gap:9px}#sf100Operations #sf100Edit .sf102-check input[type=checkbox]{width:22px;min-height:22px;height:22px;flex:none}
+.sf102-intake,.sf102-awaiting,.sf102-control-history{background:#f3f8ff;border:1px solid #bbd0e9;border-radius:12px;padding:16px;margin:12px 0}
+.sf102-control-history article{display:grid;gap:8px;padding:12px;background:#fff;border:1px solid #c7d7e9;border-radius:9px;margin-top:10px}.sf102-control-history article>span{font-size:13px}.sf102-control-state{padding:10px 12px;border-left:4px solid #075bd8;background:#edf5ff}
+#sf102Receipts [data-receipt-status] a{display:inline-flex;margin:8px;padding:12px;border:1px solid #b0c5e0;border-radius:8px}

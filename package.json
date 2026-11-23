@@ -1,1 +1,13 @@
-{"name":"stopflow-pilot","private":true,"version":"0.0.0","engines":{"node":">=22"},"dependencies":{"unpdf":"1.4.0"}}
+{
+  "name": "stopflow-pilot",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "unpdf": "1.4.0",
+    "pdf-lib": "1.17.1",
+    "sharp": "0.35.5"
+  }
+}

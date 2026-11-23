@@ -1,5 +1,5 @@
 /* StopFlow 0.5.1 — service worker d’installation sans cache applicatif. */
-const STOPFLOW_SW_VERSION = "20261123-receipts1-installation";
+const STOPFLOW_SW_VERSION = "20261123-control2-installation";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
