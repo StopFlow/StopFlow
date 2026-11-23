@@ -93,12 +93,7 @@
     },
     "api/document-extraction.js": {
       "maxDuration": 60,
-      "includeFiles": [
-        "node_modules/tesseract.js/**",
-        "node_modules/tesseract.js-core/**",
-        "node_modules/@tesseract.js-data/fra/**",
-        "stopflow-104-photo-quality.js"
-      ]
+      "includeFiles": "{node_modules/tesseract.js/**,node_modules/tesseract.js-core/**,node_modules/@tesseract.js-data/fra/**,stopflow-104-photo-quality.js}"
     }
   }
 }
