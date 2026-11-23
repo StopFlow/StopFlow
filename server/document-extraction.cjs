@@ -13,8 +13,9 @@ function candidates(text){
  }).filter(Boolean).slice(0,300);
  return {supplier_candidate:supplier,number,date,kind:/\bavoir\b/i.test(text)?'credit':/\bfacture\b/i.test(text)?'invoice':'delivery',lines,review_required:true};
 }
-async function extract(bytes,mime,loader=()=>import('unpdf')){
- if(mime!=='application/pdf')return {status:'OCR_NOT_CONFIGURED',pages:null,candidates:null,manual_entry:true};
+async function extract(bytes,mime,loader=()=>import('unpdf'),rotation=0){
+ if(['image/jpeg','image/png','image/webp'].includes(mime))return require('./document-ocr.cjs').recognize(bytes,rotation);
+ if(mime!=='application/pdf')return {status:'FORMAT_UNSUPPORTED',pages:null,candidates:null,manual_entry:true};
  const {getDocumentProxy,extractText}=await loader();const pdf=await getDocumentProxy(new Uint8Array(bytes));
  try{
   if(pdf.numPages>30)throw Object.assign(Error('PAGE_LIMIT'),{code:'PAGE_LIMIT'});

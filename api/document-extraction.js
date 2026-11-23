@@ -13,7 +13,7 @@ async function run(body,authorization,env,fetcher=fetch,extractor=extract){
  if(!original.ok)return {http:409,data:{status:'PRIVATE_ORIGINAL_UNAVAILABLE',draft_preserved:true}};
  const bytes=await read(original,15728640,true);
  if(bytes.length!==file.bytes||crypto.createHash('sha256').update(bytes).digest('hex')!==file.sha256)return {http:409,data:{status:'ORIGINAL_HASH_MISMATCH',draft_preserved:true}};
- return {http:200,data:await extractor(bytes,file.mime)};
+ return {http:200,data:await extractor(bytes,file.mime,undefined,body.rotation||0)};
 }
 async function handler(req,res){res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('X-Content-Type-Options','nosniff');if(req.method!=='POST')return res.status(405).json({status:'METHOD_REFUSED'});
  try{const out=await run(req.body,req.headers.authorization,process.env);res.status(out.http).json(out.data);}catch(e){res.status(503).json({status:['PAGE_LIMIT','TEXT_LIMIT','SIZE_LIMIT'].includes(e.code)?e.code:'EXTRACTION_UNAVAILABLE',manual_entry:true,draft_preserved:true});}}
