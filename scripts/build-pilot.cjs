@@ -22,7 +22,7 @@ function run(env, output) {
   const commit = env.VERCEL_GIT_COMMIT_SHA || env.STOPFLOW_PILOT_COMMIT || null;
   if (env.VERCEL_ENV && !/^[a-f0-9]{40}$/.test(commit || ''))
     throw new Error('PILOT_COMMIT_REQUIRED');
-  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261123-reception4')throw new Error('PILOT_EDITION_UNREVIEWED');
+  if(delivery.r3_reference!==sourceCommit||delivery.edition!=='20261123-cordier5')throw new Error('PILOT_EDITION_UNREVIEWED');
   for (const [file, sha] of Object.entries(delivery.assets)) {
     if (crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', file))).digest('hex') !== sha)
       throw new Error('PILOT_SOURCE_DIFFERENT');

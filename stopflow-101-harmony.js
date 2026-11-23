@@ -44,5 +44,5 @@
  window.addEventListener('beforeunload',e=>{const f=document.getElementById('suggestionForm');if(!f?.hidden&&(f?.querySelector('#sugTitle')?.value||f?.querySelector('#sugDesc')?.value)){e.preventDefault();e.returnValue='';}});
  window.addEventListener('stopflow-idea-saved',()=>{if(ideaTab==='history')void history();});window.addEventListener('online',schedule);window.addEventListener('offline',schedule);
  const observer=new MutationObserver(schedule);observer.observe(document.getElementById('app'),{subtree:true,childList:true,attributes:true,attributeFilter:['class']});schedule();
- window.stopflowHarmony={active:true,edition:'20261123-reception4',refresh:schedule,backTarget:()=>backTarget};
+ window.stopflowHarmony={active:true,edition:'20261123-cordier5',refresh:schedule,backTarget:()=>backTarget};
 })();
