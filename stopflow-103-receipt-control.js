@@ -17,7 +17,7 @@ async function write(action,payload,request=uuid()){
  i.clear();await H.refreshList();H.status('Enregistrement confirmé et relu.');return out;
  }catch(e){if(intention){if(['23505','22007','22008','23502','22003'].includes(e.code)&&!i.current?.uncertain)i.clear();else i.fail(e);}throw e;}finally{S.busy=false;H.render();}
 }
-async function select(file,mode='new'){
+async function select(file,mode='new',options={}){
  if(C.running||!file)return;C.running=true;H.render();const S=H.S,a=S.actor,d=S.dep;
  try{
  if(S.intent.current||C.pendingPDF.current)throw Error('RECONCILIATION_REQUIRED');
@@ -27,9 +27,9 @@ async function select(file,mode='new'){
  const id=mode==='append'?S.doc.id:uuid();const key=`${a}:${d}:${id}:${uuid()}`;
  // Persist the bytes before creating any server folder. No success claim if this rescue is refused.
  await photo('put',key,file);same(a,d);
- C.capture={quality,actor:a,department:d,mode,request_id:uuid(),start_id:uuid(),blobKey:key,stage:'selected',flow:mode==='append'?'append':null,payload:{id,file_id:uuid(),version:mode==='append'?S.doc.revision:null,kind:C.intakeKind||'delivery',name:file.name,mime:file.type,bytes:file.size,sha256:sha}};storeCapture();C.picking=false;
+ C.capture={quality,actor:a,department:d,mode,request_id:uuid(),start_id:uuid(),blobKey:key,stage:'selected',flow:mode==='append'?(options.read===false?'append-only':'append'):null,payload:{id,file_id:uuid(),version:mode==='append'?S.doc.revision:null,kind:C.intakeKind||'delivery',name:file.name,mime:file.type,bytes:file.size,sha256:sha}};storeCapture();C.picking=false;
  }finally{C.running=false;H.render();}
- if(mode==='append'&&!H.S.busy)await execute('append');
+ if(mode==='append'&&!H.S.busy)await execute(options.read===false?'append-only':'append');
 }
 async function privateBytes(file){const r=await supabaseClient.storage.from('pilot-receipts-private').download(file.path);if(r.error)throw r.error;if(r.data.size!==file.bytes||await hash(r.data)!==file.sha256)throw Error('ORIGINAL_HASH_MISMATCH');return r.data;}
 async function execute(flow){
@@ -55,7 +55,7 @@ async function execute(flow){
  else if(cap.reading_result)H.status(window.stopflowReceiptReading.readMessage(cap.reading_result),!cap.reading_result.can_start);
  else if(cap.flow==='append')H.status('Page ajoutée explicitement à ce document. Aucun autre dossier créé.');
  else if(fresh.receipt_state==='complete')H.status('Document déjà enregistré : fiche et contrôle terminé conservés, sans doublon.');else H.status('Document associé ouvert. Vérifiez les lignes proposées ; quantité reçue, température et conformité restent à renseigner. Le contrôle n’est pas terminé.');
- await photo('delete',cap.blobKey);same(a,d);C.capture=null;storeCapture();C.picking=false;
+ await photo('delete',cap.blobKey);same(a,d);C.lastCapturedId=cap.result.document_id;C.capture=null;storeCapture();C.picking=false;
  }catch(e){H.status(message(e),true);throw e;}finally{C.running=false;H.render();}
 }
 function message(e){return ({PHOTO_RESCUE_UNAVAILABLE:'La photo ne peut pas être conservée dans ce navigateur. Aucun nouveau dossier n’est créé. Gardez cet onglet ouvert et réessayez.',CAPTURE_ALREADY_PENDING:'Une autre photo attend sa reprise. Reprenez-la avant de créer un nouveau dossier.',ORIGINAL_HASH_MISMATCH:'L’empreinte de l’original diffère. Aucun contrôle terminé n’est annoncé.',ORIGINAL_UPLOAD_UNCONFIRMED:'Transfert non confirmé. La photo et le dossier de reprise sont conservés ; reprenez le même enregistrement.',RECONCILIATION_REQUIRED:'Un envoi reste à vérifier. Reprenez-le avant une nouvelle intention.',CONTROL_PDF_UNCONFIRMED:'PDF non confirmé. Le brouillon, les originaux et le même identifiant d’envoi sont conservés.',ORIGINAL_IMAGE_UNREADABLE:'Photo non lisible pour le PDF. L’original et le brouillon sont conservés.',ORIGINAL_PDF_UNREADABLE:'PDF original illisible ou protégé. Le brouillon reste disponible.',CONTROL_PDF_SIZE_LIMIT:'Le bon dépasse la taille autorisée. Les originaux et la fiche sont conservés ; aucun contrôle terminé n’est annoncé.',ANNEX_PAGE_LIMIT:'Trop de pages pour ce bon. Les originaux et le brouillon sont conservés.',ORIGINAL_TOTAL_LIMIT:'Les originaux dépassent la taille du traitement. Ils restent conservés, sans contrôle déclaré terminé.'})[e?.status||e?.message]||H.errorText(e);}
@@ -85,5 +85,5 @@ async function action(a,b){
  return false;
 }
 function bind(h){H=h;return C;}
-window.stopflowReceiptControl={host:()=>H,photo,privateBytes,bind,sync,select,execute,write,rpc,saveControl,action,intake,controls,message,state:C,hasPending:()=>Boolean(C.capture||C.pendingPDF?.current)};
+window.stopflowReceiptControl={host:()=>H,photo,privateBytes,persistCapture:storeCapture,bind,sync,select,execute,write,rpc,saveControl,action,intake,controls,message,state:C,hasPending:()=>Boolean(C.capture||C.pendingPDF?.current)};
 })();

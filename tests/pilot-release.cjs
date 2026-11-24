@@ -21,14 +21,14 @@ try {
   assert.equal(release.pilot_commit, env.STOPFLOW_PILOT_COMMIT);
   assert.equal(release.project_ref, 'mmrdpyhoawwoplbzqwag');
   const index=fs.readFileSync(path.join(output,'index.html'),'utf8');
-  assert(index.includes('stopflow-pilot-team.js?v=20261124-reception6'));
+  assert(index.includes('stopflow-pilot-team.js?v=20261124-guide7'));
   assert(index.includes('stopflow-pilot-team.css?v=20261118-team1'));
   for(const name of ['pilot-install.svg','pilot-inscription.svg']){
     const qr=fs.readFileSync(path.join(output,name),'utf8');assert(qr.startsWith('<svg'));assert(!/(?:href|src)=["']http/.test(qr));
   }
   assert.equal(release.r3_reference.commit,'e160453537460c5b05e501d68d2376724b030317');
   assert.equal(release.r3_reference.assets['stopflow-093-service.js'],'51ea7ea71ea191597438d9cd68f8d82e3057a8bfef7dc10bdbce5c1472a0637a');
-  assert.equal(release.edition,'20261124-reception6');
+  assert.equal(release.edition,'20261124-guide7');
   // The R3 reference stays immutable; service boundaries and optional departure evolve.
   assert.notEqual(release.assets['stopflow-093-service-model.js'],release.r3_reference.assets['stopflow-093-service-model.js']);
   assert.notEqual(release.assets['stopflow-093-service.css'],release.r3_reference.assets['stopflow-093-service.css']); // Action column evolves; immutable R3 reference stays intact.
