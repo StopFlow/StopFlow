@@ -2,8 +2,9 @@
 // Preserve printed order/repeated products. Missing products are a separate section.
 const clean=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const decimal=s=>/^\d+(?:[.,]\d+)?$/.test(String(s).trim())?String(s).trim():'';
+const money=s=>decimal(String(s??'').replace(/(?:€|EUR)/gi,'').replace(/[\s\u00a0\u202f]/g,''));
 function parse(rows,page=1){
- const out={supplier_candidate:'',number:'',date:'',lines:[],missing_lines:[],unclassified:[],review_required:true};let columns=null,previous=null,section='delivered';
+ const out={supplier_candidate:'',number:'',date:'',lines:[],containers:[],missing_lines:[],unclassified:[],review_required:true};let columns=null,previous=null,section='delivered';
  for(const row of rows){const text=row.words.map(w=>w.text).join(' '),s=clean(text);let m;
   if((m=text.match(/(?:fournisseur|exp[eé]diteur)\s*:\s*(.+)/i)))out.supplier_candidate=m[1].trim();
   if((m=text.match(/(?:bon(?:\s+de\s+livraison)?|facture|bordereau)\s*(?:n[°o.]?\s*[:#]?|[:#])\s*(\S+)/i)))out.number=m[1];
@@ -25,12 +26,12 @@ function parse(rows,page=1){
   if(fields.description&&(fields.quantity||fields.unit||fields.unit_price||fields.line_total||(section==='missing'&&fields.supplier_reference))){
    const reference=String(fields.supplier_reference||'').trim(),uncertain=[...weak];if(!reference||/[?\uFFFD]/.test(reference))uncertain.push('supplier_reference');
    if(section==='after_total'){out.unclassified.push({page,row:row.index,text:text.slice(0,300),reason:'SECTION_APRES_TOTAL_A_VERIFIER'});previous=null;continue;}
-   previous={...fields,supplier_reference:reference,quantity:decimal(fields.quantity),unit_price:decimal(fields.unit_price),line_total:decimal(fields.line_total),basis:columns.priceBasis||'',currency:/€|\bEUR\b/.test(text)?'EUR':'',source_section:section,source_page:page,source_rows:[row.index],review_required:true,uncertain_fields:[...new Set([...uncertain,...(!decimal(fields.quantity)?['quantity']:[]),...(fields.unit_price&&!decimal(fields.unit_price)?['unit_price']:[]),...(fields.line_total&&!decimal(fields.line_total)?['line_total']:[])])]};out[section==='missing'?'missing_lines':'lines'].push(previous);
+   previous={...fields,supplier_reference:reference,quantity:decimal(fields.quantity),unit_price:money(fields.unit_price),line_total:money(fields.line_total),deposit:money(fields.deposit),price_printed:Boolean(fields.unit_price),basis:columns.priceBasis||'',currency:/€|\bEUR\b/.test(text)?'EUR':'',source_section:section,source_page:page,source_rows:[row.index],review_required:true,uncertain_fields:[...new Set([...uncertain,...(!decimal(fields.quantity)?['quantity']:[]),...(fields.unit_price&&!money(fields.unit_price)?['unit_price']:[]),...(fields.line_total&&!money(fields.line_total)?['line_total']:[])])]};if(section==='delivered'&&/\b(bacs?|caisses?)\b/.test(clean(fields.description))){previous.type='deposit';previous.source_section='containers';previous.received_count='';previous.returned_count='';out.containers.push(previous);}else out[section==='missing'?'missing_lines':'lines'].push(previous);
   }else if(text.trim())out.unclassified.push({page,row:row.index,text:text.slice(0,300)});
  }
  const all=rows.map(r=>r.words.map(w=>w.text).join(' ')).join('\n'),basis=/\bHT\b/i.test(all)&&!/\bTTC\b/i.test(all)?'HT':/\bTTC\b/i.test(all)&&!/\bHT\b/i.test(all)?'TTC':'';
- for(const l of [...out.lines,...out.missing_lines]){if(!l.basis)l.basis=basis;if(!l.currency&&/€|\bEUR\b/.test(all))l.currency='EUR';if(l.unit_price&&!l.basis)l.uncertain_fields.push('basis');}
+ for(const l of [...out.lines,...out.containers,...out.missing_lines]){if(!l.basis)l.basis=basis;if(!l.currency&&/€|\bEUR\b/.test(all))l.currency='EUR';if(l.unit_price&&!l.basis)l.uncertain_fields.push('basis');}
  return out;
 }
 function rowsFromWords(words){const rows=[];for(const w of words.filter(w=>w.text?.trim()).sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0)){const cy=(w.bbox.y0+w.bbox.y1)/2,h=w.bbox.y1-w.bbox.y0;let row=rows.find(r=>Math.abs(r.y-cy)<Math.max(5,h*.48));if(!row){row={y:cy,words:[],index:rows.length+1};rows.push(row);}row.words.push(w);}return rows.sort((a,b)=>a.y-b.y).map((r,i)=>({...r,index:i+1,words:r.words.sort((a,b)=>a.bbox.x0-b.bbox.x0)}));}
-module.exports={parse,rowsFromWords,decimal};
+module.exports={parse,rowsFromWords,decimal,money};
