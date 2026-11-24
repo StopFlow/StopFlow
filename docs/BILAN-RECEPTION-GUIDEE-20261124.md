@@ -25,7 +25,7 @@ La confirmation physique possède un snapshot des valeurs contrôlées ; une mes
 
 Migration additive ciblée `receipt_guided_physical_progress`, sans réécriture de données ni rejeu des migrations. Empreintes avant/après identiques pour documents, fichiers, prix, tables et éléments du plan, permissions. Stockage privé ; RPC refusées au rôle anonyme ; helper de confirmation non exécutable par les clients. Contrôle advisors réalisé ; les avertissements globaux des RPC existantes restent distincts du helper privé ajouté.
 
-Édition frontend/cache PWA : `20261124-guide7`. Fichiers servis, commit et projet vérifiés après déploiement ; reçus de livraison dans les preuves privées.
+Édition frontend/cache PWA : `20261124-guide8`. Fichiers servis, commit et projet vérifiés après déploiement ; reçus de livraison dans les preuves privées.
 
 Les essais navigateur emploient Auth/REST/Storage simulés. L’OCR réel est testé séparément sur une image fictive, pas déduit des candidats du navigateur. **Aucun parcours authentifié sur le stockage réel, aucune nouvelle lecture de l’original Cordier, aucun essai physique iPad** dans cette mission. Aucun mot de passe/session demandé, aucune photo réelle transmise à un nouveau prestataire.
 
