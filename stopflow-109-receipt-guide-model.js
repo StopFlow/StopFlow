@@ -17,7 +17,7 @@ function displayPrice(line){
  const uncertain=warnings.some(k=>['unit_price','currency','unit','pack_unit','pack_quantity','basis'].includes(k))||(value===null&&(known||line.price_printed===true));
  if(value===null)return {text:uncertain?'À vérifier':'—',uncertain};
  const money=value.toLocaleString('fr-BE',{minimumFractionDigits:2,maximumFractionDigits:4}),currency=line.currency==='EUR'?' €':line.currency?' '+line.currency:'';
- const unit=String(line.pack_unit||line.unit||'').trim(),pack=num(line.pack_quantity),denominator=unit?'/'+(pack!==null&&pack!==1?pack.toLocaleString('fr-BE')+' ':'')+unit:'';
+ const rawUnit=String(line.pack_unit||line.unit||'').trim(),unit=rawUnit.toLowerCase()==='l'?'L':rawUnit,pack=num(line.pack_quantity),denominator=unit?'/'+(pack!==null&&pack!==1?pack.toLocaleString('fr-BE')+' ':'')+unit:'';
  return {text:money+currency+denominator+(['HT','TTC'].includes(line.basis)?' '+line.basis:''),uncertain};
 }
 function displayDate(value){
